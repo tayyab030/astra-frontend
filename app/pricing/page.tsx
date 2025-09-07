@@ -1,15 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Star, Zap, Brain, ArrowRight, Sparkles, Crown } from "lucide-react"
-import { AstraLogo } from "@/components/astra-logo"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Check,
+  Star,
+  Zap,
+  Brain,
+  ArrowRight,
+  Sparkles,
+  Crown,
+} from "lucide-react";
+import { AstraLogo } from "@/components/astra-logo";
 
 export default function PricingPage() {
-  const [isAnnual, setIsAnnual] = useState(false)
+  const [isAnnual, setIsAnnual] = useState(false);
 
   const plans = [
     {
@@ -28,7 +42,11 @@ export default function PricingPage() {
         "Basic Analytics",
         "Community Support",
       ],
-      limitations: ["No Advanced AI Features", "Limited Integrations", "Basic Reporting Only"],
+      limitations: [
+        "No Advanced AI Features",
+        "Limited Integrations",
+        "Basic Reporting Only",
+      ],
       cta: "Start Free",
       popular: false,
     },
@@ -80,25 +98,60 @@ export default function PricingPage() {
       cta: "Go Neural+",
       popular: false,
     },
-  ]
+  ];
 
   const features = [
     {
       category: "Core Modules",
       items: [
-        { name: "Task Management", free: "Basic", starter: "Advanced", pro: "Neural+" },
-        { name: "Goal Tracking", free: "5 Goals", starter: "Unlimited", pro: "Unlimited + AI" },
-        { name: "Health Tracking", free: "Basic", starter: "Enhanced", pro: "Complete" },
-        { name: "Wealth Management", free: "Basic", starter: "Advanced", pro: "AI-Powered" },
-        { name: "Notes & Knowledge", free: "Simple", starter: "Smart", pro: "Neural Search" },
+        {
+          name: "Task Management",
+          free: "Basic",
+          starter: "Advanced",
+          pro: "Neural+",
+        },
+        {
+          name: "Goal Tracking",
+          free: "5 Goals",
+          starter: "Unlimited",
+          pro: "Unlimited + AI",
+        },
+        {
+          name: "Health Tracking",
+          free: "Basic",
+          starter: "Enhanced",
+          pro: "Complete",
+        },
+        {
+          name: "Wealth Management",
+          free: "Basic",
+          starter: "Advanced",
+          pro: "AI-Powered",
+        },
+        {
+          name: "Notes & Knowledge",
+          free: "Simple",
+          starter: "Smart",
+          pro: "Neural Search",
+        },
         { name: "Communication", free: "❌", starter: "❌", pro: "✅" },
       ],
     },
     {
       category: "AI Features",
       items: [
-        { name: "AI Insights", free: "Limited", starter: "Enhanced", pro: "Full Access" },
-        { name: "Smart Automation", free: "❌", starter: "Basic", pro: "Advanced" },
+        {
+          name: "AI Insights",
+          free: "Limited",
+          starter: "Enhanced",
+          pro: "Full Access",
+        },
+        {
+          name: "Smart Automation",
+          free: "❌",
+          starter: "Basic",
+          pro: "Advanced",
+        },
         { name: "Predictive Analytics", free: "❌", starter: "❌", pro: "✅" },
         { name: "Neural Life Score", free: "❌", starter: "❌", pro: "✅" },
       ],
@@ -107,48 +160,25 @@ export default function PricingPage() {
       category: "Integrations",
       items: [
         { name: "Calendar Sync", free: "❌", starter: "✅", pro: "✅" },
-        { name: "Email Integration", free: "❌", starter: "Basic", pro: "Advanced" },
-        { name: "Third-party Apps", free: "❌", starter: "Limited", pro: "All" },
+        {
+          name: "Email Integration",
+          free: "❌",
+          starter: "Basic",
+          pro: "Advanced",
+        },
+        {
+          name: "Third-party Apps",
+          free: "❌",
+          starter: "Limited",
+          pro: "All",
+        },
         { name: "API Access", free: "❌", starter: "❌", pro: "✅" },
       ],
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-slate-900/80 border-b border-cyan-500/20">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/">
-              <AstraLogo className="text-cyan-400" />
-            </Link>
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Home
-              </Link>
-              <a href="#" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Features
-              </a>
-              <a href="#" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Pricing
-              </a>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button variant="ghost" className="text-slate-300 hover:text-cyan-400 hover:bg-cyan-500/10">
-                  Sign in
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-full px-6 shadow-lg shadow-cyan-500/25">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
@@ -163,26 +193,33 @@ export default function PricingPage() {
               Choose Your Neural Level
             </h1>
             <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Unlock the full potential of your digital existence with ASTRA's quantum-powered life optimization system.
+              Unlock the full potential of your digital existence with ASTRA's
+              quantum-powered life optimization system.
             </p>
 
             <div className="flex items-center justify-center mb-12">
-              <span className={`text-sm font-medium mr-3 ${!isAnnual ? "text-cyan-400" : "text-slate-400"}`}>
+              <span
+                className={`text-sm font-medium mr-3 ${!isAnnual ? "text-cyan-400" : "text-slate-400"
+                  }`}
+              >
                 Monthly
               </span>
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  isAnnual ? "bg-gradient-to-r from-cyan-500 to-blue-600" : "bg-slate-600"
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isAnnual
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600"
+                    : "bg-slate-600"
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    isAnnual ? "translate-x-6" : "translate-x-1"
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"
+                    }`}
                 />
               </button>
-              <span className={`text-sm font-medium ml-3 ${isAnnual ? "text-cyan-400" : "text-slate-400"}`}>
+              <span
+                className={`text-sm font-medium ml-3 ${isAnnual ? "text-cyan-400" : "text-slate-400"
+                  }`}
+              >
                 Annual
               </span>
               {isAnnual && (
@@ -197,11 +234,10 @@ export default function PricingPage() {
             {plans.map((plan, index) => (
               <Card
                 key={plan.name}
-                className={`relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
-                  plan.popular
+                className={`relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${plan.popular
                     ? "ring-2 ring-cyan-500/50 border-cyan-500/30 shadow-2xl shadow-cyan-500/10"
                     : "border-slate-600/50"
-                } bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-sm`}
+                  } bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-sm`}
               >
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${plan.gradient} opacity-10 group-hover:opacity-20 transition-opacity`}
@@ -223,16 +259,26 @@ export default function PricingPage() {
                     <plan.icon className="w-8 h-8 text-white" />
                   </div>
 
-                  <CardTitle className="text-2xl text-white mb-2">{plan.name}</CardTitle>
-                  <CardDescription className="text-slate-400 mb-6">{plan.description}</CardDescription>
+                  <CardTitle className="text-2xl text-white mb-2">
+                    {plan.name}
+                  </CardTitle>
+                  <CardDescription className="text-slate-400 mb-6">
+                    {plan.description}
+                  </CardDescription>
 
                   <div className="text-center">
                     <div className="text-5xl font-bold text-white mb-2">
                       ${isAnnual ? plan.price.annual : plan.price.monthly}
-                      {plan.price.monthly > 0 && <span className="text-lg text-slate-400 font-normal">/month</span>}
+                      {plan.price.monthly > 0 && (
+                        <span className="text-lg text-slate-400 font-normal">
+                          /month
+                        </span>
+                      )}
                     </div>
                     {isAnnual && plan.price.monthly > 0 && (
-                      <div className="text-sm text-slate-400">Billed annually (${plan.price.annual * 12}/year)</div>
+                      <div className="text-sm text-slate-400">
+                        Billed annually (${plan.price.annual * 12}/year)
+                      </div>
                     )}
                   </div>
                 </CardHeader>
@@ -240,11 +286,10 @@ export default function PricingPage() {
                 <CardContent className="relative">
                   <Link href="/login">
                     <Button
-                      className={`w-full mb-6 ${
-                        plan.popular
+                      className={`w-full mb-6 ${plan.popular
                           ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
                           : "bg-slate-700 hover:bg-slate-600 text-white"
-                      } rounded-full py-3`}
+                        } rounded-full py-3`}
                     >
                       {plan.cta}
                       <ArrowRight className="ml-2 w-4 h-4" />
@@ -253,7 +298,10 @@ export default function PricingPage() {
 
                   <div className="space-y-3 mb-6">
                     {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center text-sm text-slate-300">
+                      <div
+                        key={idx}
+                        className="flex items-center text-sm text-slate-300"
+                      >
                         <Check className="w-4 h-4 text-emerald-400 mr-3 flex-shrink-0" />
                         {feature}
                       </div>
@@ -262,7 +310,9 @@ export default function PricingPage() {
 
                   {plan.limitations.length > 0 && (
                     <div className="pt-4 border-t border-slate-600/50">
-                      <div className="text-xs text-slate-500 mb-2">Limitations:</div>
+                      <div className="text-xs text-slate-500 mb-2">
+                        Limitations:
+                      </div>
                       {plan.limitations.map((limitation, idx) => (
                         <div key={idx} className="text-xs text-slate-500 mb-1">
                           • {limitation}
@@ -285,20 +335,35 @@ export default function PricingPage() {
                 {features.map((category, categoryIdx) => (
                   <div key={category.category}>
                     <div className="bg-gradient-to-r from-slate-700/50 to-slate-600/50 px-6 py-4 border-b border-slate-600/50">
-                      <h3 className="text-lg font-semibold text-cyan-300">{category.category}</h3>
+                      <h3 className="text-lg font-semibold text-cyan-300">
+                        {category.category}
+                      </h3>
                     </div>
 
                     {category.items.map((item, itemIdx) => (
                       <div
                         key={item.name}
-                        className={`grid grid-cols-4 gap-4 px-6 py-4 ${
-                          itemIdx < category.items.length - 1 ? "border-b border-slate-700/50" : ""
-                        } ${categoryIdx < features.length - 1 && itemIdx === category.items.length - 1 ? "border-b border-slate-600/50" : ""}`}
+                        className={`grid grid-cols-4 gap-4 px-6 py-4 ${itemIdx < category.items.length - 1
+                            ? "border-b border-slate-700/50"
+                            : ""
+                          } ${categoryIdx < features.length - 1 &&
+                            itemIdx === category.items.length - 1
+                            ? "border-b border-slate-600/50"
+                            : ""
+                          }`}
                       >
-                        <div className="text-slate-300 font-medium">{item.name}</div>
-                        <div className="text-center text-slate-400">{item.free}</div>
-                        <div className="text-center text-cyan-300">{item.starter}</div>
-                        <div className="text-center text-purple-300">{item.pro}</div>
+                        <div className="text-slate-300 font-medium">
+                          {item.name}
+                        </div>
+                        <div className="text-center text-slate-400">
+                          {item.free}
+                        </div>
+                        <div className="text-center text-cyan-300">
+                          {item.starter}
+                        </div>
+                        <div className="text-center text-purple-300">
+                          {item.pro}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -307,7 +372,10 @@ export default function PricingPage() {
                 <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                   <div className="font-semibold text-white">Plan</div>
                   <div className="text-center">
-                    <Badge variant="outline" className="border-slate-500 text-slate-300">
+                    <Badge
+                      variant="outline"
+                      className="border-slate-500 text-slate-300"
+                    >
                       Free
                     </Badge>
                   </div>
@@ -333,8 +401,8 @@ export default function PricingPage() {
                 Ready to Optimize Your Life?
               </h2>
               <p className="text-slate-300 mb-8 text-lg leading-relaxed">
-                Join thousands of users who have transformed their productivity and life balance with ASTRA's neural
-                architecture.
+                Join thousands of users who have transformed their productivity
+                and life balance with ASTRA's neural architecture.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -359,19 +427,6 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
-
-      <footer className="py-12 px-4 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <Link href="/">
-              <AstraLogo className="mb-4 md:mb-0 text-cyan-400" />
-            </Link>
-            <div className="text-sm text-slate-400">
-              © 2024 ASTRA Neural Systems. Quantum-powered life optimization for the digital age.
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
-  )
+  );
 }
