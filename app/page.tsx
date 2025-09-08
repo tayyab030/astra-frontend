@@ -86,12 +86,12 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <AstraLogo className="text-cyan-400" />
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
+              <Link href="/product" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Product
-              </a>
-              <a href="#" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
+              </Link>
+              <Link href="/features" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Features
-              </a>
+              </Link>
               <Link href="/pricing" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Pricing
               </Link>
