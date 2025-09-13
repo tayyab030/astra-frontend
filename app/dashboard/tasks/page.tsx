@@ -665,7 +665,7 @@ export default function TasksPage() {
         <div className="grid grid-cols-7 gap-0">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div key={day} className="h-10 border border-slate-700/30 bg-slate-800/50 flex items-center justify-center">
-              <span className="text-sm font-mono text-slate-300 font-mono">{day}</span>
+              <span className="text-sm text-slate-300 font-mono">{day}</span>
             </div>
           ))}
           {days}
@@ -771,10 +771,10 @@ export default function TasksPage() {
                   <div
                     key={day}
                     className={`h-4 flex items-center justify-center font-mono ${isToday
-                        ? "bg-cyan-500 text-white rounded-full text-xs"
-                        : hasTask
-                          ? "text-cyan-300 font-bold"
-                          : "text-slate-400"
+                      ? "bg-cyan-500 text-white rounded-full text-xs"
+                      : hasTask
+                        ? "text-cyan-300 font-bold"
+                        : "text-slate-400"
                       }`}
                   >
                     {day}
@@ -922,8 +922,8 @@ export default function TasksPage() {
                       key={project.id}
                       onClick={() => setSelectedProject(project.id)}
                       className={`flex items-center text-sm font-mono px-3 py-1 rounded transition-all ${selectedProject === project.id
-                          ? "bg-cyan-500/20 text-cyan-100"
-                          : "text-slate-400 hover:bg-slate-800/50 hover:text-cyan-300"
+                        ? "bg-cyan-500/20 text-cyan-100"
+                        : "text-slate-400 hover:bg-slate-800/50 hover:text-cyan-300"
                         }`}
                     >
                       <div className={`w-2 h-2 rounded mr-2 bg-${project.color}-500`}></div>
