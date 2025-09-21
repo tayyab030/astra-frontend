@@ -1,50 +1,66 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { schema, SignUpType } from "../_schemas/signup.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function SignupForm() {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    })
-    const [acceptTerms, setAcceptTerms] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const router = useRouter()
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting },
+    } = useForm<SignUpType>({
+        resolver: zodResolver(schema),
+    });
 
-    const handleInputChange = (field: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [field]: value }))
-    }
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match")
-            return
+    const password = watch("password", "");
+    const confirmPassword = watch("confirmPassword", "");
+
+    console.log(watch(), errors);
+
+    const passwordRules = [
+        { rule: "At least 1 uppercase letter", test: /[A-Z]/.test(password) },
+        { rule: "At least 1 lowercase letter", test: /[a-z]/.test(password) },
+        { rule: "At least 1 number", test: /\d/.test(password) },
+        {
+            rule: "At least 1 special character",
+            test: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        },
+        { rule: "Minimum 8 characters", test: password.length >= 8 },
+    ];
+
+    const passwordsMatch =
+        password && confirmPassword && password === confirmPassword;
+
+    const onSubmit = async (data: SignUpType) => {
+        if (!watch("terms")) {
+            alert("Please accept the terms and conditions");
+            return;
         }
-        if (!acceptTerms) {
-            alert("Please accept the terms and conditions")
-            return
-        }
-        setIsLoading(true)
-        // Simulate signup process
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        setIsLoading(false)
-        router.push("/verify-otp")
-    }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        router.push("/verify-otp");
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 font-mono relative overflow-hidden">
@@ -80,24 +96,70 @@ export default function SignupForm() {
 
             <Card className="w-full max-w-md bg-slate-800/50 backdrop-blur-xl border-cyan-500/30 shadow-2xl shadow-cyan-500/10 relative z-10">
                 <CardHeader className="text-center space-y-2">
-                    <CardTitle className="text-3xl text-cyan-100 font-mono">Join ASTRA</CardTitle>
-                    <CardDescription className="text-slate-300 font-mono">Initialize your neural profile</CardDescription>
+                    <CardTitle className="text-3xl text-cyan-100 font-mono">
+                        Join ASTRA
+                    </CardTitle>
+                    <CardDescription className="text-slate-300 font-mono">
+                        Initialize your neural profile
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="firstName" className="text-cyan-200 font-mono">
+                                    First Name
+                                </Label>
+                                <Input
+                                    id="firstName"
+                                    type="text"
+                                    {...register("firstName")}
+                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    placeholder="Enter your first name..."
+                                    onChange={(e) => setValue("firstName", e.target.value)}
+                                />
+                                {errors.firstName && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.firstName.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="lastName" className="text-cyan-200 font-mono">
+                                    Last Name
+                                </Label>
+                                <Input
+                                    id="lastName"
+                                    type="text"
+                                    {...register("lastName")}
+                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    placeholder="Enter your last name..."
+                                    onChange={(e) => setValue("lastName", e.target.value)}
+                                />
+                                {errors.lastName && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.lastName.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-cyan-200 font-mono">
-                                Full Name
+                            <Label htmlFor="username" className="text-cyan-200 font-mono">
+                                Username
                             </Label>
                             <Input
-                                id="name"
+                                id="username"
                                 type="text"
-                                value={formData.name}
-                                onChange={(e) => handleInputChange("name", e.target.value)}
+                                {...register("username")}
                                 className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
-                                placeholder="Neural Operator"
-                                required
+                                placeholder="Enter your username..."
+                                onChange={(e) => setValue("username", e.target.value)}
                             />
+                            {errors.username && (
+                                <p className="text-red-400 text-xs font-mono">
+                                    {errors.username.message}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-cyan-200 font-mono">
@@ -106,12 +168,16 @@ export default function SignupForm() {
                             <Input
                                 id="email"
                                 type="email"
-                                value={formData.email}
-                                onChange={(e) => handleInputChange("email", e.target.value)}
+                                {...register("email")}
                                 className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
-                                placeholder="neural@astra.ai"
-                                required
+                                placeholder="Enter your email..."
+                                onChange={(e) => setValue("email", e.target.value)}
                             />
+                            {errors.email && (
+                                <p className="text-red-400 text-xs font-mono">
+                                    {errors.email.message}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password" className="text-cyan-200 font-mono">
@@ -121,11 +187,10 @@ export default function SignupForm() {
                                 <Input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
-                                    value={formData.password}
-                                    onChange={(e) => handleInputChange("password", e.target.value)}
+                                    {...register("password")}
                                     className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
-                                    placeholder="••••••••"
-                                    required
+                                    placeholder="Enter your password..."
+                                    onChange={(e) => setValue("password", e.target.value)}
                                 />
                                 <button
                                     type="button"
@@ -135,45 +200,101 @@ export default function SignupForm() {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            {password && (
+                                <div className="mt-3 space-y-2">
+                                    {passwordRules.map((rule, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center space-x-2 text-xs font-mono"
+                                        >
+                                            {rule.test ? (
+                                                <Check size={14} className="text-green-400" />
+                                            ) : (
+                                                <X size={14} className="text-red-400" />
+                                            )}
+                                            <span
+                                                className={
+                                                    rule.test ? "text-green-400" : "text-red-400"
+                                                }
+                                            >
+                                                {rule.rule}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-cyan-200 font-mono">
+                            <Label
+                                htmlFor="confirmPassword"
+                                className="text-cyan-200 font-mono"
+                            >
                                 Confirm Password
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
-                                    value={formData.confirmPassword}
-                                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                                    {...register("confirmPassword")}
                                     className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
-                                    placeholder="••••••••"
-                                    required
+                                    placeholder="Enter your confirm password..."
+                                    onChange={(e) => setValue("confirmPassword", e.target.value)}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
                                 >
-                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showConfirmPassword ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
                             </div>
+                            {confirmPassword && (
+                                <div className="flex items-center space-x-2 text-xs font-mono mt-2">
+                                    {passwordsMatch ? (
+                                        <>
+                                            <Check size={14} className="text-green-400" />
+                                            <span className="text-green-400">Passwords match</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <X size={14} className="text-red-400" />
+                                            <span className="text-red-400">
+                                                Passwords do not match
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center space-x-2">
                             <Checkbox
+                                {...register("terms")}
                                 id="terms"
-                                checked={acceptTerms}
-                                onCheckedChange={setAcceptTerms}
+                                checked={watch("terms")}
+                                onCheckedChange={() => setValue("terms", !watch("terms"))}
                                 className="border-cyan-500/30 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600"
                             />
-                            <Label htmlFor="terms" className="text-sm text-slate-300 font-mono">
+                            <Label
+                                htmlFor="terms"
+                                className="text-sm text-slate-300 font-mono"
+                            >
                                 I accept the{" "}
-                                <Link href="/terms" className="text-cyan-400 hover:text-cyan-300">
+                                <Link
+                                    href="/terms"
+                                    className="text-cyan-400 hover:text-cyan-300"
+                                >
                                     Neural Terms
                                 </Link>{" "}
                                 and{" "}
-                                <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300">
+                                <Link
+                                    href="/privacy"
+                                    className="text-cyan-400 hover:text-cyan-300"
+                                >
                                     Privacy Protocol
                                 </Link>
                             </Label>
@@ -181,10 +302,10 @@ export default function SignupForm() {
 
                         <Button
                             type="submit"
-                            disabled={isLoading || !acceptTerms}
+                            disabled={isSubmitting || !watch("terms") || !passwordsMatch}
                             className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono border-0 shadow-lg shadow-cyan-500/25 transition-all duration-300 disabled:opacity-50"
                         >
-                            {isLoading ? (
+                            {isSubmitting ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     <span>Creating Profile...</span>
@@ -198,7 +319,10 @@ export default function SignupForm() {
                     <div className="text-center">
                         <div className="text-slate-400 text-sm font-mono">
                             Already have a neural profile?{" "}
-                            <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                            <Link
+                                href="/login"
+                                className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                            >
                                 Access system
                             </Link>
                         </div>
@@ -208,16 +332,31 @@ export default function SignupForm() {
 
             <style jsx>{`
         @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
         @keyframes spin-slow-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
+          from {
+            transform: rotate(360deg);
+          }
+          to {
+            transform: rotate(0deg);
+          }
         }
         @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0; }
-          50% { transform: translateY(-20px) translateX(10px); opacity: 1; }
+          0%,
+          100% {
+            transform: translateY(0px) translateX(0px);
+            opacity: 0;
+          }
+          50% {
+            transform: translateY(-20px) translateX(10px);
+            opacity: 1;
+          }
         }
         .animate-spin-slow {
           animation: spin-slow 20s linear infinite;
@@ -230,5 +369,5 @@ export default function SignupForm() {
         }
       `}</style>
         </div>
-    )
+    );
 }

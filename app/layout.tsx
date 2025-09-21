@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Inter, Poppins } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import { ReduxProvider } from "@/store/Providers"
+import QueryProviders from "@/ReatQuery/provider"
 import "./globals.css"
 
 const inter = Inter({
@@ -34,7 +36,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} ${poppins.variable}`}>
         <Suspense fallback={null}>
-          {children}
+          <ReduxProvider>
+            <QueryProviders>
+              {children}
+            </QueryProviders>
+          </ReduxProvider>
         </Suspense>
         <Analytics />
       </body>
