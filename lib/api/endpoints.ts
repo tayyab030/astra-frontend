@@ -5,12 +5,12 @@ export const API_ENDPOINTS = {
     // LOGIN: "/auth/login",
     REGISTER: "/api/auth/users/",
     OTP_STATUS: (token: string) => `/api/otp/${token}/status/`,
+    RESEND_OTP: "/api/otp/create/",
+    VERIFY_OTP: "/api/otp/verify/",
     // REFRESH_TOKEN: "/auth/refresh",
     // LOGOUT: "/auth/logout",
     // FORGOT_PASSWORD: "/auth/forgot-password",
     // RESET_PASSWORD: "/auth/reset-password",
-    // VERIFY_OTP: "/auth/verify-otp",
-    // RESEND_OTP: "/auth/resend-otp",
   },
 
   // User endpoints

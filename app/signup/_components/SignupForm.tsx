@@ -39,8 +39,6 @@ export default function SignupForm() {
     const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
 
-    console.log(watch(), errors);
-
     const passwordRules = [
         { rule: "At least 1 uppercase letter", test: /[A-Z]/.test(password) },
         { rule: "At least 1 lowercase letter", test: /[a-z]/.test(password) },
