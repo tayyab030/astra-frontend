@@ -60,12 +60,10 @@ export default function SignupForm() {
             return;
         }
         try {
-            debugger
             const response = await publicApi.post(AUTH.REGISTER, data);
             toast.success(response?.data?.message || "Profile created successfully");
-            console.log(response);
+
             router.push(`/verify-otp?otp_token=${response?.data?.otp_token}`);
-            // await new Promise((resolve) => setTimeout(resolve, 2000));
         } catch (error: any) {
             console.error(error);
             if (error.response?.data) {
