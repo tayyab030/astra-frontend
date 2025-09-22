@@ -18,6 +18,8 @@ import { Eye, EyeOff, Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { schema, SignUpType } from "../_schemas/signup.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AUTH, publicApi } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function SignupForm() {
     const {
@@ -55,11 +57,39 @@ export default function SignupForm() {
 
     const onSubmit = async (data: SignUpType) => {
         if (!watch("terms")) {
-            alert("Please accept the terms and conditions");
             return;
         }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        router.push("/verify-otp");
+        try {
+            debugger
+            const response = await publicApi.post(AUTH.REGISTER, data);
+            toast.success(response?.data?.message || "Profile created successfully");
+            console.log(response);
+            router.push(`/verify-otp?otp_token=${response?.data?.otp_token}`);
+            // await new Promise((resolve) => setTimeout(resolve, 2000));
+        } catch (error: any) {
+            console.error(error);
+            if (error.response?.data) {
+                const errors = error.response.data;
+
+                // Collect all error messages
+                const allMessages: string[] = [];
+                Object.keys(errors).forEach((field) => {
+                    const fieldErrors = errors[field];
+                    if (Array.isArray(fieldErrors)) {
+                        allMessages.push(...fieldErrors);
+                    } else {
+                        allMessages.push(String(fieldErrors));
+                    }
+                });
+
+                // Join all messages into a single string
+                toast.error(allMessages.map((message, index) => <p key={index}>{message}</p>)); // separator can be "\n" for newlines
+            } else if (error.request) {
+                toast.error("No response from server. Please try again.");
+            } else {
+                toast.error(error.message || "Unexpected error");
+            }
+        }
     };
 
     return (
@@ -107,38 +137,38 @@ export default function SignupForm() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="firstName" className="text-cyan-200 font-mono">
+                                <Label htmlFor="first_name" className="text-cyan-200 font-mono">
                                     First Name
                                 </Label>
                                 <Input
-                                    id="firstName"
+                                    id="first_name"
                                     type="text"
-                                    {...register("firstName")}
+                                    {...register("first_name")}
                                     className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
                                     placeholder="Enter your first name..."
-                                    onChange={(e) => setValue("firstName", e.target.value)}
+                                    onChange={(e) => setValue("first_name", e.target.value)}
                                 />
-                                {errors.firstName && (
+                                {errors.first_name && (
                                     <p className="text-red-400 text-xs font-mono">
-                                        {errors.firstName.message}
+                                        {errors.first_name.message}
                                     </p>
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="lastName" className="text-cyan-200 font-mono">
+                                <Label htmlFor="last_name" className="text-cyan-200 font-mono">
                                     Last Name
                                 </Label>
                                 <Input
-                                    id="lastName"
+                                    id="last_name"
                                     type="text"
-                                    {...register("lastName")}
+                                    {...register("last_name")}
                                     className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
                                     placeholder="Enter your last name..."
-                                    onChange={(e) => setValue("lastName", e.target.value)}
+                                    onChange={(e) => setValue("last_name", e.target.value)}
                                 />
-                                {errors.lastName && (
+                                {errors.last_name && (
                                     <p className="text-red-400 text-xs font-mono">
-                                        {errors.lastName.message}
+                                        {errors.last_name.message}
                                     </p>
                                 )}
                             </div>

@@ -9,7 +9,7 @@ export const injectStore = (_store: Store) => {
   store = _store;
 };
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/";
+const baseURL = "http://127.0.0.1:8000";
 
 export const publicApi = axios.create({
   baseURL,

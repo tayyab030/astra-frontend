@@ -5,6 +5,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ReduxProvider } from "@/store/Providers"
 import QueryProviders from "@/ReatQuery/provider"
+import { Toaster } from "@/components/ui/sonner"
+
 import "./globals.css"
 
 const inter = Inter({
@@ -39,6 +41,7 @@ export default function RootLayout({
           <ReduxProvider>
             <QueryProviders>
               {children}
+              <Toaster richColors position="top-right" />
             </QueryProviders>
           </ReduxProvider>
         </Suspense>

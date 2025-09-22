@@ -3,13 +3,16 @@ import * as z from "zod";
 // Validation schema
 const schema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    first_name: z.string().min(1, "First name is required"),
+    last_name: z.string().min(1, "Last name is required"),
     username: z
       .string()
       .min(3, "Username must be at least 3 characters")
       .max(20, "Username must be no more than 20 characters")
-      .regex(/^[a-zA-Z0-9]+$/, "Username can only contain letters and numbers"),
+      .regex(
+        /^[a-zA-Z0-9@.+_-]+$/,
+        "Username can only contain letters, numbers, and @ . + - _ characters"
+      ),
     email: z
       .string()
       .min(1, "Email is required")

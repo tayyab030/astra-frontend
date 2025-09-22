@@ -3,7 +3,7 @@ export const API_ENDPOINTS = {
   // Authentication endpoints
   AUTH: {
     LOGIN: "/auth/login",
-    REGISTER: "/auth/register",
+    REGISTER: "/api/auth/users/",
     REFRESH_TOKEN: "/auth/refresh",
     LOGOUT: "/auth/logout",
     FORGOT_PASSWORD: "/auth/forgot-password",

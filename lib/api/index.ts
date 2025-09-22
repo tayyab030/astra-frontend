@@ -1,3 +1,4 @@
 // Export simple API functions
 export { authApi, publicApi } from "./simpleApi";
-export { API_ENDPOINTS } from "./endpoints";
+import { API_ENDPOINTS } from "./endpoints";
+export const { AUTH, DASHBOARD, ASSISTANT, SETTINGS } = API_ENDPOINTS;
