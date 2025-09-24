@@ -2,16 +2,17 @@ export const ROUTES = {
   AUTH: {
     LOGIN: "/auth/login",
     SIGNUP: "/auth/signup",
-    RESET: "/auth/reset",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    VERIFY_OTP: "/auth/verify-otp",
   },
   APP: {
-    DASHBOARD: "/app/dashboard",
-    PROFILE: "/app/profile",
-    SETTINGS: "/app/settings",
+    // DASHBOARD: "/app/dashboard",
+    // PROFILE: "/app/profile",
+    // SETTINGS: "/app/settings",
   },
   PUBLIC: {
     HOME: "/",
-    ABOUT: "/about",
-    CONTACT: "/contact",
+    // ABOUT: "/about",
+    // CONTACT: "/contact",
   },
 };

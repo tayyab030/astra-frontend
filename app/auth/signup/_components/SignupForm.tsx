@@ -20,6 +20,7 @@ import { schema, SignUpType } from "../_schemas/signup.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AUTH, publicApi } from "@/lib/api";
 import { toast } from "sonner";
+import { ROUTES } from "@/constants/routes";
 
 export default function SignupForm() {
     const {
@@ -61,7 +62,7 @@ export default function SignupForm() {
             const response = await publicApi.post(AUTH.REGISTER, data);
             toast.success(response?.data?.message || "Profile created successfully");
 
-            router.push(`/verify-otp?otp_token=${response?.data?.otp_token}`);
+            router.push(`${ROUTES.AUTH.VERIFY_OTP}?otp_token=${response?.data?.otp_token}`);
         } catch (error: any) {
             console.error(error);
             if (error.response?.data) {
@@ -346,7 +347,7 @@ export default function SignupForm() {
                         <div className="text-slate-400 text-sm font-mono">
                             Already have a neural profile?{" "}
                             <Link
-                                href="/login"
+                                href={ROUTES.AUTH.LOGIN}
                                 className="text-cyan-400 hover:text-cyan-300 transition-colors"
                             >
                                 Access system

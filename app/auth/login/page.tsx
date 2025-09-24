@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
+import { ROUTES } from "@/constants/routes"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -113,14 +114,14 @@ export default function LoginPage() {
 
           <div className="text-center space-y-4">
             <Link
-              href="/forgot-password"
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
               className="text-cyan-400 hover:text-cyan-300 text-sm font-mono transition-colors"
             >
               Forgot neural pathway?
             </Link>
             <div className="text-slate-400 text-sm font-mono">
               New to ASTRA?{" "}
-              <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Link href={ROUTES.AUTH.SIGNUP} className="text-cyan-400 hover:text-cyan-300 transition-colors">
                 Create neural profile
               </Link>
             </div>

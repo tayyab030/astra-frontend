@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Mail } from "lucide-react"
+import { ROUTES } from "@/constants/routes"
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("")
@@ -116,7 +117,7 @@ export default function ForgotPasswordPage() {
 
                     <div className="text-center space-y-4">
                         <Link
-                            href="/login"
+                            href={ROUTES.AUTH.LOGIN}
                             className="inline-flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 text-sm font-mono transition-colors"
                         >
                             <ArrowLeft size={16} />
@@ -124,7 +125,7 @@ export default function ForgotPasswordPage() {
                         </Link>
                         <div className="text-slate-400 text-sm font-mono">
                             New to ASTRA?{" "}
-                            <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+                            <Link href={ROUTES.AUTH.SIGNUP} className="text-cyan-400 hover:text-cyan-300 transition-colors">
                                 Create neural profile
                             </Link>
                         </div>

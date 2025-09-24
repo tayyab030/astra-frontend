@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { AstraLogo } from "@/components/astra-logo"
 import { AlertTriangle, RefreshCw, Home, Shield, Zap } from "lucide-react"
+import { ROUTES } from "@/constants/routes"
 
 interface InvalidTokenPageProps {
     tokenType?: string
@@ -16,7 +17,7 @@ interface InvalidTokenPageProps {
 export default function InvalidToken({
     tokenType = "Authentication",
     message = "The token you provided is invalid or has expired.",
-    redirectPath = "/login",
+    redirectPath = ROUTES.AUTH.LOGIN,
 }: InvalidTokenPageProps) {
     const router = useRouter()
 

@@ -20,6 +20,7 @@ import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useActiveItem } from "@/hooks/handleparams";
+import { ROUTES } from "@/constants/routes";
 
 const InvalidToken = dynamic(() => import("./InvalidToken"), {
     loading: () => <p>Loading...</p>,
@@ -101,7 +102,7 @@ export default function VerifyOTPPage() {
                 otp_code: otpCode,
             });
             toast.success("OTP verified successfully");
-            router.push("/login");
+            router.push(ROUTES.AUTH.LOGIN);
         } catch (error: any) {
             console.error(error);
             const errorData = error?.response?.data;
@@ -263,7 +264,7 @@ export default function VerifyOTPPage() {
                         <div className="text-slate-400 text-sm font-mono">
                             Wrong neural interface?{" "}
                             <Link
-                                href="/signup"
+                                href={ROUTES.AUTH.SIGNUP}
                                 className="text-cyan-400 hover:text-cyan-300 transition-colors"
                             >
                                 Update profile
