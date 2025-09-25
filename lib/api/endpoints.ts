@@ -2,7 +2,7 @@
 export const API_ENDPOINTS = {
   // Authentication endpoints
   AUTH: {
-    // LOGIN: "/auth/login",
+    LOGIN: "/api/auth/jwt/create/",
     REGISTER: "/api/auth/users/",
     OTP_STATUS: (token: string) => `/api/otp/${token}/status/`,
     RESEND_OTP: "/api/otp/create/",
