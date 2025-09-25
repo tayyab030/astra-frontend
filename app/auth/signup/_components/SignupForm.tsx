@@ -312,14 +312,14 @@ export default function SignupForm() {
                             >
                                 I accept the{" "}
                                 <Link
-                                    href="/terms"
+                                    href={ROUTES.PUBLIC.TERMS}
                                     className="text-cyan-400 hover:text-cyan-300"
                                 >
                                     Neural Terms
                                 </Link>{" "}
                                 and{" "}
                                 <Link
-                                    href="/privacy"
+                                    href={ROUTES.PUBLIC.PRIVACY}
                                     className="text-cyan-400 hover:text-cyan-300"
                                 >
                                     Privacy Protocol

@@ -17,13 +17,15 @@ import { useDispatch } from 'react-redux'
 import { setAccessToken } from '@/store/slice/authSlice'
 import { setUser } from '@/store/slice/userSlice'
 import { getRefreshTokenCookie, setRefreshTokenCookie } from '@/lib/cookies'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getAccessToken, getCurrentUser, isAuthenticated, logout } from '@/lib/auth'
 
 const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false)
     const dispatch = useDispatch()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirectTo = searchParams.get('redirect') || ROUTES.APP.DASHBOARD
 
     const {
         register,
@@ -52,8 +54,8 @@ const LoginForm = () => {
 
             toast.success("Login successful");
 
-            // Redirect to dashboard
-            // router.push(ROUTES.APP.DASHBOARD);
+            // Redirect to the intended page or dashboard
+            router.push(redirectTo);
 
             return response.data;
         } catch (error: any) {

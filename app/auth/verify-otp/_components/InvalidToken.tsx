@@ -26,7 +26,7 @@ export default function InvalidToken({
     }
 
     const handleGoHome = () => {
-        router.push("/")
+        router.push(ROUTES.PUBLIC.HOME)
     }
 
     return (
@@ -71,7 +71,7 @@ export default function InvalidToken({
 
             <div className="w-full max-w-md relative z-10">
                 <div className="text-center mb-8">
-                    <Link href="/" className="inline-block">
+                    <Link href={ROUTES.PUBLIC.HOME} className="inline-block">
                         <AstraLogo className="h-12 w-auto mx-auto mb-6 text-red-400" />
                     </Link>
 

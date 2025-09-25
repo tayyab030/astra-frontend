@@ -87,13 +87,13 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <AstraLogo className="text-cyan-400" />
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/product" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
+              <Link href={ROUTES.PUBLIC.PRODUCT} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Product
               </Link>
-              <Link href="/features" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
+              <Link href={ROUTES.PUBLIC.FEATURES} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Features
               </Link>
-              <Link href="/pricing" className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
+              <Link href={ROUTES.PUBLIC.PRICING} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
                 Pricing
               </Link>
             </nav>
@@ -376,7 +376,7 @@ export default function HomePage() {
               variant="outline"
               className="text-lg px-12 py-4 rounded-full bg-slate-800/50 border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500/50 backdrop-blur-sm"
             >
-              <Link href="/pricing">Quantum Pricing</Link>
+              <Link href={ROUTES.PUBLIC.PRICING}>Quantum Pricing</Link>
             </Button>
           </div>
         </div>

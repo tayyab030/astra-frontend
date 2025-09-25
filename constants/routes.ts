@@ -12,7 +12,12 @@ export const ROUTES = {
   },
   PUBLIC: {
     HOME: "/",
+    FEATURES: "/features",
+    PRICING: "/pricing",
+    PRODUCT: "/product",
+    TERMS: "/terms",
+    PRIVACY: "/privacy",
     // ABOUT: "/about",
     // CONTACT: "/contact",
   },
-};
+} as const;
