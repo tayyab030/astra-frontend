@@ -1,25 +1,28 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { AstraLogo } from "@/components/astra-logo"
-import { useTheme } from "next-themes"
-import TasksPage from "./tasks/page"
-import GoalsPage from "./goals/page"
-import WealthPage from "./wealth/page"
-import HealthPage from "./health/page"
-import NotesPage from "./notes/page"
-import CommunicationPage from "./communication/page"
-import LifeScorePage from "./life-score/page"
-import AnalyticsPage from "./analytics/page"
-import SettingsPage from "./settings/page"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  Sun,
-  Moon,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { AstraLogo } from "@/components/astra-logo";
+import TasksPage from "../tasks/page";
+import GoalsPage from "../goals/page";
+import WealthPage from "../wealth/page";
+import HealthPage from "../health/page";
+import NotesPage from "../notes/page";
+import CommunicationPage from "../communication/page";
+import LifeScorePage from "../life-score/page";
+import AnalyticsPage from "../analytics/page";
+import SettingsPage from "../settings/page";
+import {
   Home,
   CheckSquare,
   DollarSign,
@@ -36,20 +39,14 @@ import {
   Zap,
   Target,
   Menu,
-} from "lucide-react"
-import AssistantPage from "./assistant/page"
-import { logout } from "@/lib/auth"
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer" // Imported Drawer components
+} from "lucide-react";
+import AssistantPage from "../assistant/page";
+import { logout } from "@/lib/auth";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"; // Imported Drawer components
 
 export default function DashboardPage() {
-  const { theme, setTheme } = useTheme()
-  const [activeTab, setActiveTab] = useState("dashboard")
-  const [mounted, setMounted] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // Added state for sidebar open/close
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Added state for sidebar open/close
 
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: Home },
@@ -62,45 +59,43 @@ export default function DashboardPage() {
     { id: "communication", label: "Communication", icon: Mail },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "life-score", label: "Life Score", icon: Star },
-  ]
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+  ];
 
   const renderContent = () => {
     switch (activeTab) {
       case "tasks":
-        return <TasksPage />
+        return <TasksPage />;
       case "goals":
-        return <GoalsPage />
+        return <GoalsPage />;
       case "wealth":
-        return <WealthPage />
+        return <WealthPage />;
       case "health":
-        return <HealthPage />
+        return <HealthPage />;
       case "notes":
-        return <NotesPage />
+        return <NotesPage />;
       case "communication":
-        return <CommunicationPage />
+        return <CommunicationPage />;
       case "analytics":
-        return <AnalyticsPage />
+        return <AnalyticsPage />;
       case "life-score":
-        return <LifeScorePage />
+        return <LifeScorePage />;
       case "settings":
-        return <SettingsPage />
+        return <SettingsPage />;
       case "assistant":
-        return <AssistantPage />
+        return <AssistantPage />;
       default:
-        return renderDashboard()
+        return renderDashboard();
     }
-  }
+  };
 
   const renderDashboard = () => (
     <>
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold font-poppins text-cyan-300">Good morning, Tayyab 🚀</h1>
+            <h1 className="text-3xl font-bold font-poppins text-cyan-300">
+              Good morning, Tayyab 🚀
+            </h1>
             <p className="text-slate-300 font-inter mt-1">
               "Success is the sum of small efforts repeated day in and day out."
             </p>
@@ -117,27 +112,37 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm shadow-lg shadow-cyan-500/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-cyan-300">Tasks Due Today</CardTitle>
+              <CardTitle className="text-sm font-inter text-cyan-300">
+                Tasks Due Today
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-poppins text-cyan-200">5</div>
+              <div className="text-2xl font-bold font-poppins text-cyan-200">
+                5
+              </div>
               <p className="text-xs text-slate-400">2 completed</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-500/30 backdrop-blur-sm shadow-lg shadow-blue-500/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-blue-300">Daily Spending</CardTitle>
+              <CardTitle className="text-sm font-inter text-blue-300">
+                Daily Spending
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-poppins text-blue-200">$47</div>
+              <div className="text-2xl font-bold font-poppins text-blue-200">
+                $47
+              </div>
               <p className="text-xs text-slate-400">Budget: $80</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-400/30 backdrop-blur-sm shadow-lg shadow-cyan-400/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-cyan-300">Health Progress</CardTitle>
+              <CardTitle className="text-sm font-inter text-cyan-300">
+                Health Progress
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -152,10 +157,14 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-400/30 backdrop-blur-sm shadow-lg shadow-blue-400/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-blue-300">Focus Time</CardTitle>
+              <CardTitle className="text-sm font-inter text-blue-300">
+                Focus Time
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-poppins text-blue-200">3.2h</div>
+              <div className="text-2xl font-bold font-poppins text-blue-200">
+                3.2h
+              </div>
               <p className="text-xs text-slate-400">4 Pomodoros</p>
             </CardContent>
           </Card>
@@ -165,8 +174,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="font-poppins text-cyan-300">Weekly Expenses</CardTitle>
-            <CardDescription className="font-inter text-slate-400">Your spending vs income this week</CardDescription>
+            <CardTitle className="font-poppins text-cyan-300">
+              Weekly Expenses
+            </CardTitle>
+            <CardDescription className="font-inter text-slate-400">
+              Your spending vs income this week
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-48 flex items-center justify-center text-slate-400">
@@ -178,8 +191,12 @@ export default function DashboardPage() {
 
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="font-poppins text-cyan-300">Habit Streaks</CardTitle>
-            <CardDescription className="font-inter text-slate-400">Your consistency over time</CardDescription>
+            <CardTitle className="font-poppins text-cyan-300">
+              Habit Streaks
+            </CardTitle>
+            <CardDescription className="font-inter text-slate-400">
+              Your consistency over time
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-48 flex items-center justify-center text-slate-400">
@@ -200,7 +217,9 @@ export default function DashboardPage() {
         <CardContent>
           <div className="space-y-3">
             <div className="p-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-500/30">
-              <p className="text-sm font-inter text-slate-200">🎉 You spent 20% less this week than last week!</p>
+              <p className="text-sm font-inter text-slate-200">
+                🎉 You spent 20% less this week than last week!
+              </p>
             </div>
             <div className="p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-500/30">
               <p className="text-sm font-inter text-slate-200">
@@ -208,7 +227,9 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="p-3 bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-lg border border-slate-500/30">
-              <p className="text-sm font-inter text-slate-200">⚠️ 3 tasks are overdue. Suggest rescheduling?</p>
+              <p className="text-sm font-inter text-slate-200">
+                ⚠️ 3 tasks are overdue. Suggest rescheduling?
+              </p>
             </div>
           </div>
         </CardContent>
@@ -216,7 +237,9 @@ export default function DashboardPage() {
 
       <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="font-poppins text-cyan-300">Quick Actions</CardTitle>
+          <CardTitle className="font-poppins text-cyan-300">
+            Quick Actions
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -252,7 +275,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -298,7 +321,11 @@ export default function DashboardPage() {
 
       <header className="border-b border-slate-700/50 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/60 sticky top-0 z-50">
         <div className="flex h-16 items-center justify-between px-6">
-          <Drawer direction="left" open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+          <Drawer
+            direction="left"
+            open={isSidebarOpen}
+            onOpenChange={setIsSidebarOpen}
+          >
             <DrawerTrigger asChild>
               <Button
                 variant="ghost"
@@ -308,39 +335,39 @@ export default function DashboardPage() {
                 <Menu className="h-4 w-4" />
               </Button>
             </DrawerTrigger>
-            {/* <DrawerContent className="w-64 border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm min-h-screen">
+            <DrawerContent className="w-64 border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm min-h-screen">
               <nav className="p-4 space-y-2">
                 {sidebarItems.map((item) => {
-                  const Icon = item.icon
+                  const Icon = item.icon;
                   return (
                     <Button
                       key={item.id}
                       variant={activeTab === item.id ? "secondary" : "ghost"}
                       className={`w-full justify-start font-inter transition-all duration-200 ${activeTab === item.id
-                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
-                          : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
+                        : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
                         }`}
                       onClick={() => {
-                        setActiveTab(item.id)
-                        setIsSidebarOpen(false) // Close drawer on item click
+                        setActiveTab(item.id);
+                        setIsSidebarOpen(false); // Close drawer on item click
                       }}
                     >
                       <Icon className="mr-3 h-4 w-4" />
                       {item.label}
                     </Button>
-                  )
+                  );
                 })}
 
                 <div className="pt-4 mt-4 border-t border-slate-700/50">
                   <Button
                     variant="ghost"
                     className={`w-full justify-start font-inter transition-all duration-200 ${activeTab === "settings"
-                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
-                        : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
+                      : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
                       }`}
                     onClick={() => {
-                      setActiveTab("settings")
-                      setIsSidebarOpen(false) // Close drawer on item click
+                      setActiveTab("settings");
+                      setIsSidebarOpen(false); // Close drawer on item click
                     }}
                   >
                     <Settings className="mr-3 h-4 w-4" />
@@ -350,8 +377,8 @@ export default function DashboardPage() {
                     variant="ghost"
                     className="w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30"
                     onClick={() => {
-                      logout()
-                      setIsSidebarOpen(false) // Close drawer on logout
+                      logout();
+                      setIsSidebarOpen(false); // Close drawer on logout
                     }}
                   >
                     <LogOut className="mr-3 h-4 w-4" />
@@ -359,32 +386,24 @@ export default function DashboardPage() {
                   </Button>
                 </div>
               </nav>
-            </DrawerContent> */}
+            </DrawerContent>
           </Drawer>
 
           <AstraLogo className="h-8 w-auto" />
 
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="h-9 w-9 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0"
-            >
-              {mounted && (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />)}
-            </Button>
-
-            <Avatar className="h-8 w-8 ring-2 ring-cyan-400/50">
-              <AvatarImage src="/placeholder.svg?height=32&width=32" />
-              <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">TA</AvatarFallback>
-            </Avatar>
-          </div>
+          <Avatar className="h-8 w-8 ring-2 ring-cyan-400/50">
+            <AvatarImage src="/placeholder.svg?height=32&width=32" />
+            <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
+              TA
+            </AvatarFallback>
+          </Avatar>
         </div>
       </header>
 
       <div className="flex">
         <aside
-          className={`hidden lg:block ${isSidebarOpen ? "w-64" : "w-20"} border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out`}
+          className={`hidden lg:block ${isSidebarOpen ? "w-64" : "w-20"
+            } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out`}
         >
           <nav className="p-4 space-y-2">
             <Button
@@ -396,7 +415,7 @@ export default function DashboardPage() {
               <Menu className="h-4 w-4" />
             </Button>
             {sidebarItems.map((item) => {
-              const Icon = item.icon
+              const Icon = item.icon;
               return (
                 <Button
                   key={item.id}
@@ -410,7 +429,7 @@ export default function DashboardPage() {
                   <Icon className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
                   {isSidebarOpen && item.label}
                 </Button>
-              )
+              );
             })}
 
             <div className="pt-4 mt-4 border-t border-slate-700/50">
@@ -422,12 +441,15 @@ export default function DashboardPage() {
                   } ${isSidebarOpen ? "justify-start" : "justify-center"}`}
                 onClick={() => setActiveTab("settings")}
               >
-                <Settings className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
+                <Settings
+                  className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`}
+                />
                 {isSidebarOpen && "Settings"}
               </Button>
               <Button
                 variant="ghost"
-                className={`w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30 ${isSidebarOpen ? "justify-start" : "justify-center"}`}
+                className={`w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30 ${isSidebarOpen ? "justify-start" : "justify-center"
+                  }`}
                 onClick={() => logout()}
               >
                 <LogOut className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
@@ -443,17 +465,32 @@ export default function DashboardPage() {
 
       <style jsx>{`
         @keyframes grid-move {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
+          0% {
+            transform: translate(0, 0);
+          }
+          100% {
+            transform: translate(50px, 50px);
+          }
         }
         @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
         @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-30px) rotate(120deg); }
-          66% { transform: translateY(30px) rotate(240deg); }
+          0%,
+          100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          33% {
+            transform: translateY(-30px) rotate(120deg);
+          }
+          66% {
+            transform: translateY(30px) rotate(240deg);
+          }
         }
         .animate-spin-slow {
           animation: spin-slow 30s linear infinite;
@@ -463,5 +500,5 @@ export default function DashboardPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }
