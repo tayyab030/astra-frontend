@@ -7,19 +7,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import { ROUTES } from "@/constants/routes"
+import { LoginType, schema } from '../_schemas/login.schema'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AUTH, publicApi } from '@/lib/api'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 const LoginForm = () => {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        setIsLoading(false)
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        watch,
+        setValue,
+    } = useForm<LoginType>({
+        resolver: zodResolver(schema),
+    })
+
+    const onSubmit = async (data: LoginType) => {
+        try {
+            const response = await publicApi.post(AUTH.LOGIN, data);
+            toast.success(response?.data?.message || "Login successful");
+            return response.data;
+        } catch (error: any) {
+            console.error(error);
+            const nonFieldErrors = error?.response.data.non_field_errors
+            if (Array.isArray(nonFieldErrors) && nonFieldErrors.length > 0) {
+                toast.error(nonFieldErrors.map((error: string) => <p key={error}>{error}</p>));
+            } else {
+                toast.error("Login failed");
+            }
+        }
     }
+
+    const { mutate: handleLogin, isPending: isLoggingIn } = useMutation({
+        mutationFn: onSubmit,
+    })
 
     return (
         <Card className="w-full max-w-md bg-slate-800/50 backdrop-blur-xl border-cyan-500/30 shadow-2xl shadow-cyan-500/10 relative z-10">
@@ -28,20 +54,26 @@ const LoginForm = () => {
                 <CardDescription className="text-slate-300 font-mono">Access your Life OS dashboard</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit((data) => handleLogin(data))} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-cyan-200 font-mono">
-                            Email
+                            Email or Username
                         </Label>
                         <Input
                             id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            {...register("login")}
+                            value={watch("login")}
+                            onChange={(e) => setValue("login", e.target.value)}
                             className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
-                            placeholder="neural@astra.ai"
+                            placeholder="Enter your email or username"
                             required
                         />
+                        {errors.login && (
+                            <p className="text-red-400 text-xs font-mono">
+                                {errors.login.message}
+                            </p>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password" className="text-cyan-200 font-mono">
@@ -51,12 +83,18 @@ const LoginForm = () => {
                             <Input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                {...register("password")}
+                                value={watch("password")}
+                                onChange={(e) => setValue("password", e.target.value)}
                                 className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
-                                placeholder="••••••••"
+                                placeholder="Enter your password"
                                 required
                             />
+                            {errors.password && (
+                                <p className="text-red-400 text-xs font-mono">
+                                    {errors.password.message}
+                                </p>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
@@ -68,10 +106,10 @@ const LoginForm = () => {
                     </div>
                     <Button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoggingIn}
                         className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono border-0 shadow-lg shadow-cyan-500/25 transition-all duration-300"
                     >
-                        {isLoading ? (
+                        {isLoggingIn ? (
                             <div className="flex items-center space-x-2">
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 <span>Authenticating...</span>
