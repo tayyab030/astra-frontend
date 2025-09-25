@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { revertAll } from "./resetStore";
 
 export interface User {
   id: number;
@@ -30,6 +31,9 @@ const userSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(revertAll, () => initialState);
   },
 });
 

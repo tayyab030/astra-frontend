@@ -1,14 +1,13 @@
-import { store } from "@/store/store";
-// import { clearAuth } from "@/store/slice/authSlice";
-// import { clearUser } from "@/store/slice/userSlice";
+import { store, persistor } from "@/store/store";
 import { removeRefreshTokenCookie } from "@/lib/cookies";
 import { revertAll } from "@/store/slice/resetStore";
 
 export const logout = () => {
   // Clear all auth data from Redux store
-  //   store.dispatch(clearAuth());
-  //   store.dispatch(clearUser());
   store.dispatch(revertAll());
+
+  // Clear persisted state
+  persistor.purge();
 
   // Remove refresh token from cookie
   removeRefreshTokenCookie();

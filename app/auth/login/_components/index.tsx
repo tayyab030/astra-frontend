@@ -16,8 +16,9 @@ import { toast } from 'sonner'
 import { useDispatch } from 'react-redux'
 import { setAccessToken } from '@/store/slice/authSlice'
 import { setUser } from '@/store/slice/userSlice'
-import { setRefreshTokenCookie } from '@/lib/cookies'
+import { getRefreshTokenCookie, setRefreshTokenCookie } from '@/lib/cookies'
 import { useRouter } from 'next/navigation'
+import { getAccessToken, getCurrentUser, isAuthenticated, logout } from '@/lib/auth'
 
 const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false)
@@ -158,6 +159,14 @@ const LoginForm = () => {
                     </div>
                 </div>
             </CardContent>
+
+            {/* get the user from redux store */}
+            <button onClick={() => { const user = getCurrentUser(); console.log(user) }}>user</button>
+            <button onClick={() => { const token = getAccessToken(); console.log(token) }}>token</button>
+            <button onClick={() => { const isAuthenticateds = isAuthenticated(); console.log(isAuthenticateds) }}>isAuthenticated</button>
+            {/* get the refresh token from cookie */}
+            <button onClick={async () => { const refreshToken = await getRefreshTokenCookie(); console.log(refreshToken) }}>refreshToken</button>
+            <button onClick={() => { const logouts = logout(); console.log(logout) }}>logout</button>
         </Card>
     )
 }

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { revertAll } from "./resetStore";
 
 interface AuthState {
   accessToken: string | null;
@@ -22,6 +23,9 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.isAuthenticated = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(revertAll, () => initialState);
   },
 });
 
