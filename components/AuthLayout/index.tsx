@@ -91,7 +91,7 @@ const AuthLayout = ({
             <div className="flex h-[calc(100vh-4rem)]">
                 <aside
                     className={`hidden lg:block ${isSidebarOpen ? "w-64" : "w-20"
-                        } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm transition-all duration-300 ease-in-out`}
+                        } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm transition-all duration-300 ease-in-out overflow-y-auto scrollbar-thin`}
                 >
                     <nav className="p-4 space-y-2">
                         <SidebarContent isSidebarOpen={isSidebarOpen} />
@@ -99,7 +99,7 @@ const AuthLayout = ({
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-6 relative z-10 overflow-y-auto">
+                <main className="flex-1 p-6 relative z-10 overflow-y-auto scrollbar-thin">
                     <div>
                         {children}
                     </div>
