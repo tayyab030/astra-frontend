@@ -4,7 +4,7 @@ import { revertAll } from "@/store/slice/resetStore";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "sonner";
 
-export const logout = () => {
+export const logout = async () => {
   // Clear all auth data from Redux store
   store.dispatch(revertAll());
 
@@ -12,7 +12,7 @@ export const logout = () => {
   persistor.purge();
 
   // Remove refresh token from cookie
-  removeRefreshTokenCookie();
+  await removeRefreshTokenCookie();
   toast.success("Logged out successfully");
 
   // Redirect to login page
