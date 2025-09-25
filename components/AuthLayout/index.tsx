@@ -23,7 +23,7 @@ const AuthLayout = ({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Added state for sidebar open/close
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
             {/* Animated Grid Background */}
             <div className="absolute inset-0 opacity-20">
                 <div
@@ -88,10 +88,10 @@ const AuthLayout = ({
                 </div>
             </header>
 
-            <div className="flex">
+            <div className="flex h-[calc(100vh-4rem)]">
                 <aside
                     className={`hidden lg:block ${isSidebarOpen ? "w-64" : "w-20"
-                        } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out`}
+                        } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm transition-all duration-300 ease-in-out`}
                 >
                     <nav className="p-4 space-y-2">
                         <SidebarContent isSidebarOpen={isSidebarOpen} />
@@ -99,7 +99,11 @@ const AuthLayout = ({
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-6 relative z-10">{children}</main>
+                <main className="flex-1 p-6 relative z-10 overflow-y-auto">
+                    <div>
+                        {children}
+                    </div>
+                </main>
             </div>
 
             <style jsx>{`
