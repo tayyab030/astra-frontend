@@ -7,8 +7,16 @@ export const ROUTES = {
   },
   APP: {
     DASHBOARD: "/app/dashboard",
-    // PROFILE: "/app/profile",
-    // SETTINGS: "/app/settings",
+    TASKS: "/app/tasks",
+    GOALS: "/app/goals",
+    WEALTH: "/app/wealth",
+    HEALTH: "/app/health",
+    NOTES: "/app/notes",
+    ASSISTANT: "/app/assistant",
+    COMMUNICATION: "/app/communication",
+    ANALYTICS: "/app/analytics",
+    LIFE_SCORE: "/app/life-score",
+    SETTINGS: "/app/settings",
   },
   PUBLIC: {
     HOME: "/",
