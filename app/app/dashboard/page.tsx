@@ -37,6 +37,7 @@ import {
   Target,
 } from "lucide-react"
 import AssistantPage from "./assistant/page"
+import { logout } from "@/lib/auth"
 
 export default function DashboardPage() {
   const { theme, setTheme } = useTheme()
@@ -350,6 +351,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 className="w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30"
+                onClick={() => logout()}
               >
                 <LogOut className="mr-3 h-4 w-4" />
                 Logout

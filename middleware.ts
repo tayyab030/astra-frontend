@@ -28,9 +28,12 @@ export function middleware(request: NextRequest) {
 
   // Protected routes - require authentication
   if (pathname.startsWith("/app")) {
+    // debugger;
     if (!isAuthenticated) {
       const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
       loginUrl.searchParams.set("redirect", pathname);
+      console.log("Middleware redirect - pathname:", pathname);
+      console.log("Middleware redirect - loginUrl:", loginUrl.toString());
       return NextResponse.redirect(loginUrl);
     }
   }
