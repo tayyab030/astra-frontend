@@ -13,9 +13,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AUTH, publicApi } from '@/lib/api'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useDispatch } from 'react-redux'
+import { setAccessToken } from '@/store/slice/authSlice'
+import { setUser } from '@/store/slice/userSlice'
+import { setRefreshTokenCookie } from '@/lib/cookies'
+import { useRouter } from 'next/navigation'
 
 const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false)
+    const dispatch = useDispatch()
+    const router = useRouter()
 
     const {
         register,
@@ -30,7 +37,23 @@ const LoginForm = () => {
     const onSubmit = async (data: LoginType) => {
         try {
             const response = await publicApi.post(AUTH.LOGIN, data);
-            toast.success(response?.data?.message || "Login successful");
+            const { access, refresh, user } = response.data;
+
+            // Store access token in Redux
+            dispatch(setAccessToken(access));
+
+            // Store user data in Redux
+            dispatch(setUser(user));
+
+            // Store refresh token in secure httpOnly cookie
+
+            setRefreshTokenCookie(refresh);
+
+            toast.success("Login successful");
+
+            // Redirect to dashboard
+            // router.push(ROUTES.APP.DASHBOARD);
+
             return response.data;
         } catch (error: any) {
             console.error(error);

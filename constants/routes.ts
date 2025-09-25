@@ -6,7 +6,7 @@ export const ROUTES = {
     VERIFY_OTP: "/auth/verify-otp",
   },
   APP: {
-    // DASHBOARD: "/app/dashboard",
+    DASHBOARD: "/app/dashboard",
     // PROFILE: "/app/profile",
     // SETTINGS: "/app/settings",
   },
