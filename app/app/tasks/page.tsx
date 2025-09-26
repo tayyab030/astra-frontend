@@ -806,13 +806,10 @@ export default function TasksPage() {
 
   return (
     <Wrapper>
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className="relative z-10 flex flex-col max-h-[calc(100vh-7rem)]">
         {/* Project Header */}
         <ProjectHeader
           projectName="ASTRA - Project Tasks"
-          onShare={() => console.log('Share clicked')}
-          onCustomize={() => console.log('Customize clicked')}
-          onSetStatus={() => console.log('Set status clicked')}
         />
 
         {/* Navigation Tabs */}
@@ -821,7 +818,7 @@ export default function TasksPage() {
           onTabChange={setCurrentView}
         />
 
-        <div className="p-6 border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+        {/* <div className="p-6 border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold font-mono text-cyan-100">Task Command Center</h1>
@@ -982,7 +979,7 @@ export default function TasksPage() {
               </TabsList>
             </Tabs>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex-1 overflow-auto">
           <Tabs value={currentView} onValueChange={setCurrentView}>
