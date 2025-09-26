@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Calendar } from 'lucide-react';
 
 interface Task {
@@ -62,8 +61,23 @@ const MyTasks = () => {
             projectColor: 'bg-purple-500',
             dueDate: '',
             completed: false
+        },
+        {
+            id: '7',
+            title: 'Database Migration: Update user authentication system',
+            project: 'Plate...',
+            projectColor: 'bg-blue-500',
+            dueDate: 'Yesterday',
+            completed: false
         }
     ];
+
+    const getDueDateColor = (dueDate: string) => {
+        if (!dueDate) return 'text-gray-400';
+        if (dueDate === 'Today' || dueDate === 'Tomorrow') return 'text-green-400';
+        if (dueDate === 'Yesterday' || dueDate.includes('ago')) return 'text-red-400';
+        return 'text-gray-400';
+    };
 
     return (
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mb-6">
@@ -114,10 +128,21 @@ const MyTasks = () => {
                                 key={task.id}
                                 className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-700/30 transition-colors"
                             >
-                                <Checkbox
-                                    checked={task.completed}
-                                    className="mt-1"
-                                />
+                                {/* Custom Circular Checkbox */}
+                                <div className="mt-1">
+                                    <div
+                                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer transition-colors ${task.completed
+                                            ? 'bg-green-500 border-green-500'
+                                            : 'border-gray-400 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        {task.completed && (
+                                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </div>
                                 <div className="flex-1 min-w-0">
                                     <p className={`text-sm ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
                                         {task.title}
@@ -126,10 +151,14 @@ const MyTasks = () => {
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                     <div className={`w-3 h-3 rounded ${task.projectColor}`}></div>
                                     <span className="text-xs text-gray-400">{task.project}</span>
-                                    {task.dueDate && (
+                                    {task.dueDate ? (
                                         <div className="flex items-center gap-1">
                                             <Calendar className="w-3 h-3 text-gray-400" />
-                                            <span className="text-xs text-gray-400">{task.dueDate}</span>
+                                            <span className={`text-xs ${getDueDateColor(task.dueDate)}`}>{task.dueDate}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center size-6 rounded-full border border-dashed border-gray-400">
+                                            <Calendar className="size-3 text-gray-400" />
                                         </div>
                                     )}
                                 </div>
