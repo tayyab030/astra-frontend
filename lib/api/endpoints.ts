@@ -32,6 +32,14 @@ export const API_ENDPOINTS = {
     // COMMUNICATION: "/dashboard/communication",
   },
 
+  // Tasks endpoints
+  TASKS: {
+    PROJECTS: "/api/tasks/projects/",
+    // TASKS: "/tasks/tasks/",
+    // TAGS: "/tasks/tags/",
+    // COMPLETED_TASKS: "/tasks/completed-tasks/",
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

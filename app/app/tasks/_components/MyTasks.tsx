@@ -219,7 +219,7 @@ const MyTasks = () => {
                                     </div>
                                 </div>
                             ))}
-                            <div className="text-center">
+                            <div className="text-center mt-3">
                                 <button className="text-blue-400 hover:text-blue-300 text-sm">
                                     Show more
                                 </button>
