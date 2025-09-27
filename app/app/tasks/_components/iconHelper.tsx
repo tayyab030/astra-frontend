@@ -19,6 +19,7 @@ import {
     Megaphone,
     MessageCircle,
     Briefcase,
+    LucideProps,
 } from "lucide-react";
 
 export type IconName =
@@ -43,10 +44,7 @@ export type IconName =
     | "MessageCircle"
     | "Briefcase";
 
-export const iconMap: Record<
-    IconName,
-    React.ComponentType<{ size?: number; className?: string; color?: string }>
-> = {
+export const iconMap: Record<IconName, React.ComponentType<LucideProps>> = {
     List,
     BarChart: BarChart3,
     Layers,
