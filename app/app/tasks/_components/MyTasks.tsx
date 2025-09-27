@@ -135,11 +135,11 @@ const MyTasks = () => {
                                 Create task
                             </Button>
                         </div>
-                        <div className="space-y-3 overflow-y-auto max-h-48">
+                        <div className="overflow-y-auto max-h-48">
                             {tasks.map((task) => (
                                 <div
                                     key={task.id}
-                                    className="flex items-start gap-3 pb-2 border-b border-slate-700/50 px-3 hover:bg-slate-700/30 transition-colors"
+                                    className="flex items-start gap-3 py-2 border-b border-slate-700/50 px-3 hover:bg-slate-700/30 transition-colors"
                                 >
                                     {/* Custom Circular Checkbox */}
                                     <div className="mt-1">

@@ -898,7 +898,7 @@ export default function TasksPage() {
 
   return (
     <Wrapper>
-      <div className="relative z-10 flex flex-col auth-h-screen">
+      <div className="relative z-10 flex flex-col task-h-screen">
         {/* Project Header */}
         <ProjectHeader projectName="ASTRA - Project Tasks" />
 
@@ -1070,7 +1070,7 @@ export default function TasksPage() {
 
         <div className="flex-1 overflow-auto">
           <Tabs value={currentView} onValueChange={setCurrentView}>
-            <TabsContent value="list" className="p-6 space-y-2">
+            <TabsContent value="list" className="p-6 pb-3 space-y-2">
               {filteredTasks.map((task) => (
                 <div
                   key={task.id}
