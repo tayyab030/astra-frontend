@@ -31,7 +31,7 @@ interface ProjectFormData {
     status: string;
     color: string;
     description: string;
-    due_date: string;
+    due_date: Date | undefined;
     icon: string;
 }
 
@@ -45,14 +45,14 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         status: "on_track",
         color: "#5EC5DC",
         description: "",
-        due_date: "",
+        due_date: undefined,
         icon: "Globe",
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleInputChange = (
         field: keyof ProjectFormData,
-        value: string | boolean
+        value: string | boolean | Date | undefined
     ) => {
         setFormData((prev) => ({
             ...prev,
@@ -96,7 +96,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
             status: "on_track",
             color: "#5EC5DC",
             description: "",
-            due_date: "",
+            due_date: undefined,
             icon: "Globe",
         });
         setErrors({});
@@ -110,7 +110,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
             status: "on_track",
             color: "#5EC5DC",
             description: "",
-            due_date: "",
+            due_date: undefined,
             icon: "Globe",
         });
         setErrors({});
@@ -217,19 +217,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
                                     Due Date
                                 </Label>
-                                <DatePicker />
-                                <div className="relative">
-                                    <Input
-                                        id="due_date"
-                                        type="date"
-                                        value={formData.due_date}
-                                        onChange={(e) =>
-                                            handleInputChange("due_date", e.target.value)
-                                        }
-                                        className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 h-12"
-                                    />
-                                    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
+                                <DatePicker value={formData.due_date}
+                                    onChange={(value) =>
+                                        handleInputChange("due_date", value)
+                                    } />
                             </div>
                         </div>
 
