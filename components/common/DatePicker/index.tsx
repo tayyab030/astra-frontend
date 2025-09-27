@@ -5,7 +5,6 @@ import { CalendarIcon } from "lucide-react"
 import { useState } from "react"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
     Popover,
@@ -15,7 +14,7 @@ import {
 
 interface DatePickerProps {
     value?: Date
-    onChange?: (date: Date | undefined) => void
+    onChange?: (date: Date | undefined | string) => void
     placeholder?: string
     disabled?: (date: Date) => boolean
     className?: string
@@ -63,8 +62,11 @@ export function DatePicker({
                         mode="single"
                         selected={value}
                         onSelect={(date) => {
-                            onChange?.(date)
-                            setOpen(false)
+                            if (date) {
+                                const isoDate = date.toISOString()
+                                onChange?.(isoDate)
+                                setOpen(false)
+                            }
                         }}
                         disabled={disabled}
                         captionLayout="dropdown"

@@ -10,6 +10,7 @@ interface ColorIconSelectorProps {
     onColorSelect?: (color: string) => void;
     onIconSelect?: (icon: IconName) => void;
     className?: string;
+    iconsClassName?: string;
 }
 
 const colors = [
@@ -39,6 +40,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     onColorSelect,
     onIconSelect,
     className,
+    iconsClassName,
 }) => {
     const [activeTab, setActiveTab] = useState<"icon" | "upload">("icon");
     const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
@@ -121,7 +123,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
             {/* Icon Selection */}
             {activeTab === "icon" && (
                 <div className="max-h-64 overflow-y-auto">
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className={cn("grid grid-cols-4 gap-2", iconsClassName)}>
                         {iconNames.map((iconName, index) => (
                             <button
                                 key={index}

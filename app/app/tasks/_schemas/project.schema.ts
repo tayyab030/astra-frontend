@@ -7,7 +7,7 @@ const schema = z.object({
   status: z.string(),
   color: z.string(),
   description: z.string(),
-  due_date: z.date().optional(),
+  due_date: z.string().datetime().optional(),
   icon: z.string(),
 });
 

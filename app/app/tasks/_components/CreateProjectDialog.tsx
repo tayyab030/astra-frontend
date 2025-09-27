@@ -51,7 +51,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
     });
 
     const onSubmit = async (data: ProjectType) => {
-
+        console.log(data)
     };
 
     const handleDialog = (status: boolean) => {
@@ -163,8 +163,8 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
                                     Due Date
                                 </Label>
                                 <DatePicker
-                                    value={watch("due_date")}
-                                    onChange={(value) => setValue("due_date", value)}
+                                    value={watch("due_date") ? new Date(watch("due_date")!) : undefined}
+                                    onChange={(value) => setValue("due_date", typeof value === 'string' ? value : value?.toISOString())}
                                 />
                             </div>
                         </div>
@@ -200,6 +200,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
                                 selectedIcon={watch("icon") as IconName}
                                 onColorSelect={(color) => setValue("color", color)}
                                 onIconSelect={(icon) => setValue("icon", icon)}
+                                iconsClassName="!grid-cols-6"
                             />
                         </div>
                     </div>
