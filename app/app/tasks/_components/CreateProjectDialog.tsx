@@ -20,105 +20,47 @@ import { IconName } from "./iconHelper";
 import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
 import { DatePicker } from "@/components/common/DatePicker";
+import { useForm } from "react-hook-form";
+import { ProjectType, schema } from "../_schemas/project.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
 
-interface CreateProjectDialogProps {
-    onProjectCreate?: (projectData: ProjectFormData) => void;
-}
+interface CreateProjectDialogProps { }
 
-interface ProjectFormData {
-    title: string;
-    starred: boolean;
-    status: string;
-    color: string;
-    description: string;
-    due_date: Date | undefined;
-    icon: string;
-}
-
-const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
-    onProjectCreate,
-}) => {
+const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState<ProjectFormData>({
-        title: "",
-        starred: false,
-        status: "on_track",
-        color: "#5EC5DC",
-        description: "",
-        due_date: undefined,
-        icon: "Globe",
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        watch,
+        setValue,
+        reset,
+    } = useForm<ProjectType>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            title: "",
+            starred: false,
+            status: "on_track",
+            color: "#5EC5DC",
+            description: "",
+            due_date: undefined,
+            icon: "Globe",
+        },
     });
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    const handleInputChange = (
-        field: keyof ProjectFormData,
-        value: string | boolean | Date | undefined
-    ) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+    const onSubmit = async (data: ProjectType) => {
 
-        // Clear error when user starts typing
-        if (errors[field]) {
-            setErrors((prev) => ({
-                ...prev,
-                [field]: "",
-            }));
-        }
     };
 
-    const validateForm = (): boolean => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!formData.title.trim()) {
-            newErrors.title = "Title is required";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
-
-        // Call the callback with form data
-        onProjectCreate?.(formData);
-
-        // Reset form and close dialog
-        setFormData({
-            title: "",
-            starred: false,
-            status: "on_track",
-            color: "#5EC5DC",
-            description: "",
-            due_date: undefined,
-            icon: "Globe",
-        });
-        setErrors({});
-        setOpen(false);
-    };
-
-    const handleCancel = () => {
-        setFormData({
-            title: "",
-            starred: false,
-            status: "on_track",
-            color: "#5EC5DC",
-            description: "",
-            due_date: undefined,
-            icon: "Globe",
-        });
-        setErrors({});
-        setOpen(false);
+    const handleDialog = (status: boolean) => {
+        reset();
+        setOpen(status);
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleDialog}>
             <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
@@ -138,7 +80,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                     </p>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit((data) => onSubmit(data))}>
                     <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] my-4 pr-2">
                         {/* Project Title Section */}
                         <div className="space-y-2">
@@ -152,30 +94,32 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             <div className="flex items-center justify-between gap-3">
                                 <Input
                                     id="title"
-                                    value={formData.title}
-                                    onChange={(e) => handleInputChange("title", e.target.value)}
-                                    className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+                                    {...register("title")}
+                                    value={watch("title")}
+                                    onChange={(e) => setValue("title", e.target.value)}
+                                    className={cn(
+                                        "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                                        errors.title && "!border-red-500"
+                                    )}
                                     placeholder="Enter project title"
                                 />
                                 <div className="flex items-center justify-center">
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            handleInputChange("starred", !formData.starred)
-                                        }
-                                        className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${formData.starred
+                                        onClick={() => setValue("starred", !watch("starred"))}
+                                        className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${watch("starred")
                                             ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
                                             : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
                                             }`}
                                     >
                                         <Star
-                                            className={`w-5 h-5 transition-all duration-200 ${formData.starred
+                                            className={`w-5 h-5 transition-all duration-200 ${watch("starred")
                                                 ? "text-white fill-white scale-110"
                                                 : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
                                                 }`}
                                         />
-                                        {formData.starred && (
-                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-pulse"></div>
+                                        {watch("starred") && (
+                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-pulse" />
                                         )}
                                     </button>
                                 </div>
@@ -183,7 +127,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             {errors.title && (
                                 <p className="text-red-400 text-xs mt-1 flex items-center">
                                     <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
-                                    {errors.title}
+                                    {errors.title.message}
                                 </p>
                             )}
                         </div>
@@ -200,9 +144,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     Status
                                 </Label>
                                 <SelectField
+                                    {...register("status")}
                                     options={PROJECT_STATUS_OPTIONS}
-                                    value={formData.status}
-                                    onValueChange={(value) => handleInputChange("status", value)}
+                                    value={watch("status")}
+                                    onValueChange={(value) => setValue("status", value)}
                                     placeholder="Select status"
                                     triggerClassName="!w-full"
                                 />
@@ -217,10 +162,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
                                     Due Date
                                 </Label>
-                                <DatePicker value={formData.due_date}
-                                    onChange={(value) =>
-                                        handleInputChange("due_date", value)
-                                    } />
+                                <DatePicker
+                                    value={watch("due_date")}
+                                    onChange={(value) => setValue("due_date", value)}
+                                />
                             </div>
                         </div>
 
@@ -235,10 +180,9 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             </Label>
                             <Textarea
                                 id="description"
-                                value={formData.description}
-                                onChange={(e) =>
-                                    handleInputChange("description", e.target.value)
-                                }
+                                {...register("title")}
+                                value={watch("description")}
+                                onChange={(e) => setValue("description", e.target.value)}
                                 className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 min-h-[100px]"
                                 placeholder="Enter project description (optional)"
                                 rows={4}
@@ -252,10 +196,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 Color & Icon
                             </Label>
                             <ColorIconSelector
-                                selectedColor={formData.color}
-                                selectedIcon={formData.icon as IconName}
-                                onColorSelect={(color) => handleInputChange("color", color)}
-                                onIconSelect={(icon) => handleInputChange("icon", icon)}
+                                selectedColor={watch("color")}
+                                selectedIcon={watch("icon") as IconName}
+                                onColorSelect={(color) => setValue("color", color)}
+                                onIconSelect={(icon) => setValue("icon", icon)}
                             />
                         </div>
                     </div>
@@ -266,7 +210,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleCancel}
                                 className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white px-8 h-11 transition-all duration-200"
                             >
                                 Cancel
