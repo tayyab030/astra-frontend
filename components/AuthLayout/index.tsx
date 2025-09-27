@@ -94,7 +94,7 @@ const AuthLayout = ({
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex nav-height">
         <aside
           className={`hidden lg:block ${isSidebarOpen ? "w-64" : "w-20"
             } border-r border-slate-700/50 bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm transition-all duration-300 ease-in-out overflow-y-auto scrollbar-thin`}

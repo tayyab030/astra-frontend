@@ -313,3 +313,7 @@ aside::-webkit-scrollbar-thumb:hover {
 .auth-h-screen {
   @apply max-h-[calc(100vh-7rem)];
 }
+
+.nav-height {
+  @apply h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)];
+}
