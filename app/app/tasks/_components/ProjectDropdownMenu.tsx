@@ -107,6 +107,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                                 selectedIcon={selectedIcon}
                                                 onColorSelect={setSelectedColor}
                                                 onIconSelect={setSelectedIcon}
+                                                className="w-80"
                                             />
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>

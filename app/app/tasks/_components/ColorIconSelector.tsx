@@ -9,6 +9,7 @@ interface ColorIconSelectorProps {
     selectedIcon?: IconName;
     onColorSelect?: (color: string) => void;
     onIconSelect?: (icon: IconName) => void;
+    className?: string;
 }
 
 const colors = [
@@ -37,6 +38,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     selectedIcon = "Globe",
     onColorSelect,
     onIconSelect,
+    className,
 }) => {
     const [activeTab, setActiveTab] = useState<"icon" | "upload">("icon");
     const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
@@ -53,7 +55,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     };
 
     return (
-        <div className="w-80 p-4 bg-gray-900 rounded-lg">
+        <div className={cn("p-4 bg-gray-900 rounded-lg", className)}>
             {/* Color Section */}
             <div className="mb-4">
                 <h3 className="text-white text-sm font-medium mb-3">Color</h3>

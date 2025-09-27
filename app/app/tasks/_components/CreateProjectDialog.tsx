@@ -14,16 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Plus, Calendar, Star } from "lucide-react";
 import ColorIconSelector from "./ColorIconSelector";
 import { IconName } from "./iconHelper";
+import SelectField from "@/components/common/SelectField";
+import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
 
 interface CreateProjectDialogProps {
     onProjectCreate?: (projectData: ProjectFormData) => void;
@@ -38,14 +33,6 @@ interface ProjectFormData {
     due_date: string;
     icon: string;
 }
-
-const STATUS_OPTIONS = [
-    { value: "on_track", label: "On Track" },
-    { value: "at_risk", label: "At Risk" },
-    { value: "delayed", label: "Delayed" },
-    { value: "completed", label: "Completed" },
-    { value: "on_hold", label: "On Hold" },
-];
 
 const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     onProjectCreate,
@@ -137,7 +124,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                     Create project
                 </Button>
             </DialogTrigger>
-            <DialogContent className="md:max-w-[900px] bg-slate-900 border-slate-700">
+            <DialogContent className="bg-slate-900 border-slate-700">
                 <DialogHeader>
                     <DialogTitle className="text-white text-2xl font-bold flex items-center">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
@@ -166,7 +153,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     id="title"
                                     value={formData.title}
                                     onChange={(e) => handleInputChange("title", e.target.value)}
-                                    className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 h-12 text-lg"
+                                    className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
                                     placeholder="Enter project title"
                                 />
                                 <div className="flex items-center justify-center">
@@ -175,13 +162,13 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         onClick={() =>
                                             handleInputChange("starred", !formData.starred)
                                         }
-                                        className={`group relative p-3 rounded-xl transition-all duration-200 ${formData.starred
+                                        className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${formData.starred
                                             ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
                                             : "bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600"
                                             }`}
                                     >
                                         <Star
-                                            className={`w-6 h-6 transition-all duration-200 ${formData.starred
+                                            className={`w-5 h-5 transition-all duration-200 ${formData.starred
                                                 ? "text-white fill-white scale-110"
                                                 : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
                                                 }`}
@@ -201,7 +188,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                         </div>
 
                         {/* Project Details Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {/* Status Card */}
                             <div className="space-y-3">
                                 <Label
@@ -211,25 +198,13 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                                     Status
                                 </Label>
-                                <Select
+                                <SelectField
+                                    options={PROJECT_STATUS_OPTIONS}
                                     value={formData.status}
                                     onValueChange={(value) => handleInputChange("status", value)}
-                                >
-                                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white h-12">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-slate-700 border-slate-600">
-                                        {STATUS_OPTIONS.map((option) => (
-                                            <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                                className="text-white hover:bg-slate-600"
-                                            >
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder="Select status"
+                                    triggerClassName="!w-full"
+                                />
                             </div>
 
                             {/* Due Date Card */}
