@@ -1,4 +1,4 @@
-import { IconName } from "./iconHelper";
+import { IconName } from "./Projects/iconHelper";
 
 export interface Project {
   id: string;

@@ -21,7 +21,7 @@ import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
 import { DatePicker } from "@/components/common/DatePicker";
 import { useForm } from "react-hook-form";
-import { ProjectType, schema } from "../_schemas/project.schema";
+import { ProjectType, schema } from "../../_schemas/project.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
 

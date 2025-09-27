@@ -117,7 +117,7 @@ const Projects = () => {
                         options={selectOptions}
                     />
                 </div>
-                <CreateProjectDialog onProjectCreate={handleProjectCreate} />
+                <CreateProjectDialog />
             </div>
 
             {/* Projects Grid or Empty State */}
