@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { EllipsisVertical, Edit, Trash2, Star } from "lucide-react";
 import {
     DropdownMenu,
-    DropdownMenuGroup,
     DropdownMenuSub,
     DropdownMenuSubTrigger,
     DropdownMenuPortal,
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ColorIconSelector from "./ColorIconSelector";
+import { getIconComponent, IconName } from "./iconHelper";
 
 interface ProjectDropdownMenuProps {
     projectId: string;
@@ -66,7 +66,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     projectId,
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
-    const [selectedIcon, setSelectedIcon] = useState<React.ReactNode>(<Star size={20} />);
+    const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
     console.log(selectedColor, selectedIcon);
 
     const menuContent = handleMenuContent({
@@ -84,6 +84,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
+                {/* {getIconComponent(selectedIcon, 20)} */}
                 <EllipsisVertical size={18} />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">

@@ -2,95 +2,53 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-    List,
-    BarChart3,
-    Layers,
-    Calendar,
-    Rocket,
-    Users,
-    TrendingUp,
-    Star,
-    Bug,
-    Lightbulb,
-    Globe,
-    Settings,
-    FileText,
-    Monitor,
-    CheckCircle,
-    Target,
-    Code,
-    Megaphone,
-    MessageCircle,
-    Briefcase
-} from "lucide-react";
+import { getIconComponent, iconNames, IconName } from "./iconHelper";
 
 interface ColorIconSelectorProps {
     selectedColor?: string;
-    selectedIcon?: React.ReactNode;
+    selectedIcon?: IconName;
     onColorSelect?: (color: string) => void;
-    onIconSelect?: (icon: React.ReactNode) => void;
+    onIconSelect?: (icon: IconName) => void;
 }
 
 const colors = [
-    "#E5E7EB", // Light gray
-    "#FECACA", // Light coral
-    "#FED7AA", // Light orange
-    "#FEF3C7", // Light yellow
-    "#D1FAE5", // Light green
-    "#A7F3D0", // Light mint green
-    "#BFDBFE", // Light blue
-    "#99F6E4", // Light teal
-    "#A5F3FC", // Light turquoise
-    "#D8B4FE", // Light purple
-    "#E9D5FF", // Light lavender
-    "#FBCFE8", // Light pink
-    "#F9A8D4", // Light fuchsia
-    "#FCA5A5", // Light red
-    "#D6D3D1", // Light brown
-    "#6B7280", // Dark gray
+    "#C5C5C5",
+    "#FD767B",
+    "#FEA06A",
+    "#ECAC22",
+    "#E7C42B",
+    "#C3E684",
+    "#85D7A2",
+    "#5EC5DC",
+    "#74D7CA",
+    "#79ABFF",
+    "#B8ACFF",
+    "#D98EEA",
+    "#F597E1",
+    "#FF95C9",
+    "#FF99B1",
+    "#A0A0A0"
 ];
 
-const icons = [
-    { name: "List", component: <List size={20} /> },
-    { name: "BarChart", component: <BarChart3 size={20} /> },
-    { name: "Layers", component: <Layers size={20} /> },
-    { name: "Calendar", component: <Calendar size={20} /> },
-    { name: "Rocket", component: <Rocket size={20} /> },
-    { name: "Users", component: <Users size={20} /> },
-    { name: "TrendingUp", component: <TrendingUp size={20} /> },
-    { name: "Star", component: <Star size={20} /> },
-    { name: "Bug", component: <Bug size={20} /> },
-    { name: "Lightbulb", component: <Lightbulb size={20} /> },
-    { name: "Globe", component: <Globe size={20} /> },
-    { name: "Settings", component: <Settings size={20} /> },
-    { name: "FileText", component: <FileText size={20} /> },
-    { name: "Monitor", component: <Monitor size={20} /> },
-    { name: "CheckCircle", component: <CheckCircle size={20} /> },
-    { name: "Target", component: <Target size={20} /> },
-    { name: "Code", component: <Code size={20} /> },
-    { name: "Megaphone", component: <Megaphone size={20} /> },
-    { name: "MessageCircle", component: <MessageCircle size={20} /> },
-    { name: "Briefcase", component: <Briefcase size={20} /> },
-];
+// Icons are now handled by the iconHelper
 
 const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     selectedColor = "#D8B4FE", // Default to light purple
-    selectedIcon = <Globe size={20} />,
+    selectedIcon = "Globe",
     onColorSelect,
     onIconSelect,
 }) => {
     const [activeTab, setActiveTab] = useState<"icon" | "upload">("icon");
     const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
-    const [currentSelectedIcon, setCurrentSelectedIcon] = useState<React.ReactElement>(selectedIcon as React.ReactElement);
+    const [currentSelectedIcon, setCurrentSelectedIcon] = useState<IconName>(selectedIcon);
 
     const handleColorSelect = (color: string) => {
         setCurrentSelectedColor(color);
         onColorSelect?.(color);
     };
 
-    const handleIconSelect = (icon: React.ReactNode) => {
-        setCurrentSelectedIcon(icon as React.ReactElement);
+    const handleIconSelect = (icon: IconName) => {
+        setCurrentSelectedIcon(icon);
         onIconSelect?.(icon);
     };
 
@@ -162,18 +120,18 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
             {activeTab === "icon" && (
                 <div className="max-h-64 overflow-y-auto">
                     <div className="grid grid-cols-4 gap-2">
-                        {icons.map((icon, index) => (
+                        {iconNames.map((iconName, index) => (
                             <button
                                 key={index}
-                                onClick={() => handleIconSelect(icon.component)}
+                                onClick={() => handleIconSelect(iconName)}
                                 className={cn(
                                     "w-12 h-12 rounded-lg flex items-center justify-center transition-all hover:scale-105",
-                                    currentSelectedIcon === icon.component
+                                    currentSelectedIcon === iconName
                                         ? "bg-purple-500 text-white"
                                         : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
                                 )}
                             >
-                                {icon.component}
+                                {getIconComponent(iconName, 20)}
                             </button>
                         ))}
                     </div>
