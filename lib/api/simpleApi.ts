@@ -33,7 +33,7 @@ authApi.interceptors.request.use(
     const token = state?.auth?.accessToken;
 
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `JWT ${token}`;
     }
     return config;
   },
