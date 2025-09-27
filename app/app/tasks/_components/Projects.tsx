@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, BarChart3, Globe, List, Users, Rocket, FolderOpen, Star } from 'lucide-react';
 import SelectField from '@/components/common/SelectField';
+import CreateProjectDialog from './CreateProjectDialog';
 import dynamic from 'next/dynamic';
 
 const ProjectDropdownMenu = dynamic(() => import('./ProjectDropdownMenu'), { ssr: false });
@@ -18,6 +19,12 @@ interface Project {
 
 const Projects = () => {
     const [filter, setFilter] = useState('all');
+
+    const handleProjectCreate = (projectData: any) => {
+        // TODO: Implement project creation logic
+        console.log('Creating project:', projectData);
+        // This would typically make an API call to create the project
+    };
 
     // Sample projects with starred status
     const allProjects: Project[] = [
@@ -110,13 +117,7 @@ const Projects = () => {
                         options={selectOptions}
                     />
                 </div>
-                <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    size="sm"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create project
-                </Button>
+                <CreateProjectDialog onProjectCreate={handleProjectCreate} />
             </div>
 
             {/* Projects Grid or Empty State */}
