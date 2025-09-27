@@ -10,23 +10,26 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-const SelectField = ({
-    props,
-    selectValueProps,
-    options,
-}: {
-    props: React.ComponentProps<typeof Select>;
-    selectValueProps: React.ComponentProps<typeof SelectValue>;
+interface SelectFieldProps extends React.ComponentProps<typeof Select> {
+    placeholder?: string;
     options: { value: string; label: string }[];
-}) => {
+}
+
+const SelectField = ({
+    value,
+    onValueChange,
+    placeholder,
+    options,
+    ...selectProps
+}: SelectFieldProps) => {
     return (
-        <Select {...props}>
+        <Select value={value} onValueChange={onValueChange} {...selectProps}>
             <SelectTrigger className="w-32 bg-slate-800/50 border-slate-700 text-white">
-                <SelectValue {...selectValueProps} />
+                <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
                 {options.map((option) => (
-                    <SelectItem value={option.value} className="text-white hover:bg-slate-700">
+                    <SelectItem key={option.value} value={option.value} className="text-white hover:bg-slate-700">
                         {option.label}
                     </SelectItem>
                 ))}

@@ -104,13 +104,9 @@ const Projects = () => {
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-white">Projects</h2>
                     <SelectField
-                        props={{
-                            value: filter,
-                            onValueChange: setFilter
-                        }}
-                        selectValueProps={{
-                            placeholder: "All"
-                        }}
+                        value={filter}
+                        onValueChange={setFilter}
+                        placeholder="All"
                         options={selectOptions}
                     />
                 </div>

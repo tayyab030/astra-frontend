@@ -20,10 +20,8 @@ const Header = () => {
             <div className="flex items-center gap-6">
                 {/* Time Filter */}
                 <SelectField
-                    props={{ defaultValue: "month" }}
-                    selectValueProps={{
-                        placeholder: "My month",
-                    }}
+                    defaultValue="month"
+                    placeholder="My month"
                     options={[
                         { value: "week", label: "My week" },
                         { value: "month", label: "My month" },
