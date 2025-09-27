@@ -106,10 +106,9 @@ const Projects = () => {
                         key={project.id}
                         className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative"
                     >
-                        <div className='absolute top-2 right-2'>
+                        <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                             <ProjectDropdownMenu
                                 projectId={project.id}
-                                projectName={project.name}
                             />
                         </div>
                         <div className="flex flex-col items-center text-center">
