@@ -45,7 +45,7 @@ authApi.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const refreshToken = getRefreshTokenCookie();
+    const refreshToken = await getRefreshTokenCookie();
 
     if (
       error.response?.status === 401 &&
@@ -59,7 +59,7 @@ authApi.interceptors.response.use(
           refresh: refreshToken,
         });
 
-        const newAccessToken = res.data.access;
+        const newAccessToken = res?.data?.access;
         store.dispatch(setAccessToken(newAccessToken));
 
         // retry with new token

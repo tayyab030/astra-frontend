@@ -7,7 +7,7 @@ import SelectField from '@/components/common/SelectField';
 import CreateProjectDialog from './CreateProjectDialog';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
-import { publicApi, TASKS } from '@/lib/api';
+import { authApi, TASKS } from '@/lib/api';
 import { toast } from 'sonner';
 import { getIconComponent, IconName } from './iconHelper';
 import Link from 'next/link';
@@ -29,13 +29,14 @@ const Projects = () => {
 
     const getProjects = async () => {
         try {
-            const response = await publicApi.get(TASKS.PROJECTS);
+            const response = await authApi.get(TASKS.PROJECTS);
 
 
             return response.data;
-        } catch (error) {
-            toast.error('Failed to get projects');
+        } catch (error: any) {
             console.error(error);
+            toast.error(error?.response?.data?.detail || 'Failed to get projects');
+            return error;
         }
     }
 
