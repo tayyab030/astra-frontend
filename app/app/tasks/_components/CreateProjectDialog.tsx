@@ -122,7 +122,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCrea
                     Create project
                 </Button>
             </DialogTrigger>
-            <DialogContent className="md:max-w-[800px] bg-slate-800 border-slate-700 overflow-y-auto max-h-[90vh]">
+            <DialogContent className="md:max-w-[800px] overflow-y-auto max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle className="text-white text-xl">Create New Project</DialogTitle>
                 </DialogHeader>
