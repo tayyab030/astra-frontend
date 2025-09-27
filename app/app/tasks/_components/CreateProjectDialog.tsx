@@ -1,16 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Calendar } from 'lucide-react';
-import ColorIconSelector from './ColorIconSelector';
-import { IconName } from './iconHelper';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Plus, Calendar, Star } from "lucide-react";
+import ColorIconSelector from "./ColorIconSelector";
+import { IconName } from "./iconHelper";
 
 interface CreateProjectDialogProps {
     onProjectCreate?: (projectData: ProjectFormData) => void;
@@ -27,37 +40,42 @@ interface ProjectFormData {
 }
 
 const STATUS_OPTIONS = [
-    { value: 'on_track', label: 'On Track' },
-    { value: 'at_risk', label: 'At Risk' },
-    { value: 'delayed', label: 'Delayed' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'on_hold', label: 'On Hold' }
+    { value: "on_track", label: "On Track" },
+    { value: "at_risk", label: "At Risk" },
+    { value: "delayed", label: "Delayed" },
+    { value: "completed", label: "Completed" },
+    { value: "on_hold", label: "On Hold" },
 ];
 
-const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCreate }) => {
+const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
+    onProjectCreate,
+}) => {
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState<ProjectFormData>({
-        title: '',
+        title: "",
         starred: false,
-        status: 'on_track',
-        color: '#5EC5DC',
-        description: '',
-        due_date: '',
-        icon: 'Globe'
+        status: "on_track",
+        color: "#5EC5DC",
+        description: "",
+        due_date: "",
+        icon: "Globe",
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    const handleInputChange = (field: keyof ProjectFormData, value: string | boolean) => {
-        setFormData(prev => ({
+    const handleInputChange = (
+        field: keyof ProjectFormData,
+        value: string | boolean
+    ) => {
+        setFormData((prev) => ({
             ...prev,
-            [field]: value
+            [field]: value,
         }));
 
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({
+            setErrors((prev) => ({
                 ...prev,
-                [field]: ''
+                [field]: "",
             }));
         }
     };
@@ -66,7 +84,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCrea
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Title is required';
+            newErrors.title = "Title is required";
         }
 
         setErrors(newErrors);
@@ -85,13 +103,13 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCrea
 
         // Reset form and close dialog
         setFormData({
-            title: '',
+            title: "",
             starred: false,
-            status: 'on_track',
-            color: '#5EC5DC',
-            description: '',
-            due_date: '',
-            icon: 'Globe'
+            status: "on_track",
+            color: "#5EC5DC",
+            description: "",
+            due_date: "",
+            icon: "Globe",
         });
         setErrors({});
         setOpen(false);
@@ -99,13 +117,13 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCrea
 
     const handleCancel = () => {
         setFormData({
-            title: '',
+            title: "",
             starred: false,
-            status: 'on_track',
-            color: '#5EC5DC',
-            description: '',
-            due_date: '',
-            icon: 'Globe'
+            status: "on_track",
+            color: "#5EC5DC",
+            description: "",
+            due_date: "",
+            icon: "Globe",
         });
         setErrors({});
         setOpen(false);
@@ -114,139 +132,187 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onProjectCrea
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    size="sm"
-                >
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Create project
                 </Button>
             </DialogTrigger>
-            <DialogContent className="md:max-w-[800px] overflow-y-auto max-h-[90vh]">
+            <DialogContent className="md:max-w-[900px] bg-slate-900 border-slate-700">
                 <DialogHeader>
-                    <DialogTitle className="text-white text-xl">Create New Project</DialogTitle>
+                    <DialogTitle className="text-white text-2xl font-bold flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                            <Plus className="w-5 h-5 text-white" />
+                        </div>
+                        Create New Project
+                    </DialogTitle>
+                    <p className="text-gray-400 text-sm mt-2">
+                        Set up your project with all the details you need
+                    </p>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Title - Required */}
-                        <div className="md:col-span-2">
-                            <Label htmlFor="title" className="text-white text-sm font-medium">
+                <form onSubmit={handleSubmit}>
+                    <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] my-4 pr-2">
+                        {/* Project Title Section */}
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="title"
+                                className="text-white text-sm font-medium flex items-center"
+                            >
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                                 Project Title *
                             </Label>
-                            <Input
-                                id="title"
-                                value={formData.title}
-                                onChange={(e) => handleInputChange('title', e.target.value)}
-                                className="mt-2 bg-slate-700 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500"
-                                placeholder="Enter project title"
-                            />
+                            <div className="flex items-center justify-between gap-3">
+                                <Input
+                                    id="title"
+                                    value={formData.title}
+                                    onChange={(e) => handleInputChange("title", e.target.value)}
+                                    className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 h-12 text-lg"
+                                    placeholder="Enter project title"
+                                />
+                                <div className="flex items-center justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleInputChange("starred", !formData.starred)
+                                        }
+                                        className={`group relative p-3 rounded-xl transition-all duration-200 ${formData.starred
+                                            ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
+                                            : "bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600"
+                                            }`}
+                                    >
+                                        <Star
+                                            className={`w-6 h-6 transition-all duration-200 ${formData.starred
+                                                ? "text-white fill-white scale-110"
+                                                : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
+                                                }`}
+                                        />
+                                        {formData.starred && (
+                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-300 rounded-full animate-pulse"></div>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
                             {errors.title && (
-                                <p className="text-red-400 text-xs mt-1">{errors.title}</p>
+                                <p className="text-red-400 text-xs mt-1 flex items-center">
+                                    <span className="w-1 h-1 bg-red-400 rounded-full mr-2"></span>
+                                    {errors.title}
+                                </p>
                             )}
                         </div>
 
-                        {/* Status */}
-                        <div>
-                            <Label htmlFor="status" className="text-white text-sm font-medium">
-                                Status
-                            </Label>
-                            <Select
-                                value={formData.status}
-                                onValueChange={(value) => handleInputChange('status', value)}
-                            >
-                                <SelectTrigger className="mt-2 bg-slate-700 border-slate-600 text-white">
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-slate-700 border-slate-600">
-                                    {STATUS_OPTIONS.map((option) => (
-                                        <SelectItem
-                                            key={option.value}
-                                            value={option.value}
-                                            className="text-white hover:bg-slate-600"
-                                        >
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {/* Project Details Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Status Card */}
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="status"
+                                    className="text-white text-sm font-medium flex items-center"
+                                >
+                                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                    Status
+                                </Label>
+                                <Select
+                                    value={formData.status}
+                                    onValueChange={(value) => handleInputChange("status", value)}
+                                >
+                                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white h-12">
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-700 border-slate-600">
+                                        {STATUS_OPTIONS.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                                className="text-white hover:bg-slate-600"
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                        {/* Starred */}
-                        <div className="flex items-center space-x-2">
-                            <Switch
-                                id="starred"
-                                checked={formData.starred}
-                                onCheckedChange={(checked) => handleInputChange('starred', checked)}
-                            />
-                            <Label htmlFor="starred" className="text-white text-sm font-medium">
-                                Star this project
-                            </Label>
-                        </div>
-
-                        {/* Due Date */}
-                        <div>
-                            <Label htmlFor="due_date" className="text-white text-sm font-medium">
-                                Due Date
-                            </Label>
-                            <div className="relative mt-2">
-                                <Input
-                                    id="due_date"
-                                    type="date"
-                                    value={formData.due_date}
-                                    onChange={(e) => handleInputChange('due_date', e.target.value)}
-                                    className="bg-slate-700 border-slate-600 text-white focus:border-blue-500"
-                                />
-                                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            {/* Due Date Card */}
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="due_date"
+                                    className="text-white text-sm font-medium flex items-center"
+                                >
+                                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                                    Due Date
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        id="due_date"
+                                        type="date"
+                                        value={formData.due_date}
+                                        onChange={(e) =>
+                                            handleInputChange("due_date", e.target.value)
+                                        }
+                                        className="bg-slate-700/50 border-slate-600 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 h-12"
+                                    />
+                                    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Description */}
-                        <div className="md:col-span-2">
-                            <Label htmlFor="description" className="text-white text-sm font-medium">
+                        {/* Description Card */}
+
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="description"
+                                className="text-white text-sm font-medium flex items-center"
+                            >
+                                <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
                                 Description
                             </Label>
                             <Textarea
                                 id="description"
                                 value={formData.description}
-                                onChange={(e) => handleInputChange('description', e.target.value)}
-                                className="mt-2 bg-slate-700 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500"
+                                onChange={(e) =>
+                                    handleInputChange("description", e.target.value)
+                                }
+                                className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 min-h-[100px]"
                                 placeholder="Enter project description (optional)"
-                                rows={3}
+                                rows={4}
                             />
                         </div>
 
-                        {/* Color and Icon Selector */}
-                        <div className="md:col-span-2">
-                            <Label className="text-white text-sm font-medium mb-3 block">
+                        {/* Color and Icon Selector Card */}
+                        <div className="space-y-4">
+                            <Label className="text-white text-sm font-medium flex items-center">
+                                <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
                                 Color & Icon
                             </Label>
                             <ColorIconSelector
                                 selectedColor={formData.color}
                                 selectedIcon={formData.icon as IconName}
-                                onColorSelect={(color) => handleInputChange('color', color)}
-                                onIconSelect={(icon) => handleInputChange('icon', icon)}
+                                onColorSelect={(color) => handleInputChange("color", color)}
+                                onIconSelect={(icon) => handleInputChange("icon", icon)}
                             />
                         </div>
                     </div>
 
                     {/* Form Actions */}
-                    <div className="flex justify-end space-x-3 pt-4 border-t border-slate-700">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleCancel}
-                            className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                        >
-                            Cancel
-                        </Button>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCancel}
+                                className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white px-8 h-11 transition-all duration-200"
+                            >
+                                Cancel
+                            </Button>
+                        </DialogClose>
                         <Button
                             type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 h-11 shadow-lg hover:shadow-blue-500/25 transition-all duration-200"
                         >
+                            <Plus className="w-4 h-4 mr-2" />
                             Create Project
                         </Button>
-                    </div>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
