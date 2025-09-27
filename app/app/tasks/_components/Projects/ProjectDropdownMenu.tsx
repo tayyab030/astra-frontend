@@ -18,7 +18,7 @@ import ColorIconSelector from "./ColorIconSelector";
 import { getIconComponent, IconName } from "./iconHelper";
 
 interface ProjectDropdownMenuProps {
-    projectId: string;
+    projectId: number;
 }
 
 const handleMenuContent = ({
@@ -26,9 +26,9 @@ const handleMenuContent = ({
     onDelete,
     onStarred,
 }: {
-    onEdit: (projectId: string) => void;
-    onDelete: (projectId: string) => void;
-    onStarred: (projectId: string) => void;
+    onEdit: (projectId: number) => void;
+    onDelete: (projectId: number) => void;
+    onStarred: (projectId: number) => void;
 }) => {
     const menuContent = [
         {
@@ -67,7 +67,6 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
     const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
-    console.log(selectedColor, selectedIcon);
 
     const menuContent = handleMenuContent({
         onEdit: () => {
@@ -84,7 +83,6 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
-                {/* {getIconComponent(selectedIcon, 20)} */}
                 <EllipsisVertical size={18} />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48">

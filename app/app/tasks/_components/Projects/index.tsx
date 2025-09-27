@@ -6,93 +6,46 @@ import { Plus, BarChart3, Globe, List, Users, Rocket, FolderOpen, Star } from 'l
 import SelectField from '@/components/common/SelectField';
 import CreateProjectDialog from './CreateProjectDialog';
 import dynamic from 'next/dynamic';
+import { useQuery } from '@tanstack/react-query';
+import { publicApi, TASKS } from '@/lib/api';
+import { toast } from 'sonner';
+import { getIconComponent, IconName } from './iconHelper';
+import Link from 'next/link';
 
 const ProjectDropdownMenu = dynamic(() => import('./ProjectDropdownMenu'), { ssr: false });
 interface Project {
-    id: string;
-    name: string;
-    icon: React.ReactNode;
-    tasksDue: number;
     color: string;
+    description: string;
+    due_date: string;
+    icon: string;
+    id: number;
     starred: boolean;
+    status: string;
+    title: string;
 }
 
 const Projects = () => {
     const [filter, setFilter] = useState('all');
 
-    const handleProjectCreate = (projectData: any) => {
-        // TODO: Implement project creation logic
-        console.log('Creating project:', projectData);
-        // This would typically make an API call to create the project
-    };
+    const getProjects = async () => {
+        try {
+            const response = await publicApi.get(TASKS.PROJECTS);
+
+
+            return response.data;
+        } catch (error) {
+            toast.error('Failed to get projects');
+            console.error(error);
+        }
+    }
+
+    const { data } = useQuery({
+        queryKey: ['projects'],
+        queryFn: () => getProjects(),
+    });
 
     // Sample projects with starred status
-    const allProjects: Project[] = [
-        {
-            id: '1',
-            name: 'Plate Development v1. Beta Test',
-            icon: <BarChart3 className="w-5 h-5" />,
-            tasksDue: 3,
-            color: 'text-blue-400',
-            starred: true
-        },
-        {
-            id: '2',
-            name: '*CaseFile - Project Tasks',
-            icon: <Globe className="w-5 h-5" />,
-            tasksDue: 16,
-            color: 'text-purple-400',
-            starred: false
-        },
-        {
-            id: '3',
-            name: 'PR60',
-            icon: <List className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-blue-400',
-            starred: true
-        },
-        {
-            id: '4',
-            name: 'iwashurt-app',
-            icon: <List className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-pink-400',
-            starred: false
-        },
-        {
-            id: '5',
-            name: 'SendShare',
-            icon: <Users className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-yellow-400',
-            starred: true
-        },
-        {
-            id: '6',
-            name: 'MailFile - Quality Assurance',
-            icon: <Rocket className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-gray-400',
-            starred: false
-        },
-        {
-            id: '7',
-            name: 'Website Development',
-            icon: <List className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-red-400',
-            starred: false
-        },
-        {
-            id: '8',
-            name: '*SBA Website',
-            icon: <Globe className="w-5 h-5" />,
-            tasksDue: 0,
-            color: 'text-red-400',
-            starred: false
-        }
-    ];
+    const allProjects: Project[] = data || [];
 
     // Filter projects based on selected filter
     const projects = filter === 'starred'
@@ -124,7 +77,8 @@ const Projects = () => {
             {projects.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {projects.map((project) => (
-                        <div
+                        <Link
+                            href={`/tasks/projects/${project.id}`}
                             key={project.id}
                             className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative"
                         >
@@ -135,18 +89,21 @@ const Projects = () => {
                             </div>
                             <div className="flex flex-col items-center text-center">
                                 <div className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}>
-                                    {project.icon}
+                                    {getIconComponent(project.icon as IconName, 20)}
                                 </div>
                                 <h3 className="text-sm font-medium text-white mb-2 leading-tight">
-                                    {project.name}
+                                    {project.title}
                                 </h3>
-                                {project.tasksDue > 0 && (
+                                {/* {project.tasksDue > 0 && (
                                     <p className="text-xs text-gray-400">
                                         {project.tasksDue} tasks due soon
                                     </p>
-                                )}
+                                )} */}
+                                <p className="text-xs text-gray-400">
+                                    16 tasks due soon
+                                </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             ) : (
