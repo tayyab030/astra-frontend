@@ -2,7 +2,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, BarChart3, Globe, List, Users, Rocket } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
+const ProjectDropdownMenu = dynamic(() => import('./ProjectDropdownMenu'), { ssr: false });
 interface Project {
     id: string;
     name: string;
@@ -102,8 +104,14 @@ const Projects = () => {
                 {projects.map((project) => (
                     <div
                         key={project.id}
-                        className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group"
+                        className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative"
                     >
+                        <div className='absolute top-2 right-2'>
+                            <ProjectDropdownMenu
+                                projectId={project.id}
+                                projectName={project.name}
+                            />
+                        </div>
                         <div className="flex flex-col items-center text-center">
                             <div className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}>
                                 {project.icon}
