@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { EllipsisVertical, Edit, Trash2, Star } from "lucide-react";
 import {
     DropdownMenu,
@@ -15,6 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import ColorIconSelector from "./ColorIconSelector";
 
 interface ProjectDropdownMenuProps {
     projectId: string;
@@ -64,6 +65,10 @@ const handleMenuContent = ({
 const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     projectId,
 }) => {
+    const [selectedColor, setSelectedColor] = useState("#D8B4FE");
+    const [selectedIcon, setSelectedIcon] = useState<React.ReactNode>(<Star size={20} />);
+    console.log(selectedColor, selectedIcon);
+
     const menuContent = handleMenuContent({
         onEdit: () => {
             console.log("Edit");
@@ -88,15 +93,20 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                             {id === "set-color-icon" ? (
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger className="flex items-center gap-3 p-3">
-                                        <div className="w-4 h-4 rounded-md bg-[#D98EEA]" />
+                                        <div
+                                            className="w-4 h-4 rounded-md"
+                                            style={{ backgroundColor: selectedColor }}
+                                        />
                                         <span>Set color & icon</span>
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuItem>Email</DropdownMenuItem>
-                                            <DropdownMenuItem>Message</DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem>More...</DropdownMenuItem>
+                                        <DropdownMenuSubContent className="p-0 border-0 bg-transparent">
+                                            <ColorIconSelector
+                                                selectedColor={selectedColor}
+                                                selectedIcon={selectedIcon}
+                                                onColorSelect={setSelectedColor}
+                                                onIconSelect={setSelectedIcon}
+                                            />
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
