@@ -10,6 +10,7 @@ interface Task {
     projectColor: string;
     dueDate: string;
     completed: boolean;
+    tags?: { id: string; name: string; color: string }[];
 }
 
 const MyTasks = () => {
@@ -34,6 +35,15 @@ const MyTasks = () => {
             id: '3',
             title: 'Restaurant(Mobile): Adjust the widths of the buttons to full-width',
             project: 'Plate...',
+            tags: [{
+                id: '1',
+                name: 'Tag 1',
+                color: 'blue'
+            }, {
+                id: '2',
+                name: 'Tag 2',
+                color: 'red'
+            }],
             projectColor: 'bg-blue-500',
             dueDate: 'Today',
             completed: false
@@ -83,12 +93,6 @@ const MyTasks = () => {
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mb-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-semibold text-sm">
-                        MN
-                    </div>
-                    <h2 className="text-xl font-semibold text-white">My tasks</h2>
-                </div>
                 <Button
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     size="sm"
@@ -149,8 +153,17 @@ const MyTasks = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className={`w-3 h-3 rounded ${task.projectColor}`}></div>
-                                    <span className="text-xs text-gray-400">{task.project}</span>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-3 h-3 rounded ${task.projectColor}`}></div>
+                                        <span className="text-xs text-gray-400">{task.project}</span>
+                                    </div>
+                                    {task?.tags && task.tags.length > 0 && <div className="flex items-center gap-2">
+                                        {task.tags?.map((tag) => (
+                                            <div key={tag.id} className='rounded-sm p-1 h-fit w-fit flex items-center justify-center' style={{ backgroundColor: tag.color }}>
+                                                <span className="!text-xs text-gray-400">{tag.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>}
                                     {task.dueDate ? (
                                         <div className="flex items-center gap-1">
                                             <Calendar className="w-3 h-3 text-gray-400" />
