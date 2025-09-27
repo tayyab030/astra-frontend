@@ -27,7 +27,7 @@ const SelectField = ({
 }: SelectFieldProps) => {
     return (
         <Select value={value} onValueChange={onValueChange} {...selectProps}>
-            <SelectTrigger className={cn("bg-slate-800/50 border-slate-700 text-white", triggerClassName)}>
+            <SelectTrigger className={cn("", triggerClassName)}>
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className={cn("bg-slate-800 border-slate-700")}>

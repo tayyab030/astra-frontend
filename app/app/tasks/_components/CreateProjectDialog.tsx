@@ -153,7 +153,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     id="title"
                                     value={formData.title}
                                     onChange={(e) => handleInputChange("title", e.target.value)}
-                                    className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+                                    className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
                                     placeholder="Enter project title"
                                 />
                                 <div className="flex items-center justify-center">
@@ -164,7 +164,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         }
                                         className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${formData.starred
                                             ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
-                                            : "bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600"
+                                            : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
                                             }`}
                                     >
                                         <Star
@@ -232,7 +232,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                         </div>
 
                         {/* Description Card */}
-
                         <div className="space-y-3">
                             <Label
                                 htmlFor="description"
@@ -247,7 +246,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 onChange={(e) =>
                                     handleInputChange("description", e.target.value)
                                 }
-                                className="bg-slate-700/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 min-h-[100px]"
+                                className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 min-h-[100px]"
                                 placeholder="Enter project description (optional)"
                                 rows={4}
                             />
