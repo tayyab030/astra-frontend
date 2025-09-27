@@ -1,8 +1,9 @@
-import React from 'react'
+import React from "react";
+import { cn } from "@/lib/utils";
 
-const Wrapper = ({ children }: { children: React.ReactNode }) => {
+const Wrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden text-white">
+        <div className={cn("min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden text-white", className)}>
             <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse"></div>
 
             <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse"></div>
@@ -38,7 +39,7 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => {
             ))}
             {children}
         </div>
-    )
-}
+    );
+};
 
-export default Wrapper
+export default Wrapper;

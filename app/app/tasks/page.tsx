@@ -7,7 +7,7 @@ import Projects from "./_components/Projects";
 const Page = () => {
     return (
         <Wrapper>
-            <div className="relative z-10 flex flex-col min-h-[calc(100vh-7rem)] overflow-y-auto p-6">
+            <div className="relative z-10 flex flex-col overflow-y-hidden p-6">
                 <Header />
                 <div className="flex-1">
                     <MyTasks />

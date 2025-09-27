@@ -18,7 +18,7 @@ const SideBarDrawer = dynamic(() => import("./components/SideBarDrawer"), {
   ssr: false,
 });
 
-const hideScrollbarIn = [ROUTES.APP.TASKS];
+const hideScrollbarIn = [`${ROUTES.APP.TASKS}/`];
 
 const AuthLayout = ({
   children,
@@ -108,12 +108,12 @@ const AuthLayout = ({
         <main
           className={cn(
             "flex-1 p-6 relative z-10 scrollbar-thin",
-            hideScrollbarIn.includes(pathname as any)
+            hideScrollbarIn.find((item) => pathname.includes(item))
               ? "overflow-hidden"
-              : "overflow-y-auto"
+              : "overflow-y-auto auth-h-screen"
           )}
         >
-          <div>{children}</div>
+          {children}
         </main>
       </div>
 

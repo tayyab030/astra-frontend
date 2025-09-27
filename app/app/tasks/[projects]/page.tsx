@@ -898,7 +898,7 @@ export default function TasksPage() {
 
   return (
     <Wrapper>
-      <div className="relative z-10 flex flex-col max-h-[calc(100vh-7rem)]">
+      <div className="relative z-10 flex flex-col auth-h-screen">
         {/* Project Header */}
         <ProjectHeader projectName="ASTRA - Project Tasks" />
 
