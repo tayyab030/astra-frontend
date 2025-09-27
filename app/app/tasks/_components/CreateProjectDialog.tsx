@@ -19,6 +19,7 @@ import ColorIconSelector from "./ColorIconSelector";
 import { IconName } from "./iconHelper";
 import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
+import { DatePicker } from "@/components/common/DatePicker";
 
 interface CreateProjectDialogProps {
     onProjectCreate?: (projectData: ProjectFormData) => void;
@@ -216,6 +217,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
                                     Due Date
                                 </Label>
+                                <DatePicker />
                                 <div className="relative">
                                     <Input
                                         id="due_date"
