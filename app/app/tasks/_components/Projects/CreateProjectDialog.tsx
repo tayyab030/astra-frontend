@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Star } from "lucide-react";
+import { Loader2, Plus, Star } from "lucide-react";
 import ColorIconSelector from "./ColorIconSelector";
 import { IconName } from "./iconHelper";
 import SelectField from "@/components/common/SelectField";
@@ -24,10 +24,16 @@ import { useForm } from "react-hook-form";
 import { ProjectType, schema } from "../../_schemas/project.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { authApi } from "@/lib/api/simpleApi";
+import { TASKS } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
 
-interface CreateProjectDialogProps { }
+interface CreateProjectDialogProps {
+    refetchProjects: () => void;
+}
 
-const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
+const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ refetchProjects }) => {
     const [open, setOpen] = useState(false);
 
     const {
@@ -50,21 +56,35 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
         },
     });
 
-    const onSubmit = async (data: ProjectType) => {
-        console.log(data)
-    };
-
     const handleDialog = (status: boolean) => {
         reset();
         setOpen(status);
     };
+
+    const onSubmit = async (data: ProjectType) => {
+        try {
+            const response = await authApi.post(TASKS.PROJECTS, data);
+            toast.success(response?.data?.message || "Profile created successfully");
+            refetchProjects();
+            handleDialog(false);
+            return response.data;
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error?.response?.data?.message || "Failed to create project");
+        }
+    };
+
+    const { mutate: handleCreateProject, isPending: isCreatingProject } =
+        useMutation({
+            mutationFn: onSubmit,
+        });
 
     return (
         <Dialog open={open} onOpenChange={handleDialog}>
             <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
                     <Plus className="w-4 h-4 mr-2" />
-                    Create project
+                    Create Project
                 </Button>
             </DialogTrigger>
             <DialogContent className="bg-slate-900 border-slate-700">
@@ -80,7 +100,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
                     </p>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit((data) => onSubmit(data))}>
+                <form onSubmit={handleSubmit((data) => handleCreateProject(data))}>
                     <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] my-4 pr-2">
                         {/* Project Title Section */}
                         <div className="space-y-2">
@@ -163,8 +183,15 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
                                     Due Date
                                 </Label>
                                 <DatePicker
-                                    value={watch("due_date") ? new Date(watch("due_date")!) : undefined}
-                                    onChange={(value) => setValue("due_date", typeof value === 'string' ? value : value?.toISOString())}
+                                    value={
+                                        watch("due_date") ? new Date(watch("due_date")!) : undefined
+                                    }
+                                    onChange={(value) =>
+                                        setValue(
+                                            "due_date",
+                                            typeof value === "string" ? value : value?.toISOString()
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -219,9 +246,17 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = () => {
                         <Button
                             type="submit"
                             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 h-11 shadow-lg hover:shadow-blue-500/25 transition-all duration-200"
+                            disabled={isCreatingProject}
                         >
                             <Plus className="w-4 h-4 mr-2" />
-                            Create Project
+                            {isCreatingProject ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                    <span>Creating Project...</span>
+                                </>
+                            ) : (
+                                "Create Project"
+                            )}
                         </Button>
                     </DialogFooter>
                 </form>

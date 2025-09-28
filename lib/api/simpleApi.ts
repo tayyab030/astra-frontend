@@ -50,6 +50,7 @@ authApi.interceptors.request.use(
       config.headers["authorization"] = `JWT ${token}`;
       return config;
     } catch (verifyError) {
+      debugger;
       // Token verification failed, try to refresh
       const refreshToken = await getRefreshTokenCookie();
 

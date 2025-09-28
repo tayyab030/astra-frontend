@@ -40,7 +40,7 @@ const Projects = () => {
         }
     }
 
-    const { data } = useQuery({
+    const { data, refetch: refetchProjects } = useQuery({
         queryKey: ['projects'],
         queryFn: () => getProjects(),
     });
@@ -71,7 +71,7 @@ const Projects = () => {
                         options={selectOptions}
                     />
                 </div>
-                <CreateProjectDialog />
+                <CreateProjectDialog refetchProjects={refetchProjects} />
             </div>
 
             {/* Projects Grid or Empty State */}
@@ -125,13 +125,6 @@ const Projects = () => {
                             : 'Get started by creating your first project to organize your tasks and track your progress.'
                         }
                     </p>
-                    <Button
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                        size="lg"
-                    >
-                        <Plus className="w-5 h-5 mr-2" />
-                        {filter === 'starred' ? 'Browse all projects' : 'Create your first project'}
-                    </Button>
                 </div>
             )}
         </div>
