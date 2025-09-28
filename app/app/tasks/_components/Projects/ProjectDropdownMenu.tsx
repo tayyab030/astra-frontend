@@ -16,9 +16,13 @@ import {
 import { cn } from "@/lib/utils";
 import ColorIconSelector from "./ColorIconSelector";
 import { getIconComponent, IconName } from "./iconHelper";
+import { authApi, TASKS } from "@/lib/api";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 interface ProjectDropdownMenuProps {
     projectId: number;
+    refetchProjects: () => void;
 }
 
 const handleMenuContent = ({
@@ -64,9 +68,25 @@ const handleMenuContent = ({
 
 const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     projectId,
+    refetchProjects
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
     const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
+
+    const handleDelete = async () => {
+        try {
+            const response = await authApi.delete(TASKS.PROJECTS);
+            toast.success(response?.data?.message || "Project deleted successfully");
+            refetchProjects();
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error?.response?.data?.message || "Failed to delete project");
+        }
+    }
+
+    const { mutate: handleDeleteProject, isPending: isDeletingProject } = useMutation({
+        mutationFn: handleDelete,
+    })
 
     const menuContent = handleMenuContent({
         onEdit: () => {
@@ -116,6 +136,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                     <DropdownMenuItem
                                         onClick={() => handleClick(projectId)}
                                         className={cn("flex items-center gap-3 p-3", itemClassName)}
+                                        disabled={isDeletingProject}
                                     >
                                         {icon}
                                         <span>{label}</span>

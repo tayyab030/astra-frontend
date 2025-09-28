@@ -86,6 +86,7 @@ const Projects = () => {
                             <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                                 <ProjectDropdownMenu
                                     projectId={project.id}
+                                    refetchProjects={refetchProjects}
                                 />
                             </div>
                             <div className="flex flex-col items-center text-center">
