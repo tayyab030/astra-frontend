@@ -32,6 +32,7 @@ import { useMutation } from "@tanstack/react-query";
 
 interface ProjectDropdownMenuProps {
     projectId: number;
+    starred: boolean;
     refetchProjects: () => void;
 }
 
@@ -39,10 +40,12 @@ const handleMenuContent = ({
     onEdit,
     onDelete,
     onStarred,
+    starred
 }: {
     onEdit: (projectId: number) => void;
     onDelete: (projectId: number) => void;
     onStarred: (projectId: number) => void;
+    starred: boolean;
 }) => {
     const menuContent = [
         {
@@ -53,8 +56,8 @@ const handleMenuContent = ({
                 "text-white hover:text-white focus:text-white cursor-pointer",
         },
         {
-            icon: <Star size={14} color="#ffffff" />,
-            label: "Add to starred",
+            icon: <Star size={14} color="#ffffff" fill={starred ? "yellow" : "none"} />,
+            label: starred ? "Remove from starred" : "Add to starred",
             handleClick: onStarred,
             itemClassName:
                 "text-white hover:text-white focus:text-white cursor-pointer",
@@ -78,12 +81,14 @@ const handleMenuContent = ({
 
 const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     projectId,
+    starred,
     refetchProjects
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
     const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
+    // handle delete project
     const handleDelete = async () => {
         try {
             const response = await authApi.delete(`${TASKS.PROJECTS}${projectId}/`);
@@ -100,6 +105,22 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
         mutationFn: handleDelete,
     })
 
+    // handle star project
+    const handleStar = async (payload: { starred: boolean }) => {
+        try {
+            const response = await authApi.patch(`${TASKS.PROJECTS}${projectId}/`, payload);
+            toast.success(response?.data?.message || "Project starred successfully");
+            refetchProjects();
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error?.response?.data?.message || "Failed to star project");
+        }
+    }
+
+    const { mutate: handleStarProject, isPending: isStarringProject } = useMutation({
+        mutationFn: handleStar,
+    })
+
     const menuContent = handleMenuContent({
         onEdit: () => {
             console.log("Edit");
@@ -108,8 +129,9 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
             setShowDeleteConfirmation(true);
         },
         onStarred: () => {
-            console.log("Starred");
+            handleStarProject({ starred: !starred });
         },
+        starred
     });
 
     return (
@@ -149,7 +171,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                         <DropdownMenuItem
                                             onClick={() => handleClick(projectId)}
                                             className={cn("flex items-center gap-3 p-3", itemClassName)}
-                                            disabled={isDeletingProject}
+                                            disabled={isDeletingProject || isStarringProject}
                                         >
                                             {icon}
                                             <span>{label}</span>
