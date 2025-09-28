@@ -25,11 +25,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import ColorIconSelector from "./ColorIconSelector";
-import { getIconComponent, IconName } from "./iconHelper";
 import { authApi, TASKS } from "@/lib/api";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { Project } from ".";
+import { useActiveItem } from "@/hooks/handleparams";
 
 interface ProjectDropdownMenuProps {
     selectedProject: Project;
@@ -89,9 +89,10 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     selectedProject,
     refetchProjects
 }) => {
-    // const [selectedColor, setSelectedColor] = useState();
-    // const [selectedIcon, setSelectedIcon] = useState<IconName>();
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+    const { setActiveItem: setSelectedProjectId } =
+        useActiveItem("edit_project_id");
 
     const { id: projectId, starred, color: projectColor, icon: projectIcon } = selectedProject;
 
@@ -135,7 +136,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
 
     const menuContent = handleMenuContent({
         onEdit: () => {
-            console.log("Edit");
+            setSelectedProjectId(projectId.toString());
         },
         onDelete: () => {
             setShowDeleteConfirmation(true);
@@ -170,8 +171,6 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                                 <ColorIconSelector
                                                     selectedColor={projectColor}
                                                     selectedIcon={projectIcon}
-                                                    // onColorSelect={setSelectedColor}
-                                                    // onIconSelect={setSelectedIcon}
                                                     className="w-80"
                                                     handlePatchMutation={handlePatchMutation}
                                                 />

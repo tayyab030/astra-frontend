@@ -47,17 +47,17 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     handlePatchMutation,
 }) => {
     const [activeTab, setActiveTab] = useState<"icon" | "upload">("icon");
-    const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
-    const [currentSelectedIcon, setCurrentSelectedIcon] = useState<IconName>(selectedIcon);
+    // const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
+    // const [currentSelectedIcon, setCurrentSelectedIcon] = useState<IconName>(selectedIcon);
 
     const handleColorSelect = (color: string) => {
-        setCurrentSelectedColor(color);
+        // setCurrentSelectedColor(color);
         handlePatchMutation?.({ color });
         onColorSelect?.(color);
     };
 
     const handleIconSelect = (icon: IconName) => {
-        setCurrentSelectedIcon(icon);
+        // setCurrentSelectedIcon(icon);
         handlePatchMutation?.({ icon });
         onIconSelect?.(icon);
     };
@@ -74,13 +74,13 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
                             onClick={() => handleColorSelect(color)}
                             className={cn(
                                 "w-8 h-8 rounded-md border-2 transition-all hover:scale-105",
-                                currentSelectedColor === color
+                                selectedColor === color
                                     ? "border-white ring-2 ring-white/50"
                                     : "border-gray-600 hover:border-gray-400"
                             )}
                             style={{ backgroundColor: color }}
                         >
-                            {currentSelectedColor === color && (
+                            {selectedColor === color && (
                                 <div className="w-full h-full flex items-center justify-center">
                                     <svg
                                         className="w-4 h-4 text-white"
@@ -136,7 +136,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
                                 onClick={() => handleIconSelect(iconName)}
                                 className={cn(
                                     "w-12 h-12 rounded-lg flex items-center justify-center transition-all hover:scale-105",
-                                    currentSelectedIcon === iconName
+                                    selectedIcon === iconName
                                         ? "bg-purple-500 text-white"
                                         : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300"
                                 )}

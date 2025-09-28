@@ -7,11 +7,21 @@ const schema = z.object({
   status: z.string(),
   color: z.string(),
   description: z.string(),
-  due_date: z.string().datetime().optional(),
+  due_date: z.string().datetime().optional().nullable(),
   icon: z.string(),
 });
 
+const formDefaultValues = {
+  title: "",
+  starred: false,
+  status: "on_track",
+  color: "#5EC5DC",
+  description: "",
+  due_date: null,
+  icon: "Globe",
+};
+
 type ProjectType = z.infer<typeof schema>;
 
-export { schema };
+export { schema, formDefaultValues };
 export type { ProjectType };
