@@ -11,8 +11,12 @@ import { authApi, TASKS } from '@/lib/api';
 import { toast } from 'sonner';
 import { getIconComponent, IconName } from './iconHelper';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ProjectDropdownMenu = dynamic(() => import('./ProjectDropdownMenu'), { ssr: false });
+
+const PROJECTS_GRID_CLASSES = "grid grid-cols-2 md:grid-cols-4 gap-4";
+
 export interface Project {
     color: string;
     description: string;
@@ -40,7 +44,7 @@ const Projects = () => {
         }
     }
 
-    const { data, refetch: refetchProjects } = useQuery({
+    const { data, refetch: refetchProjects, isLoading: loadingProjects } = useQuery({
         queryKey: ['projects'],
         queryFn: () => getProjects(),
     });
@@ -75,10 +79,14 @@ const Projects = () => {
             </div>
 
             {/* Projects Grid or Empty State */}
-            {projects.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {loadingProjects ? (
+                <div className={PROJECTS_GRID_CLASSES}>
+                    {[1, 2, 3, 4].map((item) => (<Skeleton key={item} className="w-full h-32" />))}
+                </div>
+            ) : projects.length > 0 ? (
+                <div className={PROJECTS_GRID_CLASSES}>
                     {projects.map((project) => (
-                        <div key={project.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative" >
+                        <div key={project.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative h-32 flex justify-center items-center" >
                             <div className='absolute top-1.5 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1.5'>
                                 <ProjectDropdownMenu
                                     selectedProject={project}
