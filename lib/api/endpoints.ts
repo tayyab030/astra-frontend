@@ -4,7 +4,8 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/api/auth/jwt/create/",
     REGISTER: "/api/auth/users/",
-    REFRESH: "/api/auth/jwt/refresh/",
+    REFRESH_ACCESS_TOKEN: "/api/auth/jwt/refresh/",
+    VERIFY_TOKEN: "/api/auth/jwt/verify/",
     OTP_STATUS: (token: string) => `/api/otp/${token}/status/`,
     RESEND_OTP: "/api/otp/create/",
     VERIFY_OTP: "/api/otp/verify/",

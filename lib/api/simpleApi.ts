@@ -1,9 +1,9 @@
 import axios from "axios";
 import type { Store } from "@reduxjs/toolkit";
-import { setAccessToken, clearAuth } from "@/store/slice/authSlice";
-import { clearUser } from "@/store/slice/userSlice";
-import { getRefreshTokenCookie, removeRefreshTokenCookie } from "@/lib/cookies";
+import { setAccessToken } from "@/store/slice/authSlice";
+import { getRefreshTokenCookie } from "@/lib/cookies";
 import { AUTH } from ".";
+import { getAccessToken, logout } from "../auth";
 
 let store: Store;
 
@@ -29,11 +29,12 @@ export const authApi = axios.create({
 // request interceptor → add access token
 authApi.interceptors.request.use(
   (config) => {
-    const state: any = store?.getState();
-    const token = state?.auth?.accessToken;
+    const token = getAccessToken();
 
     if (token && config.headers) {
-      config.headers.Authorization = `JWT ${token}`;
+      config.headers["authorization"] = `JWT ${token}`;
+    } else {
+      console.log("No token found");
     }
     return config;
   },
@@ -55,7 +56,7 @@ authApi.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const res = await publicApi.post(AUTH.REFRESH, {
+        const res = await publicApi.post(AUTH.REFRESH_ACCESS_TOKEN, {
           refresh: refreshToken,
         });
 
@@ -67,9 +68,7 @@ authApi.interceptors.response.use(
         return authApi(originalRequest);
       } catch (err) {
         // Refresh failed, clear all auth data
-        store.dispatch(clearAuth());
-        store.dispatch(clearUser());
-        removeRefreshTokenCookie();
+        logout();
       }
     }
 
