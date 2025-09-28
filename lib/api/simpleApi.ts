@@ -77,7 +77,7 @@ authApi.interceptors.request.use(
       } catch (refreshError) {
         // Refresh failed, clear all auth data
         console.error("Token refresh failed:", refreshError);
-        logout();
+        // logout();
         return Promise.reject(new Error("Token refresh failed"));
       }
     }

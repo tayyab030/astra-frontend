@@ -29,10 +29,10 @@ import { getIconComponent, IconName } from "./iconHelper";
 import { authApi, TASKS } from "@/lib/api";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { Project } from ".";
 
 interface ProjectDropdownMenuProps {
-    projectId: number;
-    starred: boolean;
+    selectedProject: Project;
     refetchProjects: () => void;
 }
 
@@ -80,13 +80,14 @@ const handleMenuContent = ({
 };
 
 const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
-    projectId,
-    starred,
+    selectedProject,
     refetchProjects
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
     const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+    const { id: projectId, starred } = selectedProject;
 
     // handle delete project
     const handleDelete = async () => {

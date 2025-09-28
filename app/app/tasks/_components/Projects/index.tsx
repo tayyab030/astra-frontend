@@ -13,7 +13,7 @@ import { getIconComponent, IconName } from './iconHelper';
 import Link from 'next/link';
 
 const ProjectDropdownMenu = dynamic(() => import('./ProjectDropdownMenu'), { ssr: false });
-interface Project {
+export interface Project {
     color: string;
     description: string;
     due_date: string;
@@ -81,8 +81,7 @@ const Projects = () => {
                         <div key={project.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative" >
                             <div className='absolute top-1.5 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1.5'>
                                 <ProjectDropdownMenu
-                                    projectId={project.id}
-                                    starred={project.starred}
+                                    selectedProject={project}
                                     refetchProjects={refetchProjects}
                                 />
                             </div>
@@ -92,7 +91,7 @@ const Projects = () => {
                             >
                                 <div className="flex flex-col items-center text-center">
                                     <div className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}>
-                                        {getIconComponent(project.icon as IconName, 20)}
+                                        {getIconComponent(project.icon as IconName, 28, "", project.color)}
                                     </div>
                                     <h3 className="text-sm font-medium text-white mb-2 leading-tight">
                                         {project.title}
