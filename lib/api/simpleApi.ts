@@ -26,50 +26,76 @@ export const authApi = axios.create({
   withCredentials: true, // Enable cookies
 });
 
-// request interceptor → add access token
+// request interceptor → verify token and add access token
 authApi.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = getAccessToken();
 
-    if (token && config.headers) {
-      config.headers["authorization"] = `JWT ${token}`;
-    } else {
-      console.log("No token found");
+    if (!token) {
+      console.error("No token found");
+      return Promise.reject(new Error("No access token available"));
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
-// response interceptor → handle refresh
-authApi.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    const refreshToken = await getRefreshTokenCookie();
+    // Skip verification for token verification and refresh endpoints
+    if (config.url?.includes("/verify/") || config.url?.includes("/refresh/")) {
+      config.headers["authorization"] = `JWT ${token}`;
+      return config;
+    }
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      refreshToken
-    ) {
-      originalRequest._retry = true;
+    try {
+      // Verify token validity first
+      await publicApi.post(AUTH.VERIFY_TOKEN, { token });
+
+      // Token is valid, proceed with the request
+      config.headers["authorization"] = `JWT ${token}`;
+      return config;
+    } catch (verifyError) {
+      // Token verification failed, try to refresh
+      const refreshToken = await getRefreshTokenCookie();
+
+      if (!refreshToken) {
+        console.error("No refresh token available");
+        logout();
+        return Promise.reject(new Error("No refresh token available"));
+      }
 
       try {
+        // Attempt to refresh the token
         const res = await publicApi.post(AUTH.REFRESH_ACCESS_TOKEN, {
           refresh: refreshToken,
         });
 
         const newAccessToken = res?.data?.access;
-        store.dispatch(setAccessToken(newAccessToken));
-
-        // retry with new token
-        originalRequest.headers.Authorization = `JWT ${newAccessToken}`;
-        return authApi(originalRequest);
-      } catch (err) {
+        if (newAccessToken) {
+          store.dispatch(setAccessToken(newAccessToken));
+          config.headers["authorization"] = `JWT ${newAccessToken}`;
+          return config;
+        } else {
+          throw new Error("No access token in refresh response");
+        }
+      } catch (refreshError) {
         // Refresh failed, clear all auth data
+        console.error("Token refresh failed:", refreshError);
         logout();
+        return Promise.reject(new Error("Token refresh failed"));
       }
+    }
+  },
+  (error) => Promise.reject(error)
+);
+
+// response interceptor → handle unexpected 401 errors
+authApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Only handle 401 errors that weren't already handled by request interceptor
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      console.error(
+        "Unexpected 401 error - token may have expired during request"
+      );
+      logout();
     }
 
     return Promise.reject(error);
