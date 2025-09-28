@@ -21,7 +21,11 @@ import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
 import { DatePicker } from "@/components/common/DatePicker";
 import { useForm } from "react-hook-form";
-import { formDefaultValues, ProjectType, schema } from "../../_schemas/project.schema";
+import {
+    formDefaultValues,
+    ProjectType,
+    schema,
+} from "../../_schemas/project.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -55,7 +59,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isDirty },
         watch,
         setValue,
         reset,
@@ -63,6 +67,8 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         resolver: zodResolver(schema),
         defaultValues: formDefaultValues,
     });
+
+    console.log(isDirty, "isDirty");
 
     // get project details from api by id
     const getProjectDetails = async (projectId: string) => {
@@ -133,7 +139,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                     Create Project
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-700" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <DialogContent
+                className="bg-slate-900 border-slate-700"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle className="text-white text-2xl font-bold flex items-center">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
@@ -165,7 +174,9 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         id="title"
                                         {...register("title")}
                                         value={watch("title")}
-                                        onChange={(e) => setValue("title", e.target.value)}
+                                        onChange={(e) =>
+                                            setValue("title", e.target.value, { shouldDirty: true })
+                                        }
                                         className={cn(
                                             "focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
                                             errors.title && "!border-red-500"
@@ -175,16 +186,20 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     <div className="flex items-center justify-center">
                                         <button
                                             type="button"
-                                            onClick={() => setValue("starred", !watch("starred"))}
+                                            onClick={() =>
+                                                setValue("starred", !watch("starred"), {
+                                                    shouldDirty: true,
+                                                })
+                                            }
                                             className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${watch("starred")
-                                                ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
-                                                : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
+                                                    ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
+                                                    : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
                                                 }`}
                                         >
                                             <Star
                                                 className={`w-5 h-5 transition-all duration-200 ${watch("starred")
-                                                    ? "text-white fill-white scale-110"
-                                                    : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
+                                                        ? "text-white fill-white scale-110"
+                                                        : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
                                                     }`}
                                             />
                                             {watch("starred") && (
@@ -216,7 +231,9 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         {...register("status")}
                                         options={PROJECT_STATUS_OPTIONS}
                                         value={watch("status")}
-                                        onValueChange={(value) => setValue("status", value)}
+                                        onValueChange={(value) =>
+                                            setValue("status", value, { shouldDirty: true })
+                                        }
                                         placeholder="Select status"
                                         triggerClassName="!w-full"
                                     />
@@ -240,7 +257,10 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         onChange={(value) =>
                                             setValue(
                                                 "due_date",
-                                                typeof value === "string" ? value : value?.toISOString()
+                                                typeof value === "string"
+                                                    ? value
+                                                    : value?.toISOString(),
+                                                { shouldDirty: true }
                                             )
                                         }
                                     />
@@ -260,7 +280,11 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     id="description"
                                     {...register("description")}
                                     value={watch("description")}
-                                    onChange={(e) => setValue("description", e.target.value)}
+                                    onChange={(e) =>
+                                        setValue("description", e.target.value, {
+                                            shouldDirty: true,
+                                        })
+                                    }
                                     className="focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 min-h-[100px]"
                                     placeholder="Enter project description (optional)"
                                     rows={4}
@@ -276,8 +300,12 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 <ColorIconSelector
                                     selectedColor={watch("color")}
                                     selectedIcon={watch("icon") as IconName}
-                                    onColorSelect={(color) => setValue("color", color)}
-                                    onIconSelect={(icon) => setValue("icon", icon)}
+                                    onColorSelect={(color) =>
+                                        setValue("color", color, { shouldDirty: true })
+                                    }
+                                    onIconSelect={(icon) =>
+                                        setValue("icon", icon, { shouldDirty: true })
+                                    }
                                     iconsClassName="!grid-cols-6"
                                 />
                             </div>
@@ -297,16 +325,26 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             <Button
                                 type="submit"
                                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 h-11 shadow-lg hover:shadow-blue-500/25 transition-all duration-200"
-                                disabled={isCreatingProject}
+                                disabled={isCreatingProject || !isDirty}
                             >
-                                {selectedProjectId ? <Pencil className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                                {selectedProjectId ? (
+                                    <Pencil className="w-4 h-4 mr-2" />
+                                ) : (
+                                    <Plus className="w-4 h-4 mr-2" />
+                                )}
                                 {isCreatingProject ? (
                                     <>
                                         <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                                        <span>{selectedProjectId ? "Updating Project..." : "Creating Project..."}</span>
+                                        <span>
+                                            {selectedProjectId
+                                                ? "Updating Project..."
+                                                : "Creating Project..."}
+                                        </span>
                                     </>
+                                ) : selectedProjectId ? (
+                                    "Update Project"
                                 ) : (
-                                    selectedProjectId ? "Update Project" : "Create Project"
+                                    "Create Project"
                                 )}
                             </Button>
                         </DialogFooter>

@@ -71,6 +71,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
                     {colors.map((color, index) => (
                         <button
                             key={index}
+                            type="button"
                             onClick={() => handleColorSelect(color)}
                             className={cn(
                                 "w-8 h-8 rounded-md border-2 transition-all hover:scale-105",
@@ -103,6 +104,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
             {/* Tabs */}
             <div className="flex border-b border-gray-700 mb-4">
                 <button
+                    type="button"
                     onClick={() => setActiveTab("icon")}
                     className={cn(
                         "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
@@ -114,6 +116,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
                     Icon
                 </button>
                 <button
+                    type="button"
                     onClick={() => setActiveTab("upload")}
                     className={cn(
                         "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
@@ -132,6 +135,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
                     <div className={cn("grid grid-cols-4 gap-2", iconsClassName)}>
                         {iconNames.map((iconName, index) => (
                             <button
+                                type="button"
                                 key={index}
                                 onClick={() => handleIconSelect(iconName)}
                                 className={cn(
