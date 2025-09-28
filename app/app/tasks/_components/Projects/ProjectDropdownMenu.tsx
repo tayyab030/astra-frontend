@@ -36,6 +36,12 @@ interface ProjectDropdownMenuProps {
     refetchProjects: () => void;
 }
 
+export interface HandlePatchProjectPayload {
+    starred?: boolean;
+    color?: string;
+    icon?: string;
+}
+
 const handleMenuContent = ({
     onEdit,
     onDelete,
@@ -83,11 +89,11 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     selectedProject,
     refetchProjects
 }) => {
-    const [selectedColor, setSelectedColor] = useState("#D8B4FE");
-    const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
+    // const [selectedColor, setSelectedColor] = useState();
+    // const [selectedIcon, setSelectedIcon] = useState<IconName>();
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
-    const { id: projectId, starred } = selectedProject;
+    const { id: projectId, starred, color: projectColor, icon: projectIcon } = selectedProject;
 
     // handle delete project
     const handleDelete = async () => {
@@ -107,10 +113,15 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     })
 
     // handle star project
-    const handleStar = async (payload: { starred: boolean }) => {
+    const handlePatchProject = async (payload: HandlePatchProjectPayload) => {
+        // Return early if payload is empty
+        if (Object.keys(payload).length === 0) {
+            return;
+        }
+
         try {
-            const response = await authApi.patch(`${TASKS.PROJECTS}${projectId}/`, payload);
-            toast.success(response?.data?.message || "Project starred successfully");
+            await authApi.patch(`${TASKS.PROJECTS}${projectId}/`, payload);
+            // toast.success(response?.data?.message || "Project starred successfully");
             refetchProjects();
         } catch (error: any) {
             console.error(error);
@@ -118,8 +129,8 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
         }
     }
 
-    const { mutate: handleStarProject, isPending: isStarringProject } = useMutation({
-        mutationFn: handleStar,
+    const { mutate: handlePatchMutation, isPending: isStarringProject } = useMutation({
+        mutationFn: handlePatchProject,
     })
 
     const menuContent = handleMenuContent({
@@ -130,7 +141,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
             setShowDeleteConfirmation(true);
         },
         onStarred: () => {
-            handleStarProject({ starred: !starred });
+            handlePatchMutation({ starred: !starred });
         },
         starred
     });
@@ -150,18 +161,19 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                         <DropdownMenuSubTrigger className="flex items-center gap-3 p-3">
                                             <div
                                                 className="w-4 h-4 rounded-md"
-                                                style={{ backgroundColor: selectedColor }}
+                                                style={{ backgroundColor: projectColor }}
                                             />
                                             <span>Set color & icon</span>
                                         </DropdownMenuSubTrigger>
                                         <DropdownMenuPortal>
                                             <DropdownMenuSubContent className="p-0 border-0 bg-transparent">
                                                 <ColorIconSelector
-                                                    selectedColor={selectedColor}
-                                                    selectedIcon={selectedIcon}
-                                                    onColorSelect={setSelectedColor}
-                                                    onIconSelect={setSelectedIcon}
+                                                    selectedColor={projectColor}
+                                                    selectedIcon={projectIcon}
+                                                    // onColorSelect={setSelectedColor}
+                                                    // onIconSelect={setSelectedIcon}
                                                     className="w-80"
+                                                    handlePatchMutation={handlePatchMutation}
                                                 />
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>

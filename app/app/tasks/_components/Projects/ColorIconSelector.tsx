@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { getIconComponent, iconNames, IconName } from "./iconHelper";
+import { UseMutateFunction } from "@tanstack/react-query";
+import { HandlePatchProjectPayload } from "./ProjectDropdownMenu";
 
 interface ColorIconSelectorProps {
     selectedColor?: string;
@@ -11,6 +13,7 @@ interface ColorIconSelectorProps {
     onIconSelect?: (icon: IconName) => void;
     className?: string;
     iconsClassName?: string;
+    handlePatchMutation?: UseMutateFunction<void, Error, HandlePatchProjectPayload, unknown>
 }
 
 const colors = [
@@ -41,6 +44,7 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
     onIconSelect,
     className,
     iconsClassName,
+    handlePatchMutation,
 }) => {
     const [activeTab, setActiveTab] = useState<"icon" | "upload">("icon");
     const [currentSelectedColor, setCurrentSelectedColor] = useState(selectedColor);
@@ -48,11 +52,13 @@ const ColorIconSelector: React.FC<ColorIconSelectorProps> = ({
 
     const handleColorSelect = (color: string) => {
         setCurrentSelectedColor(color);
+        handlePatchMutation?.({ color });
         onColorSelect?.(color);
     };
 
     const handleIconSelect = (icon: IconName) => {
         setCurrentSelectedIcon(icon);
+        handlePatchMutation?.({ icon });
         onIconSelect?.(icon);
     };
 
