@@ -48,6 +48,10 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
+// Inject store into API layer
+import { injectStore } from "@/lib/api/simpleApi";
+injectStore(store);
 // Types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

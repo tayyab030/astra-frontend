@@ -50,7 +50,6 @@ authApi.interceptors.request.use(
       config.headers["authorization"] = `JWT ${token}`;
       return config;
     } catch (verifyError) {
-      debugger;
       // Token verification failed, try to refresh
       const refreshToken = await getRefreshTokenCookie();
 
@@ -68,7 +67,11 @@ authApi.interceptors.request.use(
 
         const newAccessToken = res?.data?.access;
         if (newAccessToken) {
-          store.dispatch(setAccessToken(newAccessToken));
+          if (store) {
+            store.dispatch(setAccessToken(newAccessToken));
+          } else {
+            console.error("Store not available for token update");
+          }
           config.headers["authorization"] = `JWT ${newAccessToken}`;
           return config;
         } else {
@@ -77,7 +80,7 @@ authApi.interceptors.request.use(
       } catch (refreshError) {
         // Refresh failed, clear all auth data
         console.error("Token refresh failed:", refreshError);
-        // logout();
+        logout();
         return Promise.reject(new Error("Token refresh failed"));
       }
     }
