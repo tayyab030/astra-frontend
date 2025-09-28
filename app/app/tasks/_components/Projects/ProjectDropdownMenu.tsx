@@ -13,6 +13,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import ColorIconSelector from "./ColorIconSelector";
 import { getIconComponent, IconName } from "./iconHelper";
@@ -72,11 +82,13 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
 }) => {
     const [selectedColor, setSelectedColor] = useState("#D8B4FE");
     const [selectedIcon, setSelectedIcon] = useState<IconName>("Star");
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const handleDelete = async () => {
         try {
-            const response = await authApi.delete(TASKS.PROJECTS);
+            const response = await authApi.delete(`${TASKS.PROJECTS}${projectId}/`);
             toast.success(response?.data?.message || "Project deleted successfully");
+            setShowDeleteConfirmation(false);
             refetchProjects();
         } catch (error: any) {
             console.error(error);
@@ -93,7 +105,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
             console.log("Edit");
         },
         onDelete: () => {
-            console.log("Delete");
+            setShowDeleteConfirmation(true);
         },
         onStarred: () => {
             console.log("Starred");
@@ -101,53 +113,79 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     });
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger>
-                <EllipsisVertical size={18} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-                {menuContent.map(
-                    ({ id, icon, label, itemClassName, handleClick }, index) => (
-                        <React.Fragment key={index}>
-                            {id === "set-color-icon" ? (
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="flex items-center gap-3 p-3">
-                                        <div
-                                            className="w-4 h-4 rounded-md"
-                                            style={{ backgroundColor: selectedColor }}
-                                        />
-                                        <span>Set color & icon</span>
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuPortal>
-                                        <DropdownMenuSubContent className="p-0 border-0 bg-transparent">
-                                            <ColorIconSelector
-                                                selectedColor={selectedColor}
-                                                selectedIcon={selectedIcon}
-                                                onColorSelect={setSelectedColor}
-                                                onIconSelect={setSelectedIcon}
-                                                className="w-80"
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger>
+                    <EllipsisVertical size={18} />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48">
+                    {menuContent.map(
+                        ({ id, icon, label, itemClassName, handleClick }, index) => (
+                            <React.Fragment key={index}>
+                                {id === "set-color-icon" ? (
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="flex items-center gap-3 p-3">
+                                            <div
+                                                className="w-4 h-4 rounded-md"
+                                                style={{ backgroundColor: selectedColor }}
                                             />
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuPortal>
-                                </DropdownMenuSub>
-                            ) : (
-                                <>
-                                    {id === "delete" && <DropdownMenuSeparator />}
-                                    <DropdownMenuItem
-                                        onClick={() => handleClick(projectId)}
-                                        className={cn("flex items-center gap-3 p-3", itemClassName)}
-                                        disabled={isDeletingProject}
-                                    >
-                                        {icon}
-                                        <span>{label}</span>
-                                    </DropdownMenuItem>
-                                </>
-                            )}
-                        </React.Fragment>
-                    )
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                                            <span>Set color & icon</span>
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuPortal>
+                                            <DropdownMenuSubContent className="p-0 border-0 bg-transparent">
+                                                <ColorIconSelector
+                                                    selectedColor={selectedColor}
+                                                    selectedIcon={selectedIcon}
+                                                    onColorSelect={setSelectedColor}
+                                                    onIconSelect={setSelectedIcon}
+                                                    className="w-80"
+                                                />
+                                            </DropdownMenuSubContent>
+                                        </DropdownMenuPortal>
+                                    </DropdownMenuSub>
+                                ) : (
+                                    <>
+                                        {id === "delete" && <DropdownMenuSeparator />}
+                                        <DropdownMenuItem
+                                            onClick={() => handleClick(projectId)}
+                                            className={cn("flex items-center gap-3 p-3", itemClassName)}
+                                            disabled={isDeletingProject}
+                                        >
+                                            {icon}
+                                            <span>{label}</span>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                            </React.Fragment>
+                        )
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the project
+                            and remove all associated tasks.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                handleDeleteProject();
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={isDeletingProject}
+                        >
+                            {isDeletingProject ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 };
 

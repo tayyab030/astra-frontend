@@ -78,34 +78,35 @@ const Projects = () => {
             {projects.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {projects.map((project) => (
-                        <Link
-                            href={`/tasks/projects/${project.id}`}
-                            key={project.id}
-                            className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative"
-                        >
-                            <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
+                        <div key={project.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative" >
+                            <div className='absolute top-1.5 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1.5'>
                                 <ProjectDropdownMenu
                                     projectId={project.id}
                                     refetchProjects={refetchProjects}
                                 />
                             </div>
-                            <div className="flex flex-col items-center text-center">
-                                <div className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}>
-                                    {getIconComponent(project.icon as IconName, 20)}
-                                </div>
-                                <h3 className="text-sm font-medium text-white mb-2 leading-tight">
-                                    {project.title}
-                                </h3>
-                                {/* {project.tasksDue > 0 && (
+                            <Link
+                                href={`/tasks/projects/${project.id}`}
+
+                            >
+                                <div className="flex flex-col items-center text-center">
+                                    <div className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}>
+                                        {getIconComponent(project.icon as IconName, 20)}
+                                    </div>
+                                    <h3 className="text-sm font-medium text-white mb-2 leading-tight">
+                                        {project.title}
+                                    </h3>
+                                    {/* {project.tasksDue > 0 && (
                                     <p className="text-xs text-gray-400">
                                         {project.tasksDue} tasks due soon
                                     </p>
                                 )} */}
-                                <p className="text-xs text-gray-400">
-                                    16 tasks due soon
-                                </p>
-                            </div>
-                        </Link>
+                                    <p className="text-xs text-gray-400">
+                                        16 tasks due soon
+                                    </p>
+                                </div>
+                            </Link>
+                        </div>
                     ))}
                 </div>
             ) : (
