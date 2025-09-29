@@ -36,7 +36,8 @@ export const API_ENDPOINTS = {
   // Tasks endpoints
   TASKS: {
     PROJECTS: "/api/tasks/projects/",
-    // TASKS: "/tasks/tasks/",
+    PROJECT_TASKS: (projectId: string) =>
+      `/api/tasks/projects/${projectId}/tasks/`,
     // TAGS: "/tasks/tags/",
     // COMPLETED_TASKS: "/tasks/completed-tasks/",
   },

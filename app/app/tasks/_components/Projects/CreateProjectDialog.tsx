@@ -68,8 +68,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         defaultValues: formDefaultValues,
     });
 
-    console.log(isDirty, "isDirty");
-
     // get project details from api by id
     const getProjectDetails = async (projectId: string) => {
         try {
@@ -192,14 +190,14 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                                 })
                                             }
                                             className={`group relative py-2 px-3 h-10 rounded-xl transition-all duration-200 ${watch("starred")
-                                                    ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
-                                                    : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
+                                                ? "bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg shadow-yellow-500/25"
+                                                : "hover:bg-slate-600/50 border bg-slate-800/50 border-slate-700"
                                                 }`}
                                         >
                                             <Star
                                                 className={`w-5 h-5 transition-all duration-200 ${watch("starred")
-                                                        ? "text-white fill-white scale-110"
-                                                        : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
+                                                    ? "text-white fill-white scale-110"
+                                                    : "text-gray-400 group-hover:text-yellow-400 group-hover:scale-105"
                                                     }`}
                                             />
                                             {watch("starred") && (

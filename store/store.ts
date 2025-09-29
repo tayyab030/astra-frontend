@@ -7,6 +7,8 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slice/authSlice";
 import userReducer from "./slice/userSlice";
+// Inject store into API layer
+import { injectStore } from "@/lib/api/simpleApi";
 
 const rootReducer = combineReducers({
   // add reducers here
@@ -49,8 +51,6 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// Inject store into API layer
-import { injectStore } from "@/lib/api/simpleApi";
 injectStore(store);
 // Types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;

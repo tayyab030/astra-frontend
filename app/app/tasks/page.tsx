@@ -1,8 +1,10 @@
 import React from "react";
-import Wrapper from "./_components/Wrapper";
-import Header from "./_components/Header";
-import MyTasks from "./_components/MyTasks";
-import Projects from "./_components/Projects";
+import dynamic from "next/dynamic";
+
+const Header = dynamic(() => import("./_components/Header"), { ssr: false });
+const Wrapper = dynamic(() => import("./_components/Wrapper"), { ssr: false });
+const Projects = dynamic(() => import("./_components/Projects"), { ssr: false });
+const MyTasks = dynamic(() => import("./_components/MyTasks"), { ssr: false });
 
 const Page = () => {
     return (

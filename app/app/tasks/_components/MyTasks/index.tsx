@@ -1,8 +1,13 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authApi, TASKS } from "@/lib/api";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface Task {
     id: string;
@@ -15,6 +20,27 @@ interface Task {
 }
 
 const MyTasks = () => {
+
+    const getTasks = async () => {
+        try {
+            const response = await authApi.get(TASKS.PROJECT_TASKS("32"));
+            console.log(response, "response");
+            return response.data;
+        } catch (error: any) {
+            console.error(error);
+            console.log(error, "error");
+            toast.error(error?.response?.data?.detail || "Failed to get tasks");
+            return error;
+        }
+    };
+
+    const { data, refetch: refetchTasks, isLoading: loadingTasks, error } = useQuery({
+        queryKey: ["tasks"],
+        queryFn: () => getTasks(),
+    });
+
+    console.log(data, "data", error);
+
     const tasks: Task[] = [
         {
             id: "1",
