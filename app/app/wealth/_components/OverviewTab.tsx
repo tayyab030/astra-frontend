@@ -3,23 +3,32 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TabsContent } from "@/components/ui/tabs"
-import { Activity, BarChart3, Brain, LineChart, PieChart } from "lucide-react"
+import { BarChart3, Brain, PieChart } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
+import type { WealthCategoryTotal, WealthDashboard, WealthTransaction } from "@/lib/api/wealth"
+import { ExpenseCategoriesChart } from "./ExpenseCategoriesChart"
+import { SpendingTrendChart } from "./SpendingTrendChart"
 import { getAiInsights } from "./constants"
 
 interface OverviewTabProps {
   monthlyIncome: number
   monthlyExpenses: number
-  netSavings: number
+  periodNet: number
   wasteSpending: number
+  transactions: WealthTransaction[]
+  categoryTotals: WealthCategoryTotal[]
+  filter: WealthDashboard["filter"]
   isLoading?: boolean
 }
 
 export function OverviewTab({
   monthlyIncome,
   monthlyExpenses,
-  netSavings,
+  periodNet,
   wasteSpending,
+  transactions,
+  categoryTotals,
+  filter,
   isLoading,
 }: OverviewTabProps) {
   const { formatCurrency } = useCurrency()
@@ -36,10 +45,11 @@ export function OverviewTab({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center text-slate-400">
-              <LineChart className="h-12 w-12 mr-2" />
-              <span className="font-mono">Spending trend visualization</span>
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-64 w-full bg-slate-900/50" />
+            ) : (
+              <SpendingTrendChart transactions={transactions} filter={filter} />
+            )}
           </CardContent>
         </Card>
 
@@ -51,10 +61,11 @@ export function OverviewTab({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center text-slate-400">
-              <Activity className="h-12 w-12 mr-2" />
-              <span className="font-mono">Category breakdown chart</span>
-            </div>
+            {isLoading ? (
+              <Skeleton className="h-64 w-full bg-slate-900/50" />
+            ) : (
+              <ExpenseCategoriesChart categoryTotals={categoryTotals} />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -80,8 +91,8 @@ export function OverviewTab({
                   <p className="text-sm text-slate-400 font-mono">Total Expenses</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-400 font-mono">{formatCurrency(netSavings)}</p>
-                  <p className="text-sm text-slate-400 font-mono">Net Savings</p>
+                  <p className="text-2xl font-bold text-blue-400 font-mono">{formatCurrency(periodNet)}</p>
+                  <p className="text-sm text-slate-400 font-mono">Period Net</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-orange-400 font-mono">{formatCurrency(wasteSpending)}</p>

@@ -49,9 +49,8 @@ export const API_ENDPOINTS = {
     DASHBOARD: "/wealth/",
     TRANSACTIONS: "/wealth/transactions/",
     TRANSACTION: (id: string) => `/wealth/transactions/${id}/`,
-    SAVINGS: "/wealth/savings/",
-    SAVING: (id: string) => `/wealth/savings/${id}/`,
-    SAVINGS_WITHDRAW: "/wealth/savings/withdraw/",
+    BUDGETS: "/wealth/budgets/",
+    BUDGET: (id: string) => `/wealth/budgets/${id}/`,
   },
 
   // Assistant endpoints

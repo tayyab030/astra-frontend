@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -50,7 +50,7 @@ import {
 } from "../_schemas/wealth.schema"
 import { FormFieldError } from "./FormFieldError"
 import { WealthEmptyState } from "./WealthEmptyState"
-import { WEALTH_CATEGORIES, getCategoryValue } from "./constants"
+import { WEALTH_EXPENSE_CATEGORIES, WEALTH_INCOME_CATEGORIES, getCategoryLabel } from "./constants"
 
 const primaryButtonClassName =
   "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border border-cyan-400/20 font-mono shadow-lg shadow-cyan-500/25"
@@ -151,7 +151,7 @@ export function TransactionsTab({
     reset({
       description: transaction.description,
       amount: Math.abs(transaction.amount),
-      category: getCategoryValue(transaction.category) as WealthCategoryValue,
+      category: transaction.category as WealthCategoryValue,
       date: parseTransactionDateForInput(transaction.date),
     })
     setShowDialog(true)
@@ -269,12 +269,26 @@ export function TransactionsTab({
                     >
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600/50">
-                      {WEALTH_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value} className="font-mono">
-                          {cat.label}
-                        </SelectItem>
-                      ))}
+                    <SelectContent
+                      position="popper"
+                      className="bg-slate-800 border-slate-600/50 max-h-48 overflow-y-auto [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:max-h-44"
+                    >
+                      <SelectGroup>
+                        <SelectLabel className="font-mono text-slate-400">Expenses</SelectLabel>
+                        {WEALTH_EXPENSE_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value} className="font-mono">
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel className="font-mono text-slate-400">Income</SelectLabel>
+                        {WEALTH_INCOME_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value} className="font-mono">
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                   <FormFieldError message={errors.category?.message} />
@@ -342,9 +356,9 @@ export function TransactionsTab({
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold font-mono text-slate-200 truncate">{transaction.description}</p>
-                      <p className="text-sm text-slate-400 font-mono">
-                        {transaction.category} • {formatTransactionDate(transaction.date)}
-                      </p>
+                        <p className="text-sm text-slate-400 font-mono">
+                          {getCategoryLabel(transaction.category)} • {formatTransactionDate(transaction.date)}
+                        </p>
                     </div>
                   </div>
                   <div className="relative z-20 flex items-center gap-2 shrink-0">

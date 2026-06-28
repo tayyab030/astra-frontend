@@ -27,6 +27,11 @@ export type WealthCategoryValue =
   | "entertainment"
   | "waste"
   | "other"
+  | "salary"
+  | "freelancing"
+  | "bonus"
+  | "gift"
+  | "income_other"
   | "income"
 
 export interface WealthTransaction {
@@ -37,18 +42,26 @@ export interface WealthTransaction {
   date: string
 }
 
-export interface WealthSaving {
-  id: string
-  amount: number
-  month: string
-  type: "deposit" | "withdrawal"
-  reason?: string
-}
-
 export interface WealthCategoryTotal {
   value: string
   label: string
   total: number
+}
+
+export type WealthBudgetStatus = "on_track" | "near_limit" | "over_budget"
+
+export interface WealthCategoryBudget {
+  id: string
+  category: string
+  label: string
+  period_type: "month" | "year"
+  year: number
+  month?: number
+  limit: number
+  spent: number
+  remaining: number
+  percentage: number
+  status: WealthBudgetStatus
 }
 
 export interface WealthDashboard {
@@ -60,10 +73,9 @@ export interface WealthDashboard {
   monthly_expenses: number
   net_savings: number
   waste_spending: number
-  savings_balance: number
   transactions: WealthTransaction[]
-  savings: WealthSaving[]
   category_totals: WealthCategoryTotal[]
+  category_budgets: WealthCategoryBudget[]
 }
 
 export interface CreateTransactionPayload {
@@ -80,21 +92,25 @@ export interface UpdateTransactionPayload {
   date?: string
 }
 
-export interface CreateSavingPayload {
+export type WealthExpenseCategoryValue =
+  | "food"
+  | "transport"
+  | "housing"
+  | "shopping"
+  | "entertainment"
+  | "waste"
+  | "other"
+
+export interface CreateCategoryBudgetPayload {
+  category: WealthExpenseCategoryValue
   amount: number
-  month: string
+  period_type: "month" | "year"
+  year: number
+  month?: number
 }
 
-export interface WithdrawSavingPayload {
+export interface UpdateCategoryBudgetPayload {
   amount: number
-  month: string
-  reason: string
-}
-
-export interface UpdateSavingPayload {
-  amount?: number
-  month?: string
-  reason?: string
 }
 
 export function buildWealthFilterParams(filter: WealthFilter) {
@@ -150,22 +166,17 @@ export async function deleteWealthTransaction(id: string) {
   return response.data
 }
 
-export async function createWealthSaving(payload: CreateSavingPayload) {
-  const response = await authApi.post<WealthSaving>(WEALTH.SAVINGS, payload)
+export async function createWealthCategoryBudget(payload: CreateCategoryBudgetPayload) {
+  const response = await authApi.post(WEALTH.BUDGETS, payload)
   return response.data
 }
 
-export async function withdrawWealthSaving(payload: WithdrawSavingPayload) {
-  const response = await authApi.post<WealthSaving>(WEALTH.SAVINGS_WITHDRAW, payload)
+export async function updateWealthCategoryBudget(id: string, payload: UpdateCategoryBudgetPayload) {
+  const response = await authApi.patch(WEALTH.BUDGET(id), payload)
   return response.data
 }
 
-export async function updateWealthSaving(id: string, payload: UpdateSavingPayload) {
-  const response = await authApi.patch<WealthSaving>(WEALTH.SAVING(id), payload)
-  return response.data
-}
-
-export async function deleteWealthSaving(id: string) {
-  const response = await authApi.delete<{ message: string }>(WEALTH.SAVING(id))
+export async function deleteWealthCategoryBudget(id: string) {
+  const response = await authApi.delete<{ message: string }>(WEALTH.BUDGET(id))
   return response.data
 }

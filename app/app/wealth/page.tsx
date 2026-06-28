@@ -7,9 +7,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DollarSign, TrendingUp, CreditCard, AlertTriangle } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
 import { WEALTH_TABS } from "./_components/constants"
+import { BudgetTab } from "./_components/BudgetTab"
 import { CategoriesTab } from "./_components/CategoriesTab"
 import { OverviewTab } from "./_components/OverviewTab"
-import { SavingsTab } from "./_components/SavingsTab"
 import { TransactionsTab } from "./_components/TransactionsTab"
 import { WealthFilters } from "./_components/WealthFilters"
 import { useWealth } from "./_hooks/useWealth"
@@ -33,24 +33,32 @@ export default function WealthPage() {
     createTransaction,
     updateTransaction,
     deleteTransaction,
-    createSaving,
-    withdrawSaving,
-    updateSaving,
-    deleteSaving,
+    createBudget,
+    updateBudget,
+    deleteBudget,
     isCreatingTransaction,
     isUpdatingTransaction,
     isDeletingTransaction,
-    isCreatingSaving,
-    isWithdrawingSaving,
-    isUpdatingSaving,
-    isDeletingSaving,
+    isCreatingBudget,
+    isUpdatingBudget,
+    isDeletingBudget,
   } = useWealth(filter)
+
+  const resolvedFilter =
+    dashboard?.filter ??
+    (filter.mode === "month"
+      ? { mode: "month" as const, year: filter.year, month: filter.month }
+      : {
+          mode: "year" as const,
+          start_year: filter.startYear,
+          end_year: filter.endYear,
+        })
 
   const summaryCards = [
     {
       title: "Net Worth",
       value: dashboard?.net_worth ?? 0,
-      subtitle: "Total savings balance",
+      subtitle: "Total income minus expenses (all time)",
       icon: TrendingUp,
       titleClass: "text-green-300",
       valueClass: "text-green-200",
@@ -186,24 +194,25 @@ export default function WealthPage() {
           <OverviewTab
             monthlyIncome={dashboard?.monthly_income ?? 0}
             monthlyExpenses={dashboard?.monthly_expenses ?? 0}
-            netSavings={dashboard?.net_savings ?? 0}
+            periodNet={dashboard?.net_savings ?? 0}
             wasteSpending={dashboard?.waste_spending ?? 0}
+            transactions={dashboard?.transactions ?? []}
+            categoryTotals={dashboard?.category_totals ?? []}
+            filter={resolvedFilter}
             isLoading={isLoading}
+          />
+          <BudgetTab
+            categoryBudgets={dashboard?.category_budgets ?? []}
+            filter={resolvedFilter}
+            isLoading={isLoading}
+            onCreateBudget={createBudget}
+            onUpdateBudget={updateBudget}
+            onDeleteBudget={deleteBudget}
+            isCreatingBudget={isCreatingBudget}
+            isUpdatingBudget={isUpdatingBudget}
+            isDeletingBudget={isDeletingBudget}
           />
           <CategoriesTab categoryTotals={dashboard?.category_totals ?? []} isLoading={isLoading} />
-          <SavingsTab
-            savings={dashboard?.savings ?? []}
-            balance={dashboard?.savings_balance ?? 0}
-            isLoading={isLoading}
-            onCreateSaving={createSaving}
-            onWithdrawSaving={withdrawSaving}
-            onUpdateSaving={updateSaving}
-            onDeleteSaving={deleteSaving}
-            isCreatingSaving={isCreatingSaving}
-            isWithdrawingSaving={isWithdrawingSaving}
-            isUpdatingSaving={isUpdatingSaving}
-            isDeletingSaving={isDeletingSaving}
-          />
           <TransactionsTab
             transactions={dashboard?.transactions ?? []}
             isLoading={isLoading}

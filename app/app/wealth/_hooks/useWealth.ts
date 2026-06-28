@@ -4,20 +4,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import type { WealthFilter } from "@/lib/api/wealth"
 import {
-  createWealthSaving,
+  createWealthCategoryBudget,
   createWealthTransaction,
-  deleteWealthSaving,
+  deleteWealthCategoryBudget,
   deleteWealthTransaction,
   fetchWealthDashboard,
   getWealthErrorMessage,
-  updateWealthSaving,
+  updateWealthCategoryBudget,
   updateWealthTransaction,
-  withdrawWealthSaving,
-  type CreateSavingPayload,
+  type CreateCategoryBudgetPayload,
   type CreateTransactionPayload,
-  type UpdateSavingPayload,
+  type UpdateCategoryBudgetPayload,
   type UpdateTransactionPayload,
-  type WithdrawSavingPayload,
 } from "@/lib/api/wealth"
 
 export function useWealth(filter: WealthFilter) {
@@ -66,48 +64,37 @@ export function useWealth(filter: WealthFilter) {
     },
   })
 
-  const createSavingMutation = useMutation({
-    mutationFn: (payload: CreateSavingPayload) => createWealthSaving(payload),
+  const createBudgetMutation = useMutation({
+    mutationFn: (payload: CreateCategoryBudgetPayload) => createWealthCategoryBudget(payload),
     onSuccess: () => {
-      toast.success("Saving added")
+      toast.success("Budget limit added")
       invalidateWealth()
     },
     onError: (error) => {
-      toast.error(getWealthErrorMessage(error, "Failed to add saving"))
+      toast.error(getWealthErrorMessage(error, "Failed to add budget limit"))
     },
   })
 
-  const withdrawSavingMutation = useMutation({
-    mutationFn: (payload: WithdrawSavingPayload) => withdrawWealthSaving(payload),
+  const updateBudgetMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateCategoryBudgetPayload }) =>
+      updateWealthCategoryBudget(id, payload),
     onSuccess: () => {
-      toast.success("Saving withdrawn")
+      toast.success("Budget limit updated")
       invalidateWealth()
     },
     onError: (error) => {
-      toast.error(getWealthErrorMessage(error, "Failed to withdraw saving"))
+      toast.error(getWealthErrorMessage(error, "Failed to update budget limit"))
     },
   })
 
-  const updateSavingMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateSavingPayload }) =>
-      updateWealthSaving(id, payload),
+  const deleteBudgetMutation = useMutation({
+    mutationFn: (id: string) => deleteWealthCategoryBudget(id),
     onSuccess: () => {
-      toast.success("Saving updated")
+      toast.success("Budget limit deleted")
       invalidateWealth()
     },
     onError: (error) => {
-      toast.error(getWealthErrorMessage(error, "Failed to update saving"))
-    },
-  })
-
-  const deleteSavingMutation = useMutation({
-    mutationFn: (id: string) => deleteWealthSaving(id),
-    onSuccess: () => {
-      toast.success("Saving deleted")
-      invalidateWealth()
-    },
-    onError: (error) => {
-      toast.error(getWealthErrorMessage(error, "Failed to delete saving"))
+      toast.error(getWealthErrorMessage(error, "Failed to delete budget limit"))
     },
   })
 
@@ -120,17 +107,15 @@ export function useWealth(filter: WealthFilter) {
     updateTransaction: ({ id, data }: { id: string; data: UpdateTransactionPayload }) =>
       updateTransactionMutation.mutateAsync({ id, payload: data }),
     deleteTransaction: deleteTransactionMutation.mutateAsync,
-    createSaving: createSavingMutation.mutateAsync,
-    withdrawSaving: withdrawSavingMutation.mutateAsync,
-    updateSaving: ({ id, data }: { id: string; data: UpdateSavingPayload }) =>
-      updateSavingMutation.mutateAsync({ id, payload: data }),
-    deleteSaving: deleteSavingMutation.mutateAsync,
+    createBudget: createBudgetMutation.mutateAsync,
+    updateBudget: ({ id, data }: { id: string; data: UpdateCategoryBudgetPayload }) =>
+      updateBudgetMutation.mutateAsync({ id, payload: data }),
+    deleteBudget: deleteBudgetMutation.mutateAsync,
     isCreatingTransaction: createTransactionMutation.isPending,
     isUpdatingTransaction: updateTransactionMutation.isPending,
     isDeletingTransaction: deleteTransactionMutation.isPending,
-    isCreatingSaving: createSavingMutation.isPending,
-    isWithdrawingSaving: withdrawSavingMutation.isPending,
-    isUpdatingSaving: updateSavingMutation.isPending,
-    isDeletingSaving: deleteSavingMutation.isPending,
+    isCreatingBudget: createBudgetMutation.isPending,
+    isUpdatingBudget: updateBudgetMutation.isPending,
+    isDeletingBudget: deleteBudgetMutation.isPending,
   }
 }

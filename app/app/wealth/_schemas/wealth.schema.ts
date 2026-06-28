@@ -1,12 +1,16 @@
 import * as z from "zod"
-import { WEALTH_CATEGORIES, type WealthCategoryValue } from "../_components/constants"
+import {
+  LEGACY_INCOME_CATEGORY,
+  WEALTH_CATEGORIES,
+  WEALTH_EXPENSE_CATEGORIES,
+  type WealthCategoryValue,
+} from "../_components/constants"
 
-const wealthCategoryValues = WEALTH_CATEGORIES.map((category) => category.value) as [
-  WealthCategoryValue,
-  ...WealthCategoryValue[],
-]
+const wealthCategoryValues = [
+  ...WEALTH_CATEGORIES.map((category) => category.value),
+  LEGACY_INCOME_CATEGORY,
+] as unknown as [WealthCategoryValue, ...WealthCategoryValue[]]
 
-const monthPattern = /^\d{4}-(0[1-9]|1[0-2])$/
 const datePattern = /^\d{4}-\d{2}-\d{2}$/
 
 const transactionSchema = z.object({
@@ -25,26 +29,6 @@ const transactionSchema = z.object({
   date: z.string().regex(datePattern, "Date is required"),
 })
 
-const addSavingSchema = z.object({
-  amount: z.coerce
-    .number({ invalid_type_error: "Amount is required" })
-    .positive("Amount must be greater than 0"),
-  month: z.string().regex(monthPattern, "Month is required"),
-})
-
-const withdrawSavingBaseSchema = z.object({
-  amount: z.coerce
-    .number({ invalid_type_error: "Amount is required" })
-    .positive("Amount must be greater than 0"),
-  month: z.string().regex(monthPattern, "Month is required"),
-  reason: z
-    .string()
-    .min(1, "Reason is required when extracting from savings")
-    .refine((value) => value.trim().length > 0, "Reason is required when extracting from savings"),
-})
-
-const withdrawSavingSchema = withdrawSavingBaseSchema
-
 const transactionDefaultValues = {
   description: "",
   amount: "" as unknown as number,
@@ -52,27 +36,58 @@ const transactionDefaultValues = {
   date: "",
 }
 
-const addSavingDefaultValues = {
-  amount: "" as unknown as number,
-  month: "",
-}
-
-const withdrawSavingDefaultValues = {
-  amount: "" as unknown as number,
-  month: "",
-  reason: "",
-}
-
 type TransactionFormValues = z.input<typeof transactionSchema>
-type AddSavingFormValues = z.input<typeof addSavingSchema>
-type WithdrawSavingFormValues = z.input<typeof withdrawSavingSchema>
 
-export {
-  transactionSchema,
-  addSavingSchema,
-  withdrawSavingSchema,
-  transactionDefaultValues,
-  addSavingDefaultValues,
-  withdrawSavingDefaultValues,
+const expenseCategoryValues = WEALTH_EXPENSE_CATEGORIES.map(
+  (category) => category.value,
+) as unknown as [WealthCategoryValue, ...WealthCategoryValue[]]
+
+const budgetSchema = z
+  .object({
+    category: z
+      .string()
+      .min(1, "Category is required")
+      .refine(
+        (value) => expenseCategoryValues.includes(value as WealthCategoryValue),
+        "Category is required",
+      ),
+    amount: z.coerce
+      .number({ invalid_type_error: "Limit is required" })
+      .positive("Limit must be greater than 0"),
+    period_type: z.enum(["month", "year"]),
+    year: z.coerce
+      .number({ invalid_type_error: "Year is required" })
+      .int()
+      .min(2000)
+      .max(2100),
+    month: z.coerce.number().int().min(1).max(12).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.period_type === "month" && !data.month) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Month is required for monthly budgets",
+        path: ["month"],
+      })
+    }
+  })
+
+const budgetDefaultValues = {
+  category: "",
+  amount: "" as unknown as number,
+  period_type: "month" as const,
+  year: new Date().getFullYear(),
+  month: new Date().getMonth() + 1,
 }
-export type { TransactionFormValues, AddSavingFormValues, WithdrawSavingFormValues }
+
+const budgetLimitSchema = z.object({
+  amount: z.coerce
+    .number({ invalid_type_error: "Limit is required" })
+    .positive("Limit must be greater than 0"),
+})
+
+type BudgetFormValues = z.input<typeof budgetSchema>
+type BudgetLimitFormValues = z.input<typeof budgetLimitSchema>
+
+export { transactionSchema, transactionDefaultValues, budgetSchema, budgetDefaultValues, budgetLimitSchema }
+export type { TransactionFormValues, BudgetFormValues, BudgetLimitFormValues }
