@@ -6,6 +6,7 @@ import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slice/authSlice";
+import currencyReducer from "./slice/currencySlice";
 import userReducer from "./slice/userSlice";
 // Inject store into API layer
 import { injectStore } from "@/lib/api/simpleApi";
@@ -13,6 +14,7 @@ import { injectStore } from "@/lib/api/simpleApi";
 const rootReducer = combineReducers({
   // add reducers here
   auth: authReducer,
+  currency: currencyReducer,
   user: userReducer,
 });
 

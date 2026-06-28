@@ -37,8 +37,10 @@ import {
   LineChart,
   Activity,
 } from "lucide-react"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function WealthPage() {
+  const { formatCurrency } = useCurrency()
   const [selectedPeriod, setSelectedPeriod] = useState("month")
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showAddGoal, setShowAddGoal] = useState(false)
@@ -100,7 +102,10 @@ export default function WealthPage() {
       type: "warning",
       message: "⚠️ Your shopping expenses are 50% over budget. Consider reducing non-essential purchases.",
     },
-    { type: "tip", message: "💡 You spent $125 on coffee this month. Making coffee at home could save you $90/month." },
+    {
+      type: "tip",
+      message: `💡 You spent ${formatCurrency(125)} on coffee this month. Making coffee at home could save you ${formatCurrency(90)}/month.`,
+    },
     {
       type: "prediction",
       message: "📈 At your current savings rate, you'll reach your emergency fund goal 2 months early!",
@@ -237,7 +242,7 @@ export default function WealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-mono text-green-200">${netWorth.toLocaleString()}</div>
+              <div className="text-2xl font-bold font-mono text-green-200">{formatCurrency(netWorth)}</div>
               <p className="text-xs text-green-400">+12.5% from last month</p>
             </CardContent>
           </Card>
@@ -250,7 +255,7 @@ export default function WealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-mono text-blue-200">${monthlyIncome.toLocaleString()}</div>
+              <div className="text-2xl font-bold font-mono text-blue-200">{formatCurrency(monthlyIncome)}</div>
               <p className="text-xs text-blue-400">Salary + Side hustle</p>
             </CardContent>
           </Card>
@@ -263,7 +268,7 @@ export default function WealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-mono text-purple-200">${monthlyExpenses.toLocaleString()}</div>
+              <div className="text-2xl font-bold font-mono text-purple-200">{formatCurrency(monthlyExpenses)}</div>
               <p className="text-xs text-purple-400">-8% from last month</p>
             </CardContent>
           </Card>
@@ -276,7 +281,7 @@ export default function WealthPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold font-mono text-orange-200">${wasteSpending}</div>
+              <div className="text-2xl font-bold font-mono text-orange-200">{formatCurrency(wasteSpending)}</div>
               <p className="text-xs text-orange-400">12% of total expenses</p>
             </CardContent>
           </Card>
@@ -358,7 +363,9 @@ export default function WealthPage() {
                       <span className="text-2xl font-bold font-mono text-slate-200">75%</span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-400 text-center font-mono">$2,875 of $3,850 used</p>
+                  <p className="text-sm text-slate-400 text-center font-mono">
+                    {formatCurrency(2875)} of {formatCurrency(3850)} used
+                  </p>
                 </CardContent>
               </Card>
 
@@ -394,7 +401,7 @@ export default function WealthPage() {
                       <span className="text-2xl font-bold font-mono text-green-200">26%</span>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-400 text-center font-mono">${netSavings} saved this month</p>
+                  <p className="text-sm text-slate-400 text-center font-mono">{formatCurrency(netSavings)} saved this month</p>
                 </CardContent>
               </Card>
 
@@ -488,7 +495,7 @@ export default function WealthPage() {
                           <div>
                             <h3 className="font-semibold font-mono text-slate-200">{category.name}</h3>
                             <p className="text-sm text-slate-400 font-mono">
-                              ${category.spent} of ${category.budget}
+                              {formatCurrency(category.spent)} of {formatCurrency(category.budget)}
                             </p>
                           </div>
                         </div>
@@ -502,7 +509,7 @@ export default function WealthPage() {
                       <Progress value={Math.min(percentage, 100)} className="h-3" />
                       <div className="flex justify-between text-xs text-slate-500 mt-2 font-mono">
                         <span>{percentage.toFixed(1)}% used</span>
-                        <span>${category.budget - category.spent} remaining</span>
+                        <span>{formatCurrency(category.budget - category.spent)} remaining</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -580,7 +587,7 @@ export default function WealthPage() {
                         <div>
                           <h3 className="font-semibold font-mono text-slate-200">{goal.name}</h3>
                           <p className="text-sm text-slate-400 font-mono">
-                            ${goal.current.toLocaleString()} of ${goal.target.toLocaleString()}
+                            {formatCurrency(goal.current)} of {formatCurrency(goal.target)}
                           </p>
                         </div>
                         <div className="text-right">
@@ -602,7 +609,7 @@ export default function WealthPage() {
                       <Progress value={percentage} className="h-3 mb-2" />
                       <div className="flex justify-between text-xs text-slate-500 font-mono">
                         <span>{percentage.toFixed(1)}% complete</span>
-                        <span>${(goal.target - goal.current).toLocaleString()} to go</span>
+                        <span>{formatCurrency(goal.target - goal.current)} to go</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -623,7 +630,7 @@ export default function WealthPage() {
                       <div>
                         <h3 className="font-semibold font-mono text-slate-200">{investment.name}</h3>
                         <p className="text-2xl font-bold mt-1 font-mono text-slate-200">
-                          ${investment.value.toLocaleString()}
+                          {formatCurrency(investment.value)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -694,7 +701,11 @@ export default function WealthPage() {
                         <p
                           className={`font-semibold font-mono ${transaction.amount > 0 ? "text-green-400" : "text-red-400"}`}
                         >
-                          {transaction.amount > 0 ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
+                          {formatCurrency(transaction.amount, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                            showSign: transaction.amount > 0,
+                          })}
                         </p>
                         <p className="text-xs text-slate-500 font-mono">{transaction.method}</p>
                       </div>
@@ -746,19 +757,19 @@ export default function WealthPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-400 font-mono">${monthlyIncome.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-400 font-mono">{formatCurrency(monthlyIncome)}</p>
                     <p className="text-sm text-slate-400 font-mono">Total Income</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-red-400 font-mono">${monthlyExpenses.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-red-400 font-mono">{formatCurrency(monthlyExpenses)}</p>
                     <p className="text-sm text-slate-400 font-mono">Total Expenses</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-400 font-mono">${netSavings.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-blue-400 font-mono">{formatCurrency(netSavings)}</p>
                     <p className="text-sm text-slate-400 font-mono">Net Savings</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-400 font-mono">${wasteSpending}</p>
+                    <p className="text-2xl font-bold text-orange-400 font-mono">{formatCurrency(wasteSpending)}</p>
                     <p className="text-sm text-slate-400 font-mono">Waste Spending</p>
                   </div>
                 </div>

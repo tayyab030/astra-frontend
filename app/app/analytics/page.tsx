@@ -28,8 +28,10 @@ import {
   PieChart,
   LineChart,
 } from "lucide-react"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function AnalyticsPage() {
+  const { formatCurrency } = useCurrency()
   const [selectedPeriod, setSelectedPeriod] = useState("week")
 
   const lifeScoreData = {
@@ -207,7 +209,7 @@ export default function AnalyticsPage() {
               <div className="text-center space-y-2">
                 <DollarSign className="h-8 w-8 mx-auto text-cyan-400" />
                 <div className="text-2xl font-bold font-poppins text-slate-200">
-                  ${dailySnapshot.spending}/${dailySnapshot.budget}
+                  {formatCurrency(dailySnapshot.spending)}/{formatCurrency(dailySnapshot.budget)}
                 </div>
                 <p className="text-sm font-inter text-slate-400">Spending vs Budget</p>
               </div>
@@ -432,7 +434,7 @@ export default function AnalyticsPage() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-inter text-sm text-slate-200">Save $10,000</span>
+                    <span className="font-inter text-sm text-slate-200">Save {formatCurrency(10000)}</span>
                     <span className="font-inter text-sm text-slate-400">75%</span>
                   </div>
                   <Progress value={75} className="h-2" />
@@ -481,7 +483,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="p-4 bg-slate-800/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
                   <p className="font-inter text-sm text-slate-300">
-                    At this savings rate, you'll reach your $10K goal by December.
+                    At this savings rate, you'll reach your {formatCurrency(10000)} goal by December.
                   </p>
                 </div>
               </div>
@@ -494,7 +496,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
                   <p className="font-inter text-sm text-slate-300">
-                    <strong>Scenario:</strong> Cut $50 dining + add 2 workouts = 8-point Life Score boost.
+                    <strong>Scenario:</strong> Cut {formatCurrency(50)} dining + add 2 workouts = 8-point Life Score boost.
                   </p>
                 </div>
               </div>

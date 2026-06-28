@@ -35,8 +35,10 @@ import {
   Paperclip,
   Mic,
 } from "lucide-react"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function CommunicationPage() {
+  const { formatCurrency } = useCurrency()
   const [selectedEmail, setSelectedEmail] = useState(null)
   const [activeTab, setActiveTab] = useState("inbox")
   const [searchQuery, setSearchQuery] = useState("")
@@ -81,7 +83,7 @@ export default function CommunicationPage() {
       unread: false,
       priority: "medium",
       hasAttachment: true,
-      aiSummary: "Monthly bank statement. Total spending: $2,847. Should be logged in Wealth module.",
+      aiSummary: `Monthly bank statement. Total spending: ${formatCurrency(2847)}. Should be logged in Wealth module.`,
       suggestedActions: ["Log in Wealth", "Download Statement", "Archive"],
     },
     {
