@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Mail } from "lucide-react"
 import { ROUTES } from "@/constants/routes"
 import { LoginType, schema } from '../_schemas/login.schema'
 import { useForm } from 'react-hook-form'
@@ -19,12 +19,17 @@ import { setUser } from '@/store/slice/userSlice'
 import { setRefreshTokenCookie } from '@/lib/cookies'
 import { useRouter } from 'next/navigation'
 
+type UnverifiedState = {
+    userId: string
+    otpToken: string | null
+    otpStillValid: boolean
+}
+
 const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false)
+    const [unverified, setUnverified] = useState<UnverifiedState | null>(null)
     const dispatch = useDispatch()
     const router = useRouter()
-    // const searchParams = useSearchParams()
-    // const redirectTo = searchParams.get('redirect') || ROUTES.APP.DASHBOARD
     const redirectTo = ROUTES.APP.DASHBOARD
 
     const {
@@ -33,44 +38,91 @@ const LoginForm = () => {
         formState: { errors },
         watch,
         setValue,
+        getValues,
     } = useForm<LoginType>({
         resolver: zodResolver(schema),
     })
 
     const onSubmit = async (data: LoginType) => {
+        setUnverified(null)
+
         try {
             const response = await publicApi.post(AUTH.LOGIN, data);
             const { access, refresh, user } = response.data;
 
-            // Store access token in Redux
             dispatch(setAccessToken(access));
-
-            // Store user data in Redux
             dispatch(setUser(user));
-
-            // Store refresh token in secure httpOnly cookie
-
             await setRefreshTokenCookie(refresh);
 
             toast.success("Login successful");
-
-            // Redirect to the intended page or dashboard
             router.replace(redirectTo);
 
             return response.data;
         } catch (error: any) {
             console.error(error);
-            const nonFieldErrors = error?.response.data.non_field_errors
+            const errorData = error?.response?.data
+
+            if (errorData?.is_unverified) {
+                setUnverified({
+                    userId: errorData.user_id,
+                    otpToken: errorData.otp_token ?? null,
+                    otpStillValid: Boolean(errorData.otp_still_valid),
+                })
+            }
+
+            const nonFieldErrors = errorData?.non_field_errors
             if (Array.isArray(nonFieldErrors) && nonFieldErrors.length > 0) {
-                toast.error(nonFieldErrors.map((error: string) => <p key={error}>{error}</p>));
+                toast.error(nonFieldErrors.map((msg: string) => <p key={msg}>{msg}</p>));
             } else {
                 toast.error("Login failed");
             }
         }
     }
 
+    const handleResendVerification = async () => {
+        const { login, password } = getValues()
+
+        if (!login || !password) {
+            toast.error("Enter your email/username and password first")
+            return
+        }
+
+        try {
+            const response = await publicApi.post(AUTH.RESEND_OTP_LOGIN, {
+                login,
+                password,
+            })
+
+            const otpToken = response?.data?.otp?.token
+            if (!otpToken) {
+                toast.error("Could not start verification. Please try again.")
+                return
+            }
+
+            if (response?.data?.resent) {
+                toast.success("New verification code sent!")
+            } else {
+                toast.success("Your verification code is still valid.")
+            }
+
+            router.push(`${ROUTES.AUTH.VERIFY_OTP}?otp_token=${otpToken}`)
+        } catch (error: any) {
+            console.error(error)
+            const nonFieldErrors = error?.response?.data?.non_field_errors
+            if (Array.isArray(nonFieldErrors) && nonFieldErrors.length > 0) {
+                toast.error(nonFieldErrors[0])
+            } else {
+                toast.error("Failed to resend verification code")
+            }
+        }
+    }
+
     const { mutate: handleLogin, isPending: isLoggingIn } = useMutation({
         mutationFn: onSubmit,
+    })
+
+    const { mutate: resendVerification, isPending: isResendingOtp } = useMutation({
+        mutationFn: handleResendVerification,
     })
 
     return (
@@ -80,6 +132,40 @@ const LoginForm = () => {
                 <CardDescription className="text-slate-300 font-mono">Access your Life OS dashboard</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+                {unverified && (
+                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                        <p className="text-sm font-mono text-amber-200">
+                            Your account exists but your email is not verified yet.
+                            {unverified.otpStillValid
+                                ? " You can continue with your existing code or request a new one."
+                                : " Request a new verification code to activate your account."}
+                        </p>
+                        <Button
+                            type="button"
+                            onClick={() => resendVerification()}
+                            disabled={isResendingOtp}
+                            variant="outline"
+                            className="w-full font-mono border-amber-500/40 text-amber-100 hover:bg-amber-500/20 hover:text-amber-50"
+                        >
+                            {isResendingOtp ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-4 h-4 border-2 border-amber-200/30 border-t-amber-100 rounded-full animate-spin" />
+                                    <span>Sending code...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center space-x-2">
+                                    <Mail size={16} />
+                                    <span>
+                                        {unverified.otpStillValid
+                                            ? "Continue verification"
+                                            : "Resend verification code"}
+                                    </span>
+                                </div>
+                            )}
+                        </Button>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit((data) => handleLogin(data))} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-cyan-200 font-mono">
@@ -90,7 +176,10 @@ const LoginForm = () => {
                             type="text"
                             {...register("login")}
                             value={watch("login")}
-                            onChange={(e) => setValue("login", e.target.value)}
+                            onChange={(e) => {
+                                setValue("login", e.target.value)
+                                setUnverified(null)
+                            }}
                             className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
                             placeholder="Enter your email or username"
                             required
@@ -111,7 +200,10 @@ const LoginForm = () => {
                                 type={showPassword ? "text" : "password"}
                                 {...register("password")}
                                 value={watch("password")}
-                                onChange={(e) => setValue("password", e.target.value)}
+                                onChange={(e) => {
+                                    setValue("password", e.target.value)
+                                    setUnverified(null)
+                                }}
                                 className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
                                 placeholder="Enter your password"
                                 required

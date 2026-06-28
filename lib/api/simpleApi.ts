@@ -12,7 +12,8 @@ export const injectStore = (_store: Store) => {
   store = _store;
 };
 
-const baseURL = "http://127.0.0.1:8000";
+const baseURL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
 
 export const publicApi = axios.create({
   baseURL,

@@ -2,14 +2,15 @@
 export const API_ENDPOINTS = {
   // Authentication endpoints
   AUTH: {
-    LOGIN: "/api/auth/jwt/create/",
-    REGISTER: "/api/auth/users/",
-    REFRESH_ACCESS_TOKEN: "/api/auth/jwt/refresh/",
-    VERIFY_TOKEN: "/api/auth/jwt/verify/",
-    OTP_STATUS: (token: string) => `/api/otp/${token}/status/`,
-    RESEND_OTP: "/api/otp/create/",
-    VERIFY_OTP: "/api/otp/verify/",
-    // LOGOUT: "/api/auth/jwt/logout/",
+    LOGIN: "/auth/jwt/create/",
+    REGISTER: "/auth/users/",
+    REFRESH_ACCESS_TOKEN: "/auth/jwt/refresh/",
+    VERIFY_TOKEN: "/auth/jwt/verify/",
+    OTP_STATUS: (token: string) => `/otp/${token}/status/`,
+    RESEND_OTP: "/otp/create/",
+    RESEND_OTP_LOGIN: "/otp/resend-login/",
+    VERIFY_OTP: "/otp/verify/",
+    // LOGOUT: "/auth/jwt/logout/",
     // FORGOT_PASSWORD: "/auth/forgot-password",
     // RESET_PASSWORD: "/auth/reset-password",
   },
@@ -35,9 +36,9 @@ export const API_ENDPOINTS = {
 
   // Tasks endpoints
   TASKS: {
-    PROJECTS: "/api/tasks/projects/",
+    PROJECTS: "/tasks/projects/",
     PROJECT_TASKS: (projectId: string) =>
-      `/api/tasks/projects/${projectId}/tasks/`,
+      `/tasks/projects/${projectId}/tasks/`,
     // TAGS: "/tasks/tags/",
     // COMPLETED_TASKS: "/tasks/completed-tasks/",
   },
