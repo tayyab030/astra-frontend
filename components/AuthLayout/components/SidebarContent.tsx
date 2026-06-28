@@ -1,4 +1,14 @@
 import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ROUTES } from "@/constants/routes";
 import { logout } from "@/lib/auth";
 import {
@@ -16,6 +26,7 @@ import {
     Target,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, href: ROUTES.APP.DASHBOARD },
@@ -33,6 +44,7 @@ const sidebarItems = [
 const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const pathname = usePathname();
     const router = useRouter();
+    const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
     return (
         <>
@@ -74,12 +86,33 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                     variant="ghost"
                     className={`w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30 ${isSidebarOpen ? "justify-start" : "justify-center"
                         }`}
-                    onClick={() => logout()}
+                    onClick={() => setShowLogoutConfirmation(true)}
                 >
                     <LogOut className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
                     {isSidebarOpen && "Logout"}
                 </Button>
             </div>
+
+            <AlertDialog open={showLogoutConfirmation} onOpenChange={setShowLogoutConfirmation}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Log out?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to log out? You will need to sign in again to
+                            access your account.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => logout()}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            Log out
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     )
 }

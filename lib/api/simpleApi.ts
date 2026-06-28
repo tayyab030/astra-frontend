@@ -4,6 +4,7 @@ import { setAccessToken } from "@/store/slice/authSlice";
 import { getRefreshTokenCookie } from "@/lib/cookies";
 import { AUTH } from ".";
 import { getAccessToken, logout } from "../auth";
+import { getApiBaseUrl } from "./config";
 
 let store: Store;
 
@@ -12,8 +13,7 @@ export const injectStore = (_store: Store) => {
   store = _store;
 };
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
+const baseURL = getApiBaseUrl();
 
 export const publicApi = axios.create({
   baseURL,
