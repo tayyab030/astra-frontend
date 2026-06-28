@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Clock, Mail } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { schema, ForgotPasswordType } from "../_schemas/forgot-password.schema";
@@ -35,6 +35,14 @@ export default function ForgotPasswordForm() {
   const { ref: emailRef, ...emailField } = register("email");
   const email = watch("email", "");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [linkSent, setLinkSent] = useState(true);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: ForgotPasswordType) => {
@@ -43,7 +51,20 @@ export default function ForgotPasswordForm() {
     },
     onSuccess: (data) => {
       setIsSubmitted(true);
-      toast.success(data?.message || "Recovery link sent");
+      setLinkSent(data?.sent !== false);
+      setRemainingSeconds(
+        typeof data?.remaining_time_seconds === "number"
+          ? data.remaining_time_seconds
+          : null
+      );
+
+      if (data?.sent === false) {
+        toast.success(
+          data?.message || "Your recovery link is still valid. Check your inbox."
+        );
+      } else {
+        toast.success(data?.message || "Recovery link sent");
+      }
     },
     onError: (error: any) => {
       if (error.response?.data) {
@@ -75,7 +96,11 @@ export default function ForgotPasswordForm() {
           Neural Recovery
         </CardTitle>
         <CardDescription className="text-slate-300 font-mono">
-          {isSubmitted ? "Recovery link transmitted" : "Reset your neural pathway"}
+          {isSubmitted
+            ? linkSent
+              ? "Recovery link transmitted"
+              : "Recovery link still active"
+            : "Reset your neural pathway"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -125,21 +150,53 @@ export default function ForgotPasswordForm() {
           </>
         ) : (
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-white" />
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                linkSent
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-500"
+                  : "bg-gradient-to-r from-amber-500 to-orange-500"
+              }`}
+            >
+              {linkSent ? (
+                <Mail className="w-8 h-8 text-white" />
+              ) : (
+                <Clock className="w-8 h-8 text-white" />
+              )}
             </div>
             <div className="text-cyan-100 font-mono text-lg">
-              Recovery Link Sent
+              {linkSent ? "Recovery Link Sent" : "Recovery Link Still Valid"}
             </div>
             <div className="text-slate-400 text-sm font-mono">
-              We&apos;ve transmitted a secure recovery link to{" "}
-              <span className="text-cyan-400">{email}</span>. Check your neural
-              inbox and follow the instructions to restore access to your ASTRA
-              Life OS.
+              {linkSent ? (
+                <>
+                  We&apos;ve transmitted a secure recovery link to{" "}
+                  <span className="text-cyan-400">{email}</span>. Check your
+                  neural inbox and follow the instructions to restore access to
+                  your ASTRA Life OS.
+                </>
+              ) : (
+                <>
+                  A recovery link was already sent to{" "}
+                  <span className="text-cyan-400">{email}</span> and is still
+                  active
+                  {remainingSeconds !== null && (
+                    <>
+                      {" "}
+                      for{" "}
+                      <span className="text-amber-400">
+                        {formatTime(remainingSeconds)}
+                      </span>
+                    </>
+                  )}
+                  . Check your inbox and use the existing link — a new email was
+                  not sent.
+                </>
+              )}
             </div>
             <div className="text-slate-500 text-xs font-mono mt-4">
-              Didn&apos;t receive the transmission? Check your spam folder or
-              try again in a few minutes.
+              {linkSent
+                ? "Didn't receive the transmission? Check your spam folder or try again in a few minutes."
+                : "Wait for the link to expire before requesting a new one, or use the link from your earlier email."}
             </div>
           </div>
         )}
