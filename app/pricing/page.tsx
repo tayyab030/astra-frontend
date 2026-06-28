@@ -21,6 +21,7 @@ import {
   Crown,
 } from "lucide-react";
 import { AstraLogo } from "@/components/astra-logo";
+import { ROUTES } from "@/constants/routes";
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -207,8 +208,8 @@ export default function PricingPage() {
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isAnnual
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600"
-                    : "bg-slate-600"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600"
+                  : "bg-slate-600"
                   }`}
               >
                 <span
@@ -235,8 +236,8 @@ export default function PricingPage() {
               <Card
                 key={plan.name}
                 className={`relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${plan.popular
-                    ? "ring-2 ring-cyan-500/50 border-cyan-500/30 shadow-2xl shadow-cyan-500/10"
-                    : "border-slate-600/50"
+                  ? "ring-2 ring-cyan-500/50 border-cyan-500/30 shadow-2xl shadow-cyan-500/10"
+                  : "border-slate-600/50"
                   } bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-sm`}
               >
                 <div
@@ -284,11 +285,11 @@ export default function PricingPage() {
                 </CardHeader>
 
                 <CardContent className="relative">
-                  <Link href="/login">
+                  <Link href={ROUTES.AUTH.LOGIN}>
                     <Button
                       className={`w-full mb-6 ${plan.popular
-                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
-                          : "bg-slate-700 hover:bg-slate-600 text-white"
+                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25"
+                        : "bg-slate-700 hover:bg-slate-600 text-white"
                         } rounded-full py-3`}
                     >
                       {plan.cta}
@@ -344,8 +345,8 @@ export default function PricingPage() {
                       <div
                         key={item.name}
                         className={`grid grid-cols-4 gap-4 px-6 py-4 ${itemIdx < category.items.length - 1
-                            ? "border-b border-slate-700/50"
-                            : ""
+                          ? "border-b border-slate-700/50"
+                          : ""
                           } ${categoryIdx < features.length - 1 &&
                             itemIdx === category.items.length - 1
                             ? "border-b border-slate-600/50"
@@ -406,7 +407,7 @@ export default function PricingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/login">
+                <Link href={ROUTES.AUTH.LOGIN}>
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-lg px-10 py-4 rounded-full shadow-2xl shadow-cyan-500/25"

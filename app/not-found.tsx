@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Home, ArrowLeft, Zap } from "lucide-react"
+import { ROUTES } from "@/constants/routes"
 
 export default function NotFound() {
     const [mounted, setMounted] = useState(false)
@@ -83,7 +84,7 @@ export default function NotFound() {
                     {/* Navigation Options */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
-                            href="/"
+                            href={ROUTES.PUBLIC.HOME}
                             className="group flex items-center justify-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/25"
                         >
                             <Home className="w-5 h-5 group-hover:animate-pulse" />

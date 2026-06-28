@@ -1,0 +1,31 @@
+export const ROUTES = {
+  AUTH: {
+    LOGIN: "/auth/login",
+    SIGNUP: "/auth/signup",
+    FORGOT_PASSWORD: "/auth/forgot-password",
+    VERIFY_OTP: "/auth/verify-otp",
+  },
+  APP: {
+    DASHBOARD: "/app/dashboard",
+    TASKS: "/app/tasks",
+    GOALS: "/app/goals",
+    WEALTH: "/app/wealth",
+    HEALTH: "/app/health",
+    NOTES: "/app/notes",
+    ASSISTANT: "/app/assistant",
+    COMMUNICATION: "/app/communication",
+    ANALYTICS: "/app/analytics",
+    LIFE_SCORE: "/app/life-score",
+    SETTINGS: "/app/settings",
+  },
+  PUBLIC: {
+    HOME: "/",
+    FEATURES: "/features",
+    PRICING: "/pricing",
+    PRODUCT: "/product",
+    TERMS: "/terms",
+    PRIVACY: "/privacy",
+    // ABOUT: "/about",
+    // CONTACT: "/contact",
+  },
+} as const;
