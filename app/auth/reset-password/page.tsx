@@ -2,12 +2,12 @@
 
 import dynamic from "next/dynamic";
 
-const ForgotPasswordForm = dynamic(
-  () => import("./_components/ForgotPasswordForm"),
+const ResetPasswordForm = dynamic(
+  () => import("./_components/ResetPasswordForm"),
   { ssr: false }
 );
 
-export default function ForgotPasswordPage() {
+export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 font-mono relative overflow-hidden">
       <div className="absolute inset-0 opacity-20">
@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
         ))}
       </div>
 
-      <ForgotPasswordForm />
+      <ResetPasswordForm />
 
       <style jsx>{`
         @keyframes spin-slow {

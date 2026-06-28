@@ -35,8 +35,12 @@ import {
   Settings2,
   Plus,
 } from "lucide-react"
+import CurrencySelect from "@/components/common/CurrencySelect"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function SettingsPage() {
+  const { currency, setCurrency, formatCurrency } = useCurrency()
+
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -62,19 +66,19 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
       {/* Animated Background Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse" />
 
       {/* Floating Orbs */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" />
-      <div className="absolute top-40 right-32 w-24 h-24 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse delay-1000" />
-      <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-xl animate-pulse delay-2000" />
+      <div className="pointer-events-none absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" />
+      <div className="pointer-events-none absolute top-40 right-32 w-24 h-24 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse delay-1000" />
+      <div className="pointer-events-none absolute bottom-32 left-1/3 w-40 h-40 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-xl animate-pulse delay-2000" />
 
       {/* Holographic Rings */}
-      <div className="absolute top-1/4 right-1/4 w-64 h-64 border border-cyan-500/20 rounded-full animate-spin-slow" />
-      <div className="absolute bottom-1/4 left-1/4 w-48 h-48 border border-blue-500/20 rounded-full animate-spin-slow-reverse" />
+      <div className="pointer-events-none absolute top-1/4 right-1/4 w-64 h-64 border border-cyan-500/20 rounded-full animate-spin-slow" />
+      <div className="pointer-events-none absolute bottom-1/4 left-1/4 w-48 h-48 border border-blue-500/20 rounded-full animate-spin-slow-reverse" />
 
       {/* Floating Particles */}
-      <div className="absolute inset-0">
+      <div className="pointer-events-none absolute inset-0">
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
@@ -275,6 +279,15 @@ export default function SettingsPage() {
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="currency" className="font-mono text-slate-300">
+                      Currency Format
+                    </Label>
+                    <CurrencySelect value={currency} onValueChange={setCurrency} />
+                    <p className="text-xs text-slate-500 font-mono">
+                      Search and select your preferred currency. Amounts across the app update automatically.
+                    </p>
                   </div>
                 </div>
 
@@ -528,7 +541,7 @@ export default function SettingsPage() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg border-destructive">
+                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold text-destructive font-mono">Delete Account</h4>
                       <p className="text-sm text-muted-foreground font-mono">
@@ -560,7 +573,7 @@ export default function SettingsPage() {
                       <p className="opacity-90 font-mono">All features unlocked</p>
                     </div>
                     <Badge variant="secondary" className="bg-white/20 text-white font-mono">
-                      $19/month
+                      {formatCurrency(19)}/month
                     </Badge>
                   </div>
                   <div className="mt-4 text-sm opacity-90 font-mono">Next billing: January 15, 2025</div>
@@ -591,13 +604,15 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-yellow-400">Billing History</h4>
                   <div className="space-y-2">
-                    {["Dec 2024 - $19.00", "Nov 2024 - $19.00", "Oct 2024 - $19.00"].map((bill, index) => (
+                    {["Dec 2024", "Nov 2024", "Oct 2024"].map((billMonth, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between p-3 border border-yellow-500/30 rounded"
                         style={{ backgroundColor: "rgba(255, 255, 0, 0.1)" }}
                       >
-                        <span className="font-mono text-slate-300">{bill}</span>
+                        <span className="font-mono text-slate-300">
+                          {billMonth} - {formatCurrency(19, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
                         <Button variant="ghost" size="sm" className="font-mono">
                           <Download className="h-4 w-4" />
                         </Button>
@@ -665,7 +680,6 @@ export default function SettingsPage() {
                   <Select
                     value={notifications.digest}
                     onValueChange={(value) => setNotifications((prev) => ({ ...prev, digest: value }))}
-                    className="font-mono"
                   >
                     <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                       <SelectValue />
@@ -737,7 +751,6 @@ export default function SettingsPage() {
                     <Select
                       value={aiSettings.personality}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, personality: value }))}
-                      className="font-mono"
                     >
                       <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                         <SelectValue />
@@ -773,7 +786,6 @@ export default function SettingsPage() {
                     <Select
                       value={aiSettings.dataScope}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, dataScope: value }))}
-                      className="font-mono"
                     >
                       <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                         <SelectValue />

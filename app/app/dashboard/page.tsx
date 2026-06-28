@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,8 +20,11 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function DashboardPage() {
+  const { formatCurrency } = useCurrency();
+
   // const renderContent = () => {
   //   switch (activeTab) {
   //     case "tasks":
@@ -91,9 +96,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-poppins text-blue-200">
-                $47
+                {formatCurrency(47)}
               </div>
-              <p className="text-xs text-slate-400">Budget: $80</p>
+              <p className="text-xs text-slate-400">Budget: {formatCurrency(80)}</p>
             </CardContent>
           </Card>
 

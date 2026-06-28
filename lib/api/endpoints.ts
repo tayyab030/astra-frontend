@@ -10,9 +10,10 @@ export const API_ENDPOINTS = {
     RESEND_OTP: "/otp/create/",
     RESEND_OTP_LOGIN: "/otp/resend-login/",
     VERIFY_OTP: "/otp/verify/",
-    // LOGOUT: "/auth/jwt/logout/",
-    // FORGOT_PASSWORD: "/auth/forgot-password",
-    // RESET_PASSWORD: "/auth/reset-password",
+    FORGOT_PASSWORD: "/auth/password/forgot/",
+    RESET_PASSWORD: "/auth/password/reset/",
+    PASSWORD_RESET_STATUS: (token: string) =>
+      `/auth/password/${token}/status/`,
   },
 
   // User endpoints
@@ -41,6 +42,15 @@ export const API_ENDPOINTS = {
       `/tasks/projects/${projectId}/tasks/`,
     // TAGS: "/tasks/tags/",
     // COMPLETED_TASKS: "/tasks/completed-tasks/",
+  },
+
+  // Wealth endpoints
+  WEALTH: {
+    DASHBOARD: "/wealth/",
+    TRANSACTIONS: "/wealth/transactions/",
+    TRANSACTION: (id: string) => `/wealth/transactions/${id}/`,
+    BUDGETS: "/wealth/budgets/",
+    BUDGET: (id: string) => `/wealth/budgets/${id}/`,
   },
 
   // Assistant endpoints

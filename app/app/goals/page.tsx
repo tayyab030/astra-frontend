@@ -29,15 +29,17 @@ import {
   DollarSign,
   Briefcase,
 } from "lucide-react"
+import { useCurrency } from "@/hooks/useCurrency"
 
 export default function GoalsPage() {
+  const { formatCurrency } = useCurrency()
   const [selectedView, setSelectedView] = useState("overview")
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false)
 
   const goals = [
     {
       id: 1,
-      title: "Save $10,000 Emergency Fund",
+      title: `Save ${formatCurrency(10000)} Emergency Fund`,
       category: "Wealth",
       categoryIcon: DollarSign,
       categoryColor: "green",
@@ -47,10 +49,10 @@ export default function GoalsPage() {
       priority: "High",
       motivation: "Financial security and peace of mind for unexpected expenses",
       milestones: [
-        { title: "Save $2,500", completed: true, dueDate: "2024-03-31" },
-        { title: "Save $5,000", completed: true, dueDate: "2024-06-30" },
-        { title: "Save $7,500", completed: false, dueDate: "2024-09-30" },
-        { title: "Save $10,000", completed: false, dueDate: "2024-12-31" },
+        { title: `Save ${formatCurrency(2500)}`, completed: true, dueDate: "2024-03-31" },
+        { title: `Save ${formatCurrency(5000)}`, completed: true, dueDate: "2024-06-30" },
+        { title: `Save ${formatCurrency(7500)}`, completed: false, dueDate: "2024-09-30" },
+        { title: `Save ${formatCurrency(10000)}`, completed: false, dueDate: "2024-12-31" },
       ],
       linkedTasks: 8,
       streak: 45,
@@ -271,7 +273,7 @@ export default function GoalsPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-200">Goal Title</label>
                   <Input
-                    placeholder="e.g., Save $5,000 for vacation"
+                    placeholder={`e.g., Save ${formatCurrency(5000)} for vacation`}
                     className="bg-slate-700/50 border-slate-600 text-slate-100"
                   />
                 </div>
@@ -404,7 +406,7 @@ export default function GoalsPage() {
               </div>
               <div className="p-3 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-lg border border-cyan-400/30 backdrop-blur-sm">
                 <p className="text-sm font-inter text-slate-200">
-                  ⚡ Your savings goal needs $400/month to stay on track. Current pace: $350/month.
+                  ⚡ Your savings goal needs {formatCurrency(400)}/month to stay on track. Current pace: {formatCurrency(350)}/month.
                 </p>
               </div>
             </div>
