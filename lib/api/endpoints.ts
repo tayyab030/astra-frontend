@@ -44,6 +44,16 @@ export const API_ENDPOINTS = {
     // COMPLETED_TASKS: "/tasks/completed-tasks/",
   },
 
+  // Wealth endpoints
+  WEALTH: {
+    DASHBOARD: "/wealth/",
+    TRANSACTIONS: "/wealth/transactions/",
+    TRANSACTION: (id: string) => `/wealth/transactions/${id}/`,
+    SAVINGS: "/wealth/savings/",
+    SAVING: (id: string) => `/wealth/savings/${id}/`,
+    SAVINGS_WITHDRAW: "/wealth/savings/withdraw/",
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

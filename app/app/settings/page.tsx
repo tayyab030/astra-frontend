@@ -541,7 +541,7 @@ export default function SettingsPage() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg border-destructive">
+                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold text-destructive font-mono">Delete Account</h4>
                       <p className="text-sm text-muted-foreground font-mono">
@@ -680,7 +680,6 @@ export default function SettingsPage() {
                   <Select
                     value={notifications.digest}
                     onValueChange={(value) => setNotifications((prev) => ({ ...prev, digest: value }))}
-                    className="font-mono"
                   >
                     <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                       <SelectValue />
@@ -752,7 +751,6 @@ export default function SettingsPage() {
                     <Select
                       value={aiSettings.personality}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, personality: value }))}
-                      className="font-mono"
                     >
                       <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                         <SelectValue />
@@ -788,7 +786,6 @@ export default function SettingsPage() {
                     <Select
                       value={aiSettings.dataScope}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, dataScope: value }))}
-                      className="font-mono"
                     >
                       <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
                         <SelectValue />
