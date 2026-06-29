@@ -27,6 +27,7 @@ import {
   taskSchema,
   type TaskFormValues,
 } from "../_schemas/task.schema"
+import { TASK_STATUS_OPTIONS } from "./detail/constants"
 import { cn } from "@/lib/utils"
 
 const inputClassName = "bg-slate-800/50 border-slate-700 text-white"
@@ -42,18 +43,50 @@ const priorityOptions = [
 ]
 
 function taskToFormValues(task: TaskItem): TaskFormValues {
+  const status =
+    task.completed || task.status === "done"
+      ? "done"
+      : (task.status as TaskFormValues["status"]) ?? "todo"
+
   return {
     title: task.title,
     description: task.description ?? "",
     due_date: task.due_date,
     priority: (task.priority as TaskFormValues["priority"]) ?? "medium",
+    status,
     link_type: task.link_type,
     project_id: task.project_id ?? "",
     goal_id: task.goal_id ?? "",
   }
 }
 
-function buildTaskPayload(data: TaskFormValues): CreateTaskPayload {
+function buildTaskPayload(
+  data: TaskFormValues,
+  fixedGoalId?: string,
+  fixedProjectId?: string,
+): CreateTaskPayload {
+  if (fixedGoalId) {
+    return {
+      title: data.title.trim(),
+      description: data.description?.trim() || undefined,
+      due_date: data.due_date,
+      priority: data.priority,
+      project_id: null,
+      goal_id: fixedGoalId,
+    }
+  }
+
+  if (fixedProjectId) {
+    return {
+      title: data.title.trim(),
+      description: data.description?.trim() || undefined,
+      due_date: data.due_date,
+      priority: data.priority,
+      project_id: fixedProjectId,
+      goal_id: null,
+    }
+  }
+
   return {
     title: data.title.trim(),
     description: data.description?.trim() || undefined,
@@ -64,14 +97,43 @@ function buildTaskPayload(data: TaskFormValues): CreateTaskPayload {
   }
 }
 
+function getInitialFormValues(fixedGoalId?: string, fixedProjectId?: string): TaskFormValues {
+  if (fixedGoalId) {
+    return {
+      ...taskDefaultValues,
+      link_type: "goal",
+      goal_id: fixedGoalId,
+    }
+  }
+
+  if (fixedProjectId) {
+    return {
+      ...taskDefaultValues,
+      link_type: "project",
+      project_id: fixedProjectId,
+    }
+  }
+
+  return taskDefaultValues
+}
+
 interface TaskFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: "add" | "edit"
   task?: TaskItem | null
+  fixedGoalId?: string
+  fixedProjectId?: string
 }
 
-export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialogProps) {
+export function TaskFormDialog({
+  open,
+  onOpenChange,
+  mode,
+  task,
+  fixedGoalId,
+  fixedProjectId,
+}: TaskFormDialogProps) {
   const { projects } = useProjects()
   const { createTask, updateTask, isCreatingTask, isUpdatingTask } = useTasks("all")
 
@@ -84,7 +146,7 @@ export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialo
         year: now.getFullYear(),
         month: now.getMonth() + 1,
       }),
-    enabled: open,
+    enabled: open && !fixedGoalId && !fixedProjectId,
   })
 
   const {
@@ -105,14 +167,22 @@ export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialo
     if (!open) return
 
     if (mode === "edit" && task) {
-      reset(taskToFormValues(task))
+      reset(
+        fixedGoalId
+          ? { ...taskToFormValues(task), link_type: "goal", goal_id: fixedGoalId }
+          : fixedProjectId
+            ? { ...taskToFormValues(task), link_type: "project", project_id: fixedProjectId }
+            : taskToFormValues(task),
+      )
       return
     }
 
-    reset(taskDefaultValues)
-  }, [open, mode, task, reset])
+    reset(getInitialFormValues(fixedGoalId, fixedProjectId))
+  }, [open, mode, task, reset, fixedGoalId, fixedProjectId])
 
   useEffect(() => {
+    if (fixedGoalId || fixedProjectId) return
+
     if (linkType === "none") {
       setValue("project_id", "")
       setValue("goal_id", "")
@@ -121,18 +191,25 @@ export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialo
     } else if (linkType === "goal") {
       setValue("project_id", "")
     }
-  }, [linkType, setValue])
+  }, [linkType, setValue, fixedGoalId, fixedProjectId])
 
   const handleClose = (nextOpen: boolean) => {
     onOpenChange(nextOpen)
-    if (!nextOpen) reset(taskDefaultValues)
+    if (!nextOpen) reset(getInitialFormValues(fixedGoalId, fixedProjectId))
   }
 
   const submit = handleSubmit(async (data) => {
-    const payload = buildTaskPayload(data)
+    const payload = buildTaskPayload(data, fixedGoalId, fixedProjectId)
 
     if (mode === "edit" && task) {
-      await updateTask({ id: task.id, data: payload })
+      await updateTask({
+        id: task.id,
+        data: {
+          ...payload,
+          status: data.status ?? "todo",
+          completed: data.status === "done",
+        },
+      })
     } else {
       await createTask(payload)
     }
@@ -160,7 +237,11 @@ export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialo
             {mode === "edit" ? "Edit Task" : "Create Task"}
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            Link to a project or goal, or keep it independent — not both.
+            {fixedGoalId
+              ? "This task will be linked to the current goal."
+              : fixedProjectId
+                ? "This task will be linked to the current project."
+                : "Link to a project or goal, or keep it independent — not both."}
           </DialogDescription>
         </DialogHeader>
 
@@ -204,53 +285,72 @@ export function TaskFormDialog({ open, onOpenChange, mode, task }: TaskFormDialo
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-200">Link</Label>
-            <SelectField
-              value={linkType}
-              onValueChange={(value: TaskFormValues["link_type"]) =>
-                setValue("link_type", value, { shouldValidate: true })
-              }
-              options={linkTypeOptions}
-              placeholder="How is this task linked?"
-              triggerClassName="!w-full"
-            />
-          </div>
-
-          {linkType === "project" ? (
+          {mode === "edit" ? (
             <div className="space-y-2">
-              <Label className="text-slate-200">Project</Label>
+              <Label className="text-slate-200">Status</Label>
               <SelectField
-                value={watch("project_id")}
-                onValueChange={(value) =>
-                  setValue("project_id", value, { shouldValidate: true })
+                value={watch("status") ?? "todo"}
+                onValueChange={(value: NonNullable<TaskFormValues["status"]>) =>
+                  setValue("status", value, { shouldValidate: true })
                 }
-                options={projectOptions}
-                placeholder={projectOptions.length ? "Select project" : "No projects yet"}
+                options={[...TASK_STATUS_OPTIONS]}
+                placeholder="Select status"
                 triggerClassName="!w-full"
               />
-              {errors.project_id ? (
-                <p className="text-sm text-red-400">{errors.project_id.message}</p>
-              ) : null}
             </div>
           ) : null}
 
-          {linkType === "goal" ? (
-            <div className="space-y-2">
-              <Label className="text-slate-200">Goal</Label>
-              <SelectField
-                value={watch("goal_id")}
-                onValueChange={(value) =>
-                  setValue("goal_id", value, { shouldValidate: true })
-                }
-                options={goalOptions}
-                placeholder={goalOptions.length ? "Select goal" : "No goals this month"}
-                triggerClassName="!w-full"
-              />
-              {errors.goal_id ? (
-                <p className="text-sm text-red-400">{errors.goal_id.message}</p>
+          {!fixedGoalId && !fixedProjectId ? (
+            <>
+              <div className="space-y-2">
+                <Label className="text-slate-200">Link</Label>
+                <SelectField
+                  value={linkType}
+                  onValueChange={(value: TaskFormValues["link_type"]) =>
+                    setValue("link_type", value, { shouldValidate: true })
+                  }
+                  options={linkTypeOptions}
+                  placeholder="How is this task linked?"
+                  triggerClassName="!w-full"
+                />
+              </div>
+
+              {linkType === "project" ? (
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Project</Label>
+                  <SelectField
+                    value={watch("project_id")}
+                    onValueChange={(value) =>
+                      setValue("project_id", value, { shouldValidate: true })
+                    }
+                    options={projectOptions}
+                    placeholder={projectOptions.length ? "Select project" : "No projects yet"}
+                    triggerClassName="!w-full"
+                  />
+                  {errors.project_id ? (
+                    <p className="text-sm text-red-400">{errors.project_id.message}</p>
+                  ) : null}
+                </div>
               ) : null}
-            </div>
+
+              {linkType === "goal" ? (
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Goal</Label>
+                  <SelectField
+                    value={watch("goal_id")}
+                    onValueChange={(value) =>
+                      setValue("goal_id", value, { shouldValidate: true })
+                    }
+                    options={goalOptions}
+                    placeholder={goalOptions.length ? "Select goal" : "No goals this month"}
+                    triggerClassName="!w-full"
+                  />
+                  {errors.goal_id ? (
+                    <p className="text-sm text-red-400">{errors.goal_id.message}</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
           ) : null}
 
           <div className="space-y-2">

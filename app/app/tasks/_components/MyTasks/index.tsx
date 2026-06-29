@@ -168,7 +168,13 @@ function TaskRow({
   )
 }
 
-const MyTasks = ({ listParams }: { listParams: Omit<TasksListParams, "filter"> }) => {
+const MyTasks = ({
+  listParams,
+  fixedGoalId,
+}: {
+  listParams: Omit<TasksListParams, "filter">
+  fixedGoalId?: string
+}) => {
   const [activeTab, setActiveTab] = useState<TaskFilter>("upcoming")
   const [expandedTabs, setExpandedTabs] = useState<Partial<Record<TaskFilter, boolean>>>({})
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -319,6 +325,7 @@ const MyTasks = ({ listParams }: { listParams: Omit<TasksListParams, "filter"> }
         onOpenChange={setIsFormOpen}
         mode={editingTask ? "edit" : "add"}
         task={editingTask}
+        fixedGoalId={fixedGoalId}
       />
 
       <AlertDialog open={Boolean(taskToDelete)} onOpenChange={(open) => !open && setTaskToDelete(null)}>

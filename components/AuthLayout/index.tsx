@@ -18,8 +18,6 @@ const SideBarDrawer = dynamic(() => import("./components/SideBarDrawer"), {
   ssr: false,
 });
 
-const hideScrollbarIn = [`${ROUTES.APP.TASKS}/`];
-
 const AuthLayout = ({
   children,
 }: Readonly<{
@@ -27,6 +25,9 @@ const AuthLayout = ({
 }>) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Added state for sidebar open/close
   const pathname = usePathname();
+  const isScrollLockedTaskView =
+    pathname.startsWith(`${ROUTES.APP.TASKS}/`) &&
+    !pathname.startsWith(`${ROUTES.APP.TASKS}/goals/`);
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -108,9 +109,9 @@ const AuthLayout = ({
         <main
           className={cn(
             "flex-1 p-6 relative z-10 scrollbar-thin",
-            hideScrollbarIn.find((item) => pathname.includes(item))
+            isScrollLockedTaskView
               ? "overflow-hidden"
-              : "overflow-y-auto auth-h-screen"
+              : "overflow-y-auto auth-h-screen",
           )}
         >
           {children}

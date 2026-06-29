@@ -123,6 +123,7 @@ export interface UpdateTaskPayload {
   due_date?: string | null
   priority?: TaskPriority
   completed?: boolean
+  status?: string
   project_id?: string | null
   goal_id?: string | null
 }

@@ -11,6 +11,7 @@ const taskSchema = z
       .optional()
       .transform((value) => (value ? value : null)),
     priority: z.enum(["high", "medium", "low"]),
+    status: z.enum(["todo", "in_progress", "review", "done"]).optional(),
     link_type: z.enum(["none", "project", "goal"]),
     project_id: z.string().optional(),
     goal_id: z.string().optional(),
@@ -46,6 +47,7 @@ const taskDefaultValues = {
   description: "",
   due_date: null as string | null,
   priority: "medium" as const,
+  status: "todo" as const,
   link_type: "none" as const,
   project_id: "",
   goal_id: "",
