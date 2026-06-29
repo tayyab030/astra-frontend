@@ -2,19 +2,7 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Calendar,
-  ClipboardList,
-  Clock,
-  Hand,
-  List,
-  MessageSquare,
-  Network,
-  Paperclip,
-  Plus,
-  Timer,
-  Workflow,
-} from "lucide-react"
+import { Calendar, Hand, List, Network } from "lucide-react"
 
 interface NavigationTabsProps {
   activeTab?: string
@@ -22,16 +10,10 @@ interface NavigationTabsProps {
 }
 
 const navigationItems = [
-  { id: "overview", label: "Overview", icon: ClipboardList },
-  { id: "board", label: "Board", icon: Hand },
   { id: "list", label: "List", icon: List },
+  { id: "board", label: "Board", icon: Hand },
   { id: "calendar", label: "Calendar", icon: Calendar },
-  { id: "timeline", label: "Timeline", icon: Timer },
   { id: "dashboard", label: "Dashboard", icon: Network },
-  { id: "workflow", label: "Workflow", icon: Workflow },
-  { id: "messages", label: "Messages", icon: MessageSquare },
-  { id: "files", label: "Files", icon: Paperclip },
-  { id: "workload", label: "Workload", icon: Clock },
 ]
 
 export default function NavigationTabs({
@@ -39,7 +21,7 @@ export default function NavigationTabs({
   onTabChange,
 }: NavigationTabsProps) {
   return (
-    <div className="flex items-center space-x-1 bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 px-4 py-2 overflow-x-auto">
+    <div className="flex items-center space-x-1 overflow-x-auto border-b border-slate-700/50 bg-slate-900/50 px-4 py-2 backdrop-blur-sm">
       {navigationItems.map((item) => {
         const Icon = item.icon
         const isActive = activeTab === item.id
@@ -50,10 +32,10 @@ export default function NavigationTabs({
             variant="ghost"
             size="sm"
             onClick={() => onTabChange?.(item.id)}
-            className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200 shrink-0 ${
+            className={`flex shrink-0 items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200 ${
               isActive
-                ? "text-white border-b-2 border-white bg-transparent"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                ? "border-b-2 border-white bg-transparent text-white"
+                : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
             }`}
           >
             <Icon className="h-4 w-4" />
@@ -61,16 +43,6 @@ export default function NavigationTabs({
           </Button>
         )
       })}
-
-      <div className="ml-4 shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-slate-400 hover:text-white hover:bg-slate-800/50 p-2"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
     </div>
   )
 }

@@ -23,6 +23,7 @@ export default function GoalDetailPage() {
     <TaskDetailLayout
       header={
         <GoalHeader
+          goalId={goalId}
           goalName={goal?.title ?? "Goal Tasks"}
           category={goal?.category as GoalCategoryValue | undefined}
         />

@@ -23,23 +23,21 @@ function getPriorityColor(priority: string) {
 interface DetailBoardCardProps {
   task: TaskItem
   isDragging?: boolean
+  isDragActive?: boolean
   onEdit: (task: TaskItem) => void
   onDelete: (task: TaskItem) => void
   onDragStart: (taskId: string) => void
   onDragEnd: () => void
-  onDragOverZone?: (event: DragEvent<HTMLDivElement>) => void
-  onDropInZone?: (event: DragEvent<HTMLDivElement>) => void
 }
 
 export default function DetailBoardCard({
   task,
   isDragging,
+  isDragActive,
   onEdit,
   onDelete,
   onDragStart,
   onDragEnd,
-  onDragOverZone,
-  onDropInZone,
 }: DetailBoardCardProps) {
   const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData("text/plain", task.id)
@@ -57,11 +55,10 @@ export default function DetailBoardCard({
       draggable
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
-      onDragOver={onDragOverZone}
-      onDrop={onDropInZone}
       className={cn(
         "group cursor-grab border-slate-600/30 bg-slate-900/50 backdrop-blur-sm transition-all duration-200 active:cursor-grabbing hover:bg-slate-800/50 hover:border-cyan-500/30",
         isDragging && "scale-[0.98] opacity-50",
+        isDragActive && !isDragging && "pointer-events-none",
         task.completed && "opacity-80",
       )}
     >
