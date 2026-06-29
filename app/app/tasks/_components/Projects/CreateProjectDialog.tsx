@@ -19,7 +19,7 @@ import ColorIconSelector from "./ColorIconSelector";
 import { IconName } from "./iconHelper";
 import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
-import { DatePicker } from "@/components/common/DatePicker";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useForm } from "react-hook-form";
 import {
     formDefaultValues,
@@ -247,20 +247,12 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         Due Date
                                     </Label>
                                     <DatePicker
-                                        value={
-                                            watch("due_date")
-                                                ? new Date(watch("due_date")!)
-                                                : undefined
-                                        }
+                                        value={watch("due_date") || undefined}
                                         onChange={(value) =>
-                                            setValue(
-                                                "due_date",
-                                                typeof value === "string"
-                                                    ? value
-                                                    : value?.toISOString(),
-                                                { shouldDirty: true }
-                                            )
+                                            setValue("due_date", value ?? null, { shouldDirty: true })
                                         }
+                                        placeholder="Pick due date"
+                                        buttonClassName="!w-full bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/50 hover:text-white"
                                     />
                                 </div>
                             </div>

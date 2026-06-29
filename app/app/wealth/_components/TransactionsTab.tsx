@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TabsContent } from "@/components/ui/tabs"
 import { Edit, EllipsisVertical, Plus, Receipt, Trash2, TrendingDown, TrendingUp } from "lucide-react"
-import { DatePicker } from "@/components/common/DatePicker"
+import { DatePicker } from "@/components/ui/date-picker"
 import { useCurrency } from "@/hooks/useCurrency"
 import { cn } from "@/lib/utils"
 import type {

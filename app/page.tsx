@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { AstraLogo } from "@/components/astra-logo"
+import { PublicNavbar } from "@/components/PublicNavbar"
 import { ROUTES } from "@/constants/routes"
 
 export default function HomePage() {
@@ -82,36 +83,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-slate-900/80 border-b border-cyan-500/20">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <AstraLogo className="text-cyan-400" />
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href={ROUTES.PUBLIC.PRODUCT} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Product
-              </Link>
-              <Link href={ROUTES.PUBLIC.FEATURES} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Features
-              </Link>
-              <Link href={ROUTES.PUBLIC.PRICING} className="text-slate-300 hover:text-cyan-400 font-medium transition-colors">
-                Pricing
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link href={ROUTES.AUTH.LOGIN}>
-                <Button variant="ghost" className="text-slate-300 hover:text-cyan-400 hover:bg-cyan-500/10">
-                  Sign in
-                </Button>
-              </Link>
-              <Link href={ROUTES.AUTH.LOGIN}>
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-full px-6 shadow-lg shadow-cyan-500/25">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PublicNavbar />
 
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Animated background grid */}

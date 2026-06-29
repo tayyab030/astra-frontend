@@ -2,11 +2,21 @@ import axios from "axios";
 import type { Store } from "@reduxjs/toolkit";
 import { setAccessToken } from "@/store/slice/authSlice";
 import { getRefreshTokenCookie } from "@/lib/cookies";
-import { AUTH } from ".";
-import { getAccessToken, logout } from "../auth";
+import { API_ENDPOINTS } from "./endpoints";
 import { getApiBaseUrl } from "./config";
 
+const { AUTH } = API_ENDPOINTS;
+
 let store: Store;
+
+function getAccessTokenFromStore() {
+  return store?.getState().auth?.accessToken ?? null;
+}
+
+async function logoutSession() {
+  const { logout } = await import("../auth");
+  await logout();
+}
 
 // allow us to inject redux store later
 export const injectStore = (_store: Store) => {
@@ -30,7 +40,7 @@ export const authApi = axios.create({
 // request interceptor → verify token and add access token
 authApi.interceptors.request.use(
   async (config) => {
-    const token = getAccessToken();
+    const token = getAccessTokenFromStore();
 
     if (!token) {
       console.error("No token found");
@@ -56,7 +66,7 @@ authApi.interceptors.request.use(
 
       if (!refreshToken) {
         console.error("No refresh token available");
-        logout();
+        await logoutSession();
         return Promise.reject(new Error("No refresh token available"));
       }
 
@@ -81,7 +91,7 @@ authApi.interceptors.request.use(
       } catch (refreshError) {
         // Refresh failed, clear all auth data
         console.error("Token refresh failed:", refreshError);
-        logout();
+        await logoutSession();
         return Promise.reject(new Error("Token refresh failed"));
       }
     }
@@ -100,7 +110,7 @@ authApi.interceptors.response.use(
       console.error(
         "Unexpected 401 error - token may have expired during request"
       );
-      logout();
+      await logoutSession();
     }
 
     return Promise.reject(error);
