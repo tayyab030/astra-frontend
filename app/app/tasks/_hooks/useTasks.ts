@@ -16,7 +16,13 @@ import {
 } from "@/lib/api/tasks"
 
 function buildTasksQueryKey(statusFilter: TaskFilter, listParams?: TasksListParams) {
-  return ["tasks", statusFilter, listParams?.period ?? null, listParams?.goal_id ?? null] as const
+  return [
+    "tasks",
+    statusFilter,
+    listParams?.period ?? null,
+    listParams?.goal_id ?? null,
+    listParams?.project_id ?? null,
+  ] as const
 }
 
 export function useTasks(

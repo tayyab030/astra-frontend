@@ -65,6 +65,7 @@ export interface TasksListParams {
   filter?: TaskFilter
   period?: TaskPeriodFilter
   goal_id?: string
+  project_id?: string
 }
 
 export interface TaskTag {
@@ -186,12 +187,13 @@ export async function fetchProjectTasks(projectId: string) {
 }
 
 export async function fetchTasks(params: TasksListParams = {}) {
-  const { filter = "all", period, goal_id } = params
+  const { filter = "all", period, goal_id, project_id } = params
   const response = await authApi.get<TasksDashboard>(TASKS.LIST, {
     params: {
       filter,
       ...(period ? { period } : {}),
       ...(goal_id ? { goal_id } : {}),
+      ...(project_id ? { project_id } : {}),
     },
   })
   return response.data

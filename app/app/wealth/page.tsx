@@ -54,16 +54,24 @@ export default function WealthPage() {
           end_year: filter.endYear,
         })
 
+  const netWorth = dashboard?.net_worth ?? 0
+  const isNegativeNetWorth = netWorth < 0
+
   const summaryCards = [
     {
       title: "Net Worth",
-      value: dashboard?.net_worth ?? 0,
+      value: netWorth,
       subtitle: "Total income minus expenses (all time)",
       icon: TrendingUp,
-      titleClass: "text-green-300",
-      valueClass: "text-green-200",
-      subtitleClass: "text-green-400",
-      borderClass: "border-green-500/20 shadow-green-500/10",
+      titleClass: isNegativeNetWorth ? "text-red-300" : "text-green-300",
+      valueClass: isNegativeNetWorth ? "text-red-200" : "text-green-200",
+      subtitleClass: isNegativeNetWorth ? "text-red-400" : "text-green-400",
+      borderClass: isNegativeNetWorth
+        ? "border-red-500/20 shadow-red-500/10"
+        : "border-green-500/20 shadow-green-500/10",
+      cardClass: isNegativeNetWorth
+        ? "from-red-950/50 to-slate-800/50"
+        : "from-slate-800/50 to-slate-700/50",
     },
     {
       title: "Monthly Income",
@@ -74,6 +82,7 @@ export default function WealthPage() {
       valueClass: "text-blue-200",
       subtitleClass: "text-blue-400",
       borderClass: "border-blue-500/20 shadow-blue-500/10",
+      cardClass: "from-slate-800/50 to-slate-700/50",
     },
     {
       title: "Monthly Expenses",
@@ -84,6 +93,7 @@ export default function WealthPage() {
       valueClass: "text-purple-200",
       subtitleClass: "text-purple-400",
       borderClass: "border-purple-500/20 shadow-purple-500/10",
+      cardClass: "from-slate-800/50 to-slate-700/50",
     },
     {
       title: "Waste Spending",
@@ -94,6 +104,7 @@ export default function WealthPage() {
       valueClass: "text-orange-200",
       subtitleClass: "text-orange-400",
       borderClass: "border-orange-500/20 shadow-orange-500/10",
+      cardClass: "from-slate-800/50 to-slate-700/50",
     },
   ]
 
@@ -150,7 +161,7 @@ export default function WealthPage() {
             return (
               <Card
                 key={card.title}
-                className={`bg-gradient-to-br from-slate-800/50 to-slate-700/50 ${card.borderClass} shadow-2xl backdrop-blur-sm`}
+                className={`bg-gradient-to-br ${card.cardClass} ${card.borderClass} shadow-2xl backdrop-blur-sm`}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className={`text-sm font-mono ${card.titleClass} flex items-center`}>
