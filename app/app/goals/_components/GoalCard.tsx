@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Calendar, CheckCircle, Edit, EllipsisVertical, Flame, Trash2 } from "lucide-react"
 import type { Goal, UpdateMilestonePayload } from "@/lib/api/goals"
+import { cn } from "@/lib/utils"
 import { CATEGORY_COLORS, CATEGORY_ICONS } from "./constants"
 
 interface GoalCardProps {
@@ -48,6 +49,10 @@ function formatGoalDate(value: string) {
   })
 }
 
+function taskLabel(count: number) {
+  return count === 1 ? "task" : "tasks"
+}
+
 export function GoalCard({
   goal,
   onEdit,
@@ -61,6 +66,12 @@ export function GoalCard({
   const completedMilestones = goal.milestones.filter((milestone) => milestone.completed).length
   const totalMilestones = goal.milestones.length
   const priorityLabel = goal.priority.charAt(0).toUpperCase() + goal.priority.slice(1)
+  const { total: totalTasks, completed: completedTasks, pending: pendingTasks } = goal.linked_tasks
+  const allTasksDone = totalTasks > 0 && completedTasks === totalTasks
+  const taskStatText =
+    totalTasks === 0
+      ? "0 tasks"
+      : `${completedTasks}/${totalTasks} ${taskLabel(totalTasks)} done`
 
   const handleDelete = async () => {
     await onDelete(goal.id)
@@ -193,16 +204,28 @@ export function GoalCard({
             </div>
           ) : null}
 
-          <div className="flex items-center justify-between pt-2 border-t border-slate-600/50">
-            <div className="flex items-center space-x-4 text-sm text-slate-400">
-              <div className="flex items-center">
-                <Flame className="mr-1 h-3 w-3 text-orange-400" />
-                {goal.streak} day streak
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="mr-1 h-3 w-3 text-cyan-400" />
-                {goal.linked_tasks} tasks
-              </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-600/50">
+            <div className="flex items-center text-sm text-slate-400">
+              <Flame className="mr-1 h-3 w-3 text-orange-400" />
+              {goal.streak} day streak
+            </div>
+            <div
+              className={cn(
+                "flex items-center text-sm",
+                totalTasks === 0 && "text-slate-400",
+                totalTasks > 0 && !allTasksDone && "text-cyan-400",
+                allTasksDone && "text-green-400",
+              )}
+              title={
+                totalTasks === 0
+                  ? "No linked tasks"
+                  : allTasksDone
+                    ? "All tasks completed"
+                    : `${pendingTasks} pending`
+              }
+            >
+              <CheckCircle className="mr-1 h-3 w-3" />
+              {taskStatText}
             </div>
           </div>
         </CardContent>

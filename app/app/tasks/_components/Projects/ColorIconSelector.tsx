@@ -3,8 +3,7 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { getIconComponent, iconNames, IconName } from "./iconHelper";
-import { UseMutateFunction } from "@tanstack/react-query";
-import { HandlePatchProjectPayload } from "./ProjectDropdownMenu";
+import type { PatchProjectPayload } from "@/lib/api/tasks";
 
 interface ColorIconSelectorProps {
     selectedColor?: string;
@@ -13,7 +12,7 @@ interface ColorIconSelectorProps {
     onIconSelect?: (icon: IconName) => void;
     className?: string;
     iconsClassName?: string;
-    handlePatchMutation?: UseMutateFunction<void, Error, HandlePatchProjectPayload, unknown>
+    handlePatchMutation?: (payload: PatchProjectPayload) => void | Promise<void>;
 }
 
 const colors = [

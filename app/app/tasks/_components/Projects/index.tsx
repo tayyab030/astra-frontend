@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
     FolderOpen,
     Star,
@@ -8,58 +9,32 @@ import {
 import SelectField from "@/components/common/SelectField";
 import CreateProjectDialog from "./CreateProjectDialog";
 import dynamic from "next/dynamic";
-import { useQuery } from "@tanstack/react-query";
-import { authApi, TASKS } from "@/lib/api";
-import { toast } from "sonner";
 import { getIconComponent, IconName } from "./iconHelper";
-import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useProjects } from "../../_hooks/useProjects";
+import { ROUTES } from "@/constants/routes";
+import { CardTaskSummary } from "../CardTaskSummary";
 
 const ProjectDropdownMenu = dynamic(() => import("./ProjectDropdownMenu"), {
     ssr: false,
 });
 
 const PROJECTS_GRID_CLASSES = "grid grid-cols-2 md:grid-cols-4 gap-4";
-
-export interface Project {
-    color: string;
-    description: string;
-    due_date: string;
-    icon: IconName;
-    id: number;
-    starred: boolean;
-    status: string;
-    title: string;
-}
+const CARD_GRID_MAX_HEIGHT = "max-h-72 overflow-y-auto overflow-x-hidden pr-1";
 
 const Projects = () => {
+    const router = useRouter();
     const [filter, setFilter] = useState("all");
-
-    const getProjects = async () => {
-        try {
-            const response = await authApi.get(TASKS.PROJECTS);
-
-            return response.data;
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error?.response?.data?.detail || "Failed to get projects");
-            return error;
-        }
-    };
-
     const {
-        data,
-        refetch: refetchProjects,
+        projects: allProjects,
         isLoading: loadingProjects,
-    } = useQuery({
-        queryKey: ["projects"],
-        queryFn: () => getProjects(),
-    });
+        refetch: refetchProjects,
+        patchProject,
+        deleteProject,
+        isPatchingProject,
+        isDeletingProject,
+    } = useProjects();
 
-    // Sample projects with starred status
-    const allProjects: Project[] = data || [];
-
-    // Filter projects based on selected filter
     const projects =
         filter === "starred"
             ? allProjects.filter((project) => project.starred)
@@ -72,7 +47,6 @@ const Projects = () => {
 
     return (
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-4.5 border border-slate-700/50">
-            {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-white">Projects</h2>
@@ -86,57 +60,70 @@ const Projects = () => {
                 <CreateProjectDialog refetchProjects={refetchProjects} />
             </div>
 
-            {/* Projects Grid or Empty State */}
             {loadingProjects ? (
-                <div className={PROJECTS_GRID_CLASSES}>
-                    {Array.from({ length: 4 }, (_, index) => (
-                        <Skeleton key={index} className="w-full h-32" />
-                    ))}
+                <div className={CARD_GRID_MAX_HEIGHT}>
+                    <div className={PROJECTS_GRID_CLASSES}>
+                        {Array.from({ length: 4 }, (_, index) => (
+                            <Skeleton key={index} className="w-full h-32" />
+                        ))}
+                    </div>
                 </div>
             ) : projects.length > 0 ? (
-                <div className={PROJECTS_GRID_CLASSES}>
+                <div className={CARD_GRID_MAX_HEIGHT}>
+                    <div className={PROJECTS_GRID_CLASSES}>
                     {projects.map((project) => (
                         <div
                             key={project.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => router.push(`${ROUTES.APP.TASKS}/${project.id}`)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    router.push(`${ROUTES.APP.TASKS}/${project.id}`);
+                                }
+                            }}
                             className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50 hover:bg-slate-700/50 transition-colors cursor-pointer group relative h-32 flex justify-center items-center"
                         >
-                            <div className="absolute top-1.5 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1.5">
+                            <div
+                                className="absolute top-1.5 right-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity p-1.5"
+                                onClick={(event) => event.stopPropagation()}
+                                onPointerDown={(event) => event.stopPropagation()}
+                            >
                                 <ProjectDropdownMenu
                                     selectedProject={project}
                                     refetchProjects={refetchProjects}
+                                    onPatchProject={patchProject}
+                                    onDeleteProject={deleteProject}
+                                    isPatchingProject={isPatchingProject}
+                                    isDeletingProject={isDeletingProject}
                                 />
                             </div>
-                            <Link href={`/tasks/projects/${project.id}`}>
-                                {project.starred && (
-                                    <div className="absolute z-20 top-2.5 left-2.5">
-                                        <Star size={16} color="yellow" fill="yellow" />
-                                    </div>
-                                )}
-
-                                <div className="flex flex-col items-center text-center">
-                                    <div
-                                        className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}
-                                    >
-                                        {getIconComponent(
-                                            project.icon as IconName,
-                                            28,
-                                            "",
-                                            project.color
-                                        )}
-                                    </div>
-                                    <h3 className="text-sm font-medium text-white mb-2 leading-tight">
-                                        {project.title}
-                                    </h3>
-                                    {/* {project.tasksDue > 0 && (
-                                    <p className="text-xs text-gray-400">
-                                        {project.tasksDue} tasks due soon
-                                    </p>
-                                )} */}
-                                    <p className="text-xs text-gray-400">16 tasks due soon</p>
+                            {project.starred && (
+                                <div className="absolute z-20 top-2.5 left-2.5 pointer-events-none">
+                                    <Star size={16} color="yellow" fill="yellow" />
                                 </div>
-                            </Link>
+                            )}
+
+                            <div className="flex flex-col items-center text-center pointer-events-none">
+                                <div
+                                    className={`${project.color} mb-3 group-hover:scale-110 transition-transform`}
+                                >
+                                    {getIconComponent(
+                                        project.icon as IconName,
+                                        28,
+                                        "",
+                                        project.color
+                                    )}
+                                </div>
+                                <h3 className="text-sm font-medium text-white mb-1 leading-tight line-clamp-2">
+                                    {project.title}
+                                </h3>
+                                <CardTaskSummary summary={project.linked_tasks ?? { total: 0, completed: 0, pending: 0 }} />
+                            </div>
                         </div>
                     ))}
+                    </div>
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center py-12 px-4">

@@ -35,6 +35,12 @@ export interface GoalMilestone {
   completed: boolean
 }
 
+export interface GoalLinkedTasks {
+  total: number
+  completed: number
+  pending: number
+}
+
 export interface Goal {
   id: string
   title: string
@@ -46,7 +52,7 @@ export interface Goal {
   target_date: string
   progress: number
   streak: number
-  linked_tasks: number
+  linked_tasks: GoalLinkedTasks
   milestones: GoalMilestone[]
 }
 
@@ -133,6 +139,11 @@ export async function fetchGoalsDashboard(filter: GoalsFilter) {
   const response = await authApi.get<GoalsDashboard>(GOALS.DASHBOARD, {
     params: buildGoalsFilterParams(filter),
   })
+  return response.data
+}
+
+export async function fetchGoal(id: string) {
+  const response = await authApi.get<Goal>(GOALS.GOAL(id))
   return response.data
 }
 
