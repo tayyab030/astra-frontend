@@ -2,23 +2,19 @@
 
 import type { UseTimeTrackReturn } from "../../_hooks/useTimeTrack"
 import { ReportsFilters } from "./ReportsFilters"
-import { TimeEntryTable } from "./TimeEntryTable"
+import { TaskReportTable } from "./TaskReportTable"
 
 interface ReportsTabProps {
   timeTrack: UseTimeTrackReturn
 }
 
 export function ReportsTab({ timeTrack }: ReportsTabProps) {
-  const { filteredEntries, deleteTimeEntryById, isDeletingEntry } = timeTrack
+  const { filteredEntries } = timeTrack
 
   return (
     <div className="space-y-4 pb-6">
       <ReportsFilters timeTrack={timeTrack} />
-      <TimeEntryTable
-        entries={filteredEntries}
-        onDelete={deleteTimeEntryById}
-        isDeleting={isDeletingEntry}
-      />
+      <TaskReportTable entries={filteredEntries} />
     </div>
   )
 }
