@@ -17,7 +17,8 @@ interface AddTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   availableTasks: AvailableTask[]
-  onAddTask: (task: AvailableTask) => void
+  onAddTask: (task: AvailableTask) => void | Promise<void>
+  isAdding?: boolean
 }
 
 export function AddTaskDialog({
@@ -25,6 +26,7 @@ export function AddTaskDialog({
   onOpenChange,
   availableTasks,
   onAddTask,
+  isAdding = false,
 }: AddTaskDialogProps) {
   const [search, setSearch] = useState("")
 
@@ -36,8 +38,8 @@ export function AddTaskDialog({
     )
   })
 
-  const handleAdd = (task: AvailableTask) => {
-    onAddTask(task)
+  const handleAdd = async (task: AvailableTask) => {
+    await onAddTask(task)
     onOpenChange(false)
     setSearch("")
   }
@@ -67,7 +69,8 @@ export function AddTaskDialog({
               <button
                 key={task.id}
                 type="button"
-                onClick={() => handleAdd(task)}
+                disabled={isAdding}
+                onClick={() => void handleAdd(task)}
                 className="w-full flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 p-3 text-left hover:bg-slate-700/50 transition-colors"
               >
                 <div>

@@ -9,12 +9,16 @@ interface ReportsTabProps {
 }
 
 export function ReportsTab({ timeTrack }: ReportsTabProps) {
-  const { filteredEntries } = timeTrack
+  const { filteredEntries, deleteTimeEntryById, isDeletingEntry } = timeTrack
 
   return (
     <div className="space-y-4 pb-6">
       <ReportsFilters timeTrack={timeTrack} />
-      <TimeEntryTable entries={filteredEntries} />
+      <TimeEntryTable
+        entries={filteredEntries}
+        onDelete={deleteTimeEntryById}
+        isDeleting={isDeletingEntry}
+      />
     </div>
   )
 }

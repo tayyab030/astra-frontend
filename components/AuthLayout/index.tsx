@@ -10,6 +10,8 @@ import { Menu } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { TimeTrackProvider, useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider";
+import { TimeTrackActivityBar } from "./components/TimeTrackActivityBar";
 
 const SidebarContent = dynamic(() => import("./components/SidebarContent"), {
   ssr: false,
@@ -18,17 +20,19 @@ const SideBarDrawer = dynamic(() => import("./components/SideBarDrawer"), {
   ssr: false,
 });
 
-const AuthLayout = ({
+const AuthLayoutShell = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Added state for sidebar open/close
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { settings } = useTimeTrackContext();
   const isGoalDetailPage = /^\/app\/tasks\/goals\/[^/]+$/.test(pathname);
   const isScrollLockedTaskView =
     pathname.startsWith(`${ROUTES.APP.TASKS}/`) &&
     (!pathname.startsWith(`${ROUTES.APP.TASKS}/goals`) || isGoalDetailPage);
+  const showActivityBarPadding = settings.activityBarVisible;
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -113,11 +117,14 @@ const AuthLayout = ({
             isScrollLockedTaskView
               ? "h-full overflow-hidden"
               : "auth-h-screen overflow-y-auto",
+            showActivityBarPadding && "pb-14",
           )}
         >
           {children}
         </main>
       </div>
+
+      <TimeTrackActivityBar />
 
       <style jsx>{`
         @keyframes grid-move {
@@ -156,6 +163,18 @@ const AuthLayout = ({
         }
       `}</style>
     </div>
+  );
+};
+
+const AuthLayout = ({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) => {
+  return (
+    <TimeTrackProvider>
+      <AuthLayoutShell>{children}</AuthLayoutShell>
+    </TimeTrackProvider>
   );
 };
 

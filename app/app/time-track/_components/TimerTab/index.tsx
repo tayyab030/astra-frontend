@@ -15,7 +15,7 @@ interface TimerTabProps {
 
 export function TimerTab({ timeTrack }: TimerTabProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const { todayTotalSeconds, availableTasksToAdd, addTrackedTask } = timeTrack
+  const { todayTotalSeconds, availableTasksToAdd, addTrackedTask, isSaving } = timeTrack
 
   return (
     <div className="space-y-4 pb-6">
@@ -39,6 +39,7 @@ export function TimerTab({ timeTrack }: TimerTabProps) {
         onOpenChange={setDialogOpen}
         availableTasks={availableTasksToAdd}
         onAddTask={addTrackedTask}
+        isAdding={isSaving}
       />
     </div>
   )

@@ -64,6 +64,16 @@ export const API_ENDPOINTS = {
     BUDGET: (id: string) => `/wealth/budgets/${id}/`,
   },
 
+  // Time track endpoints
+  TIME_TRACK: {
+    DASHBOARD: "/time-track/",
+    ENTRIES: "/time-track/entries/",
+    ENTRY: (id: string) => `/time-track/entries/${id}/`,
+    TRACKED_TASKS: "/time-track/tracked-tasks/",
+    TRACKED_TASK: (taskId: string) => `/time-track/tracked-tasks/${taskId}/`,
+    SETTINGS: "/time-track/settings/",
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

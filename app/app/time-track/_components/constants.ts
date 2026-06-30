@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, Clock, FileText } from "lucide-react"
+import { BarChart3, CalendarDays, Clock, FileText, Settings } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { DateRangePreset } from "../_types/timeTrack.types"
 
@@ -7,9 +7,15 @@ export const TIME_TRACK_TABS = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "reports", label: "Reports", icon: FileText },
   { id: "weekly", label: "Weekly", icon: CalendarDays },
+  { id: "settings", label: "Settings", icon: Settings },
 ] as const
 
 export type TimeTrackTabId = (typeof TIME_TRACK_TABS)[number]["id"]
+
+export const ACTIVITY_BAR_OPTIONS = [
+  { value: "visible", label: "Visible" },
+  { value: "hidden", label: "Hidden" },
+] as const
 
 export const DATE_RANGE_PRESETS: { value: DateRangePreset; label: string }[] = [
   { value: "today", label: "Today" },

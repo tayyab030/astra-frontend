@@ -1,17 +1,27 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { MOCK_AVAILABLE_TASKS, MOCK_TIME_ENTRIES } from "../_data/mockData"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import {
+  addTrackedTask as addTrackedTaskApi,
+  createTimeEntry,
+  fetchTimeTrackDashboard,
+  getTimeTrackErrorMessage,
+  mapTaskItemToAvailableTask,
+  removeTrackedTask as removeTrackedTaskApi,
+  deleteTimeEntry,
+  updateTimeTrackSettings,
+} from "@/lib/api/timeTrack"
+import { fetchTasks } from "@/lib/api/tasks"
 import type {
   ActiveTimerState,
   AvailableTask,
   DateRangeFilter,
-  TimeEntry,
-  TimeTrackPersistedState,
+  TimeTrackSettings,
   TrackedTask,
-  WeeklyTarget,
 } from "../_types/timeTrack.types"
-import { DEFAULT_WEEKLY_TARGET_HOURS, STORAGE_KEY } from "../_constants/config"
+import { DEFAULT_WEEKLY_TARGET_HOURS } from "../_constants/config"
 import {
   filterEntriesByDateRange,
   getCurrentWeekRange,
@@ -27,89 +37,169 @@ const DEFAULT_TIMER: ActiveTimerState = {
   sessionStartTime: null,
 }
 
-function loadPersistedState(): Partial<TimeTrackPersistedState> | null {
-  if (typeof window === "undefined") return null
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as Partial<TimeTrackPersistedState>
-  } catch {
-    return null
-  }
+const DEFAULT_SETTINGS: TimeTrackSettings = {
+  hoursPerWeek: DEFAULT_WEEKLY_TARGET_HOURS,
+  activityBarVisible: true,
+  lastSelectedTaskId: null,
 }
 
-function mergeEntries(persisted: TimeEntry[], seed: TimeEntry[]): TimeEntry[] {
-  const map = new Map<string, TimeEntry>()
-  for (const entry of seed) map.set(entry.id, entry)
-  for (const entry of persisted) map.set(entry.id, entry)
-  return Array.from(map.values()).sort(
-    (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-  )
-}
+function resolveTrackedTask(
+  taskId: string,
+  trackedTasks: TrackedTask[],
+  allTasks: ReturnType<typeof mapTaskItemToAvailableTask>[] | undefined
+): TrackedTask | null {
+  const tracked = trackedTasks.find((t) => t.taskId === taskId)
+  if (tracked) return tracked
 
-function normalizePersistedState(
-  persisted: Partial<TimeTrackPersistedState> | null
-): TimeTrackPersistedState {
-  const activeTimer = persisted?.activeTimer ?? DEFAULT_TIMER
+  const task = allTasks?.find((t) => t.id === taskId)
+  if (!task) return null
 
   return {
-    trackedTasks: Array.isArray(persisted?.trackedTasks) ? persisted.trackedTasks : [],
-    entries: mergeEntries(
-      Array.isArray(persisted?.entries) ? persisted.entries : [],
-      MOCK_TIME_ENTRIES
-    ),
-    activeTimer: {
-      ...DEFAULT_TIMER,
-      ...activeTimer,
-      status: "idle",
-      elapsedSeconds: 0,
-      sessionStartTime: null,
-    },
-    weeklyTarget: {
-      hoursPerWeek:
-        persisted?.weeklyTarget?.hoursPerWeek ?? DEFAULT_WEEKLY_TARGET_HOURS,
-    },
+    taskId: task.id,
+    title: task.title,
+    projectTitle: task.project_title,
+    totalSecondsToday: 0,
+    isActive: false,
   }
-}
-
-const DEFAULT_STATE: TimeTrackPersistedState = {
-  trackedTasks: [],
-  entries: MOCK_TIME_ENTRIES,
-  activeTimer: DEFAULT_TIMER,
-  weeklyTarget: { hoursPerWeek: DEFAULT_WEEKLY_TARGET_HOURS },
 }
 
 export function useTimeTrack() {
-  const [trackedTasks, setTrackedTasks] = useState<TrackedTask[]>(DEFAULT_STATE.trackedTasks)
-  const [entries, setEntries] = useState<TimeEntry[]>(DEFAULT_STATE.entries)
-  const [activeTimer, setActiveTimer] = useState<ActiveTimerState>(DEFAULT_STATE.activeTimer)
-  const [weeklyTarget, setWeeklyTarget] = useState<WeeklyTarget>(DEFAULT_STATE.weeklyTarget)
+  const queryClient = useQueryClient()
+  const [activeTimer, setActiveTimer] = useState<ActiveTimerState>(DEFAULT_TIMER)
   const [dateRange, setDateRange] = useState<DateRangeFilter>(getInitialDateRange)
   const [reportsSearch, setReportsSearch] = useState("")
-  const [isHydrated, setIsHydrated] = useState(false)
+  const hasRestoredSelection = useRef(false)
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
   const today = getTodayString()
+  const weekRange = getCurrentWeekRange()
+
+  const invalidateTimeTrack = useCallback(async () => {
+    await queryClient.refetchQueries({
+      queryKey: ["time-track"],
+      type: "all",
+    })
+  }, [queryClient])
+
+  const dashboardQuery = useQuery({
+    queryKey: [
+      "time-track",
+      "dashboard",
+      dateRange.startDate,
+      dateRange.endDate,
+      reportsSearch,
+    ],
+    queryFn: () =>
+      fetchTimeTrackDashboard({
+        start_date: dateRange.startDate,
+        end_date: dateRange.endDate,
+        ...(reportsSearch.trim() ? { search: reportsSearch.trim() } : {}),
+      }),
+  })
+
+  const weekQuery = useQuery({
+    queryKey: ["time-track", "week", weekRange.startDate, weekRange.endDate],
+    queryFn: () =>
+      fetchTimeTrackDashboard({
+        start_date: weekRange.startDate,
+        end_date: weekRange.endDate,
+      }),
+  })
+
+  const tasksQuery = useQuery({
+    queryKey: ["tasks", "all", "time-track-picker"],
+    queryFn: () => fetchTasks({ filter: "all" }),
+  })
+
+  const trackedTasks = dashboardQuery.data?.trackedTasks ?? []
+  const entries = dashboardQuery.data?.entries ?? []
+  const settings: TimeTrackSettings = dashboardQuery.data?.settings ?? DEFAULT_SETTINGS
+  const weeklyTarget = { hoursPerWeek: settings.hoursPerWeek }
+
+  const weekEntries = useMemo(
+    () => weekQuery.data?.entries ?? [],
+    [weekQuery.data?.entries]
+  )
+
+  const weekTotalSeconds = weekEntries.reduce((sum, e) => sum + e.durationSeconds, 0)
+
+  const allTasksForPicker = useMemo(
+    () => tasksQuery.data?.tasks.map(mapTaskItemToAvailableTask) ?? [],
+    [tasksQuery.data?.tasks]
+  )
+
+  const createEntryMutation = useMutation({
+    mutationFn: createTimeEntry,
+    onSuccess: () => invalidateTimeTrack(),
+    onError: (error) => {
+      toast.error(getTimeTrackErrorMessage(error, "Failed to save time entry"))
+    },
+  })
+
+  const addTrackedTaskMutation = useMutation({
+    mutationFn: addTrackedTaskApi,
+    onSuccess: () => {
+      invalidateTimeTrack()
+      toast.success("Task added to today")
+    },
+    onError: (error) => {
+      toast.error(getTimeTrackErrorMessage(error, "Failed to add task"))
+    },
+  })
+
+  const removeTrackedTaskMutation = useMutation({
+    mutationFn: (taskId: string) => removeTrackedTaskApi(taskId, today),
+    onSuccess: async () => {
+      await invalidateTimeTrack()
+      toast.success("Task and today's time records deleted")
+    },
+    onError: (error) => {
+      toast.error(getTimeTrackErrorMessage(error, "Failed to remove task"))
+    },
+  })
+
+  const deleteEntryMutation = useMutation({
+    mutationFn: deleteTimeEntry,
+    onSuccess: async () => {
+      await invalidateTimeTrack()
+      toast.success("Time record deleted")
+    },
+    onError: (error) => {
+      toast.error(getTimeTrackErrorMessage(error, "Failed to delete time record"))
+    },
+  })
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: updateTimeTrackSettings,
+    onSuccess: () => invalidateTimeTrack(),
+    onError: (error) => {
+      toast.error(getTimeTrackErrorMessage(error, "Failed to update settings"))
+    },
+  })
+
+  const persistSelectedTask = useCallback(
+    (taskId: string | null) => {
+      updateSettingsMutation.mutate({ last_selected_task_id: taskId })
+    },
+    [updateSettingsMutation]
+  )
 
   useEffect(() => {
-    const state = normalizePersistedState(loadPersistedState())
-    setTrackedTasks(state.trackedTasks)
-    setEntries(state.entries)
-    setActiveTimer(state.activeTimer)
-    setWeeklyTarget(state.weeklyTarget)
-    setIsHydrated(true)
-  }, [])
+    if (hasRestoredSelection.current || !dashboardQuery.data) return
 
-  useEffect(() => {
-    if (!isHydrated) return
-    const state: TimeTrackPersistedState = {
-      trackedTasks,
-      entries,
-      activeTimer,
-      weeklyTarget,
+    const lastTaskId = dashboardQuery.data.settings.lastSelectedTaskId
+    if (lastTaskId) {
+      setActiveTimer((prev) => {
+        if (prev.taskId) return prev
+        return {
+          ...DEFAULT_TIMER,
+          taskId: lastTaskId,
+          status: "paused",
+        }
+      })
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  }, [trackedTasks, entries, activeTimer, weeklyTarget, isHydrated])
+
+    hasRestoredSelection.current = true
+  }, [dashboardQuery.data])
 
   useEffect(() => {
     if (activeTimer.status === "running") {
@@ -125,17 +215,39 @@ export function useTimeTrack() {
     }
   }, [activeTimer.status])
 
+  const saveSession = useCallback(
+    async (taskId: string, durationSeconds: number, sessionStart: string) => {
+      if (durationSeconds <= 0) return
+      await createEntryMutation.mutateAsync({
+        task_id: taskId,
+        duration_seconds: durationSeconds,
+        start_time: sessionStart,
+        end_time: new Date().toISOString(),
+        entry_date: today,
+      })
+    },
+    [createEntryMutation, today]
+  )
+
   const activeTask = useMemo(() => {
-    if (activeTimer.taskId) {
-      return trackedTasks.find((t) => t.taskId === activeTimer.taskId) ?? null
+    if (!activeTimer.taskId) return null
+    return resolveTrackedTask(activeTimer.taskId, trackedTasks, allTasksForPicker)
+  }, [activeTimer.taskId, trackedTasks, allTasksForPicker])
+
+  const displayClockSeconds = useMemo(() => {
+    if (!activeTask) return 0
+    if (activeTimer.status === "running") {
+      return activeTask.totalSecondsToday + activeTimer.elapsedSeconds
     }
-    return trackedTasks.find((t) => t.isActive) ?? null
-  }, [trackedTasks, activeTimer.taskId])
+    return activeTask.totalSecondsToday
+  }, [activeTask, activeTimer])
 
   const todayTotalSeconds = useMemo(() => {
     const fromTracked = trackedTasks.reduce((sum, t) => sum + t.totalSecondsToday, 0)
-    const activeExtra = activeTimer.status === "running" ? activeTimer.elapsedSeconds : 0
-    return fromTracked + activeExtra
+    if (activeTimer.status !== "running" || !activeTimer.taskId) return fromTracked
+    const runningTask = trackedTasks.find((t) => t.taskId === activeTimer.taskId)
+    if (!runningTask) return fromTracked
+    return fromTracked + activeTimer.elapsedSeconds
   }, [trackedTasks, activeTimer])
 
   const entriesInDateRange = useMemo(
@@ -152,87 +264,70 @@ export function useTimeTrack() {
     return entriesInDateRange.filter((e) => e.taskTitle.toLowerCase().includes(query))
   }, [entriesInDateRange, reportsSearch])
 
-  const weekRange = getCurrentWeekRange()
-  const weekEntries = useMemo(
-    () => filterEntriesByDateRange(entries, { preset: "week", ...weekRange }),
-    [entries, weekRange.startDate, weekRange.endDate]
+  const availableTasksToAdd = useMemo(
+    () => allTasksForPicker.filter((task) => !trackedTasks.some((t) => t.taskId === task.id)),
+    [allTasksForPicker, trackedTasks]
   )
 
-  const weekTotalSeconds = weekEntries.reduce((sum, e) => sum + e.durationSeconds, 0)
-
-  const addTrackedTask = useCallback((task: AvailableTask) => {
-    setTrackedTasks((prev) => {
-      if (prev.some((t) => t.taskId === task.id)) return prev
-      const hasSelection = prev.some((t) => t.isActive) || activeTimer.taskId
-      const newTask: TrackedTask = {
-        taskId: task.id,
-        title: task.title,
-        projectTitle: task.project_title,
-        totalSecondsToday: 0,
-        isActive: !hasSelection,
+  const selectTask = useCallback(
+    async (taskId: string) => {
+      if (activeTimer.status === "running" && activeTimer.taskId !== taskId) {
+        if (activeTimer.sessionStartTime && activeTimer.elapsedSeconds > 0) {
+          await saveSession(
+            activeTimer.taskId!,
+            activeTimer.elapsedSeconds,
+            activeTimer.sessionStartTime
+          )
+        }
       }
-      return [...prev, newTask]
-    })
 
-    setActiveTimer((prev) => {
-      if (prev.taskId) return prev
-      return { ...DEFAULT_TIMER, taskId: task.id }
-    })
-  }, [activeTimer.taskId])
+      setActiveTimer({
+        taskId,
+        status: "paused",
+        elapsedSeconds: 0,
+        sessionStartTime: null,
+      })
+      persistSelectedTask(taskId)
+    },
+    [activeTimer, saveSession, persistSelectedTask]
+  )
+
+  const addTrackedTask = useCallback(
+    async (task: AvailableTask) => {
+      await addTrackedTaskMutation.mutateAsync({ task_id: task.id, track_date: today })
+    },
+    [addTrackedTaskMutation, today]
+  )
 
   const removeTrackedTask = useCallback(
-    (taskId: string) => {
-      if (activeTimer.taskId === taskId && activeTimer.status === "running") {
+    async (taskId: string) => {
+      if (activeTimer.taskId === taskId) {
         setActiveTimer(DEFAULT_TIMER)
+        persistSelectedTask(null)
       }
-      setTrackedTasks((prev) => prev.filter((t) => t.taskId !== taskId))
+      await removeTrackedTaskMutation.mutateAsync(taskId)
     },
-    [activeTimer]
-  )
-
-  const saveSession = useCallback(
-    (taskId: string, taskTitle: string, durationSeconds: number, sessionStart: string) => {
-      if (durationSeconds <= 0) return
-      const now = new Date()
-      const entry: TimeEntry = {
-        id: `entry-${Date.now()}`,
-        taskId,
-        taskTitle,
-        date: today,
-        startTime: sessionStart,
-        endTime: now.toISOString(),
-        durationSeconds,
-      }
-      setEntries((prev) => [entry, ...prev])
-    },
-    [today]
+    [activeTimer.taskId, removeTrackedTaskMutation, persistSelectedTask]
   )
 
   const startTimer = useCallback(
-    (taskId: string) => {
-      const task = trackedTasks.find((t) => t.taskId === taskId)
+    async (taskId: string) => {
+      const task = resolveTrackedTask(taskId, trackedTasks, allTasksForPicker)
       if (!task) return
 
-      if (activeTimer.status === "running" && activeTimer.taskId && activeTimer.taskId !== taskId) {
-        const prevTask = trackedTasks.find((t) => t.taskId === activeTimer.taskId)
-        if (prevTask && activeTimer.sessionStartTime) {
-          saveSession(prevTask.taskId, prevTask.title, activeTimer.elapsedSeconds, activeTimer.sessionStartTime)
-        }
-        setTrackedTasks((prev) =>
-          prev.map((t) =>
-            t.taskId === activeTimer.taskId
-              ? { ...t, totalSecondsToday: t.totalSecondsToday + activeTimer.elapsedSeconds, isActive: false }
-              : t
+      if (
+        activeTimer.status === "running" &&
+        activeTimer.taskId &&
+        activeTimer.taskId !== taskId
+      ) {
+        if (activeTimer.sessionStartTime) {
+          await saveSession(
+            activeTimer.taskId,
+            activeTimer.elapsedSeconds,
+            activeTimer.sessionStartTime
           )
-        )
+        }
       }
-
-      setTrackedTasks((prev) =>
-        prev.map((t) => ({
-          ...t,
-          isActive: t.taskId === taskId,
-        }))
-      )
 
       setActiveTimer({
         taskId,
@@ -240,36 +335,40 @@ export function useTimeTrack() {
         elapsedSeconds: 0,
         sessionStartTime: new Date().toISOString(),
       })
+      persistSelectedTask(taskId)
     },
-    [trackedTasks, activeTimer, saveSession]
+    [trackedTasks, allTasksForPicker, activeTimer, saveSession, persistSelectedTask]
   )
 
-  const pauseTimer = useCallback(() => {
+  const pauseTimer = useCallback(async () => {
     if (!activeTimer.taskId || activeTimer.status !== "running") return
-    const task = trackedTasks.find((t) => t.taskId === activeTimer.taskId)
-    if (!task) return
 
-    if (activeTimer.sessionStartTime) {
-      saveSession(task.taskId, task.title, activeTimer.elapsedSeconds, activeTimer.sessionStartTime)
+    const taskId = activeTimer.taskId
+
+    if (activeTimer.sessionStartTime && activeTimer.elapsedSeconds > 0) {
+      await saveSession(
+        taskId,
+        activeTimer.elapsedSeconds,
+        activeTimer.sessionStartTime
+      )
     }
 
-    setTrackedTasks((prev) =>
-      prev.map((t) =>
-        t.taskId === activeTimer.taskId
-          ? { ...t, totalSecondsToday: t.totalSecondsToday + activeTimer.elapsedSeconds, isActive: false }
-          : t
-      )
-    )
-    setActiveTimer(DEFAULT_TIMER)
-  }, [activeTimer, trackedTasks, saveSession])
+    setActiveTimer({
+      taskId,
+      status: "paused",
+      elapsedSeconds: 0,
+      sessionStartTime: null,
+    })
+    persistSelectedTask(taskId)
+  }, [activeTimer, saveSession, persistSelectedTask])
 
   const stopTimer = useCallback(() => {
-    pauseTimer()
+    void pauseTimer()
   }, [pauseTimer])
 
   const resumeTimer = useCallback(
     (taskId: string) => {
-      startTimer(taskId)
+      void startTimer(taskId)
     },
     [startTimer]
   )
@@ -282,22 +381,39 @@ export function useTimeTrack() {
     setDateRange({ preset: "custom", startDate, endDate })
   }, [])
 
-  const updateWeeklyTarget = useCallback((hours: number) => {
-    setWeeklyTarget({ hoursPerWeek: Math.max(1, hours) })
-  }, [])
-
-  const availableTasksToAdd = useMemo(
-    () => MOCK_AVAILABLE_TASKS.filter((t) => !trackedTasks.some((tt) => tt.taskId === t.id)),
-    [trackedTasks]
+  const updateWeeklyTarget = useCallback(
+    (hours: number) => {
+      const normalized = Math.max(1, Math.min(168, hours))
+      updateSettingsMutation.mutate({ hours_per_week: normalized })
+    },
+    [updateSettingsMutation]
   )
 
-  const displayClockSeconds = activeTimer.status === "running" ? activeTimer.elapsedSeconds : 0
+  const updateActivityBarVisible = useCallback(
+    (visible: boolean) => {
+      updateSettingsMutation.mutate({ activity_bar_visible: visible })
+    },
+    [updateSettingsMutation]
+  )
+
+  const deleteTimeEntryById = useCallback(
+    (entryId: string) => deleteEntryMutation.mutateAsync(entryId),
+    [deleteEntryMutation]
+  )
+
+  const isLoading = dashboardQuery.isLoading || tasksQuery.isLoading
+  const isSaving =
+    createEntryMutation.isPending ||
+    addTrackedTaskMutation.isPending ||
+    removeTrackedTaskMutation.isPending ||
+    deleteEntryMutation.isPending
 
   return {
     trackedTasks,
     entries,
     activeTimer,
     activeTask,
+    settings,
     weeklyTarget,
     dateRange,
     reportsSearch,
@@ -309,8 +425,14 @@ export function useTimeTrack() {
     weekRange,
     displayClockSeconds,
     availableTasksToAdd,
+    isLoading,
+    isSaving,
+    isDeletingEntry: deleteEntryMutation.isPending,
+    isWeekLoading: weekQuery.isLoading,
     addTrackedTask,
     removeTrackedTask,
+    deleteTimeEntryById,
+    selectTask,
     startTimer,
     pauseTimer,
     stopTimer,
@@ -319,6 +441,7 @@ export function useTimeTrack() {
     setCustomDateRange,
     setReportsSearch,
     updateWeeklyTarget,
+    updateActivityBarVisible,
   }
 }
 

@@ -28,14 +28,20 @@ export function TodayTaskList({ timeTrack }: TodayTaskListProps) {
     startTimer,
     pauseTimer,
     removeTrackedTask,
+    selectTask,
   } = timeTrack
 
   const [taskToRemove, setTaskToRemove] = useState<TrackedTask | null>(null)
 
-  const handleRemoveConfirm = () => {
+  const handleRemoveConfirm = async () => {
     if (!taskToRemove) return
-    removeTrackedTask(taskToRemove.taskId)
-    setTaskToRemove(null)
+
+    try {
+      await removeTrackedTask(taskToRemove.taskId)
+      setTaskToRemove(null)
+    } catch {
+      // Error toast is handled by the mutation
+    }
   }
 
   return (
@@ -56,8 +62,9 @@ export function TodayTaskList({ timeTrack }: TodayTaskListProps) {
                 task={task}
                 activeTimer={activeTimer}
                 elapsedSeconds={displayClockSeconds}
-                onStart={startTimer}
-                onPause={pauseTimer}
+              onStart={startTimer}
+              onSelect={(taskId) => void selectTask(taskId)}
+              onPause={pauseTimer}
                 onRemove={setTaskToRemove}
               />
             ))
@@ -75,15 +82,15 @@ export function TodayTaskList({ timeTrack }: TodayTaskListProps) {
               Remove task from today?
             </AlertDialogTitle>
             <AlertDialogDescription className="font-mono text-slate-400">
-              &quot;{taskToRemove?.title}&quot; will be removed from today&apos;s tracking list.
-              Your logged time entries will be kept in Reports.
+              &quot;{taskToRemove?.title}&quot; and all time logged for it today will be permanently
+              deleted from the database. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="font-mono">Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="font-mono bg-red-600 hover:bg-red-700"
-              onClick={handleRemoveConfirm}
+              onClick={() => void handleRemoveConfirm()}
             >
               Remove
             </AlertDialogAction>

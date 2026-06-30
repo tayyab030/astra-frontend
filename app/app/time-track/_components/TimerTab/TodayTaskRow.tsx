@@ -12,6 +12,7 @@ interface TodayTaskRowProps {
   activeTimer: ActiveTimerState
   elapsedSeconds: number
   onStart: (taskId: string) => void
+  onSelect: (taskId: string) => void
   onPause: () => void
   onRemove: (task: TrackedTask) => void
 }
@@ -21,17 +22,22 @@ export function TodayTaskRow({
   activeTimer,
   elapsedSeconds,
   onStart,
+  onSelect,
   onPause,
   onRemove,
 }: TodayTaskRowProps) {
-  const isActive = activeTimer.taskId === task.taskId
-  const isRunning = isActive && activeTimer.status === "running"
+  const isSelected = activeTimer.taskId === task.taskId
+  const isRunning = isSelected && activeTimer.status === "running"
   const displaySeconds = task.totalSecondsToday + (isRunning ? elapsedSeconds : 0)
 
   return (
     <div
-      className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
-        isActive
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(task.taskId)}
+      onKeyDown={(e) => e.key === "Enter" && onSelect(task.taskId)}
+      className={`flex items-center justify-between rounded-lg border p-3 transition-colors cursor-pointer ${
+        isSelected
           ? "border-cyan-500/50 bg-cyan-500/10"
           : "border-slate-700/50 bg-slate-800/30 hover:bg-slate-800/50"
       }`}
@@ -55,7 +61,10 @@ export function TodayTaskRow({
           <Button
             size="icon"
             variant="ghost"
-            onClick={onPause}
+            onClick={(e) => {
+              e.stopPropagation()
+              onPause()
+            }}
             className="h-8 w-8 text-slate-400 hover:text-white"
           >
             <Pause className="h-4 w-4" />
@@ -64,7 +73,10 @@ export function TodayTaskRow({
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => onStart(task.taskId)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onStart(task.taskId)
+            }}
             className="h-8 w-8 text-slate-400 hover:text-cyan-300"
           >
             <Play className="h-4 w-4" />
@@ -73,7 +85,10 @@ export function TodayTaskRow({
         <Button
           size="icon"
           variant="ghost"
-          onClick={() => onRemove(task)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove(task)
+          }}
           className="h-8 w-8 text-slate-400 hover:text-red-400"
         >
           <Trash2 className="h-4 w-4" />

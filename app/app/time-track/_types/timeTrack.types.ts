@@ -35,6 +35,12 @@ export interface WeeklyTarget {
   hoursPerWeek: number
 }
 
+export interface TimeTrackSettings {
+  hoursPerWeek: number
+  activityBarVisible: boolean
+  lastSelectedTaskId: string | null
+}
+
 export type TimerStatus = "idle" | "running" | "paused"
 
 export interface ActiveTimerState {
