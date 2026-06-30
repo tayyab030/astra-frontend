@@ -9,6 +9,7 @@ export const ROUTES = {
   APP: {
     DASHBOARD: "/app/dashboard",
     TASKS: "/app/tasks",
+    TIME_TRACK: "/app/time-track",
     GOALS: "/app/goals",
     WEALTH: "/app/wealth",
     HEALTH: "/app/health",
