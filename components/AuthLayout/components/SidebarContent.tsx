@@ -14,6 +14,7 @@ import { logout } from "@/lib/auth";
 import {
     Home,
     CheckSquare,
+    Clock,
     DollarSign,
     Heart,
     FileText,
@@ -31,6 +32,7 @@ import { useState } from "react";
 const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, href: ROUTES.APP.DASHBOARD },
     { id: "tasks", label: "Tasks", icon: CheckSquare, href: ROUTES.APP.TASKS },
+    { id: "time-track", label: "Time Track", icon: Clock, href: ROUTES.APP.TIME_TRACK },
     { id: "goals", label: "Goals", icon: Target, href: ROUTES.APP.GOALS },
     { id: "wealth", label: "Wealth", icon: DollarSign, href: ROUTES.APP.WEALTH },
     { id: "health", label: "Health", icon: Heart, href: ROUTES.APP.HEALTH },

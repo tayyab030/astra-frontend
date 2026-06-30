@@ -64,6 +64,29 @@ export const API_ENDPOINTS = {
     BUDGET: (id: string) => `/wealth/budgets/${id}/`,
   },
 
+  // Time track endpoints
+  TIME_TRACK: {
+    DASHBOARD: "/time-track/",
+    ENTRIES: "/time-track/entries/",
+    ENTRY: (id: string) => `/time-track/entries/${id}/`,
+    TRACKED_TASKS: "/time-track/tracked-tasks/",
+    TRACKED_TASK: (taskId: string) => `/time-track/tracked-tasks/${taskId}/`,
+    SETTINGS: "/time-track/settings/",
+  },
+
+  // Health endpoints
+  HEALTH: {
+    DASHBOARD: "/health/",
+    PROFILE: "/health/profile/",
+    TARGETS: "/health/targets/",
+    METRICS_ADJUST: "/health/metrics/adjust/",
+    WEIGHT: "/health/weight/",
+    HABITS: "/health/habits/",
+    HABIT_TOGGLE: (id: string) => `/health/habits/${id}/toggle/`,
+    WORKOUTS: "/health/workouts/",
+    MOOD: "/health/mood/",
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

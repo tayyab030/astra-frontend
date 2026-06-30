@@ -13,6 +13,13 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { TaskItem } from "@/lib/api/tasks"
+import dynamic from "next/dynamic"
+
+const TaskTimeTrackControls = dynamic(
+  () =>
+    import("../TaskTimeTrackControls").then((m) => ({ default: m.TaskTimeTrackControls })),
+  { ssr: false }
+)
 
 function getPriorityColor(priority: string) {
   switch (priority) {
@@ -101,6 +108,7 @@ export default function DetailTaskRow({
               </Badge>
             ))}
           </div>
+          <TaskTimeTrackControls task={task} />
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
               type="button"

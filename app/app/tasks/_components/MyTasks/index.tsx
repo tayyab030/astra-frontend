@@ -20,6 +20,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { TaskFilter, TaskItem, TasksListParams } from "@/lib/api/tasks"
 import { useTasks } from "../../_hooks/useTasks"
 import { TaskFormDialog } from "../TaskFormDialog"
+import dynamic from "next/dynamic"
+
+const TaskTimeTrackControls = dynamic(
+  () =>
+    import("../TaskTimeTrackControls").then((m) => ({ default: m.TaskTimeTrackControls })),
+  { ssr: false }
+)
 
 const VISIBLE_TASK_COUNT = 6
 const TASK_LIST_MAX_HEIGHT = "max-h-64 overflow-y-auto overflow-x-hidden"
@@ -145,6 +152,7 @@ function TaskRow({
             <Calendar className="size-3 text-gray-400" />
           </div>
         )}
+        <TaskTimeTrackControls task={task} />
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
