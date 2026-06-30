@@ -1,5 +1,6 @@
 import { authApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
+import { getApiBaseUrl } from "./config"
 
 const { TIME_TRACK } = API_ENDPOINTS
 
@@ -156,6 +157,26 @@ export async function fetchTimeTrackDashboard(params: TimeTrackFilterParams) {
 export async function createTimeEntry(payload: CreateTimeEntryPayload) {
   const response = await authApi.post<TimeEntryApi>(TIME_TRACK.ENTRIES, payload)
   return mapEntry(response.data)
+}
+
+/** Best-effort save when the page is closing (fetch keepalive). */
+export function createTimeEntryKeepalive(
+  payload: CreateTimeEntryPayload,
+  accessToken: string
+) {
+  const url = `${getApiBaseUrl()}${TIME_TRACK.ENTRIES}`
+  return fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `JWT ${accessToken}`,
+    },
+    body: JSON.stringify({
+      ...payload,
+      end_time: payload.end_time ?? new Date().toISOString(),
+    }),
+    keepalive: true,
+  })
 }
 
 export async function deleteTimeEntry(id: string) {

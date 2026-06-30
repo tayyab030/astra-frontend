@@ -28,7 +28,7 @@ export function TodayTaskRow({
 }: TodayTaskRowProps) {
   const isSelected = activeTimer.taskId === task.taskId
   const isRunning = isSelected && activeTimer.status === "running"
-  const displaySeconds = task.totalSecondsToday + (isRunning ? elapsedSeconds : 0)
+  const displaySeconds = isRunning ? elapsedSeconds : task.totalSecondsToday
 
   return (
     <div

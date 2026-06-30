@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import {
   addTrackedTask as addTrackedTaskApi,
   createTimeEntry,
+  createTimeEntryKeepalive,
   fetchTimeTrackDashboard,
   getTimeTrackErrorMessage,
   mapTaskItemToAvailableTask,
@@ -14,6 +15,7 @@ import {
   updateTimeTrackSettings,
 } from "@/lib/api/timeTrack"
 import { fetchTasks } from "@/lib/api/tasks"
+import { store } from "@/store/store"
 import type {
   ActiveTimerState,
   AvailableTask,
@@ -21,7 +23,7 @@ import type {
   TimeTrackSettings,
   TrackedTask,
 } from "../_types/timeTrack.types"
-import { DEFAULT_WEEKLY_TARGET_HOURS } from "../_constants/config"
+import { DEFAULT_WEEKLY_TARGET_HOURS, TIMER_AUTO_SAVE_SECONDS } from "../_constants/config"
 import {
   filterEntriesByDateRange,
   getCurrentWeekRange,
@@ -70,6 +72,14 @@ export function useTimeTrack() {
   const [reportsSearch, setReportsSearch] = useState("")
   const hasRestoredSelection = useRef(false)
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const activeTimerRef = useRef(activeTimer)
+  const isFlushingRef = useRef(false)
+  const isSavingEntryRef = useRef(false)
+  const flushRunningSessionRef = useRef<(() => Promise<void>) | null>(null)
+  /** Saved + server total at session start, plus flushed chunks — keeps clock continuous across autosave */
+  const runningDisplayBaseRef = useRef(0)
+  const runningDisplayTaskIdRef = useRef<string | null>(null)
+  const invalidateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const today = getTodayString()
   const weekRange = getCurrentWeekRange()
 
@@ -79,6 +89,15 @@ export function useTimeTrack() {
       type: "all",
     })
   }, [queryClient])
+
+  const scheduleInvalidateTimeTrack = useCallback(() => {
+    if (invalidateDebounceRef.current) {
+      clearTimeout(invalidateDebounceRef.current)
+    }
+    invalidateDebounceRef.current = setTimeout(() => {
+      void invalidateTimeTrack()
+    }, 300)
+  }, [invalidateTimeTrack])
 
   const dashboardQuery = useQuery({
     queryKey: [
@@ -127,13 +146,7 @@ export function useTimeTrack() {
     [tasksQuery.data?.tasks]
   )
 
-  const createEntryMutation = useMutation({
-    mutationFn: createTimeEntry,
-    onSuccess: () => invalidateTimeTrack(),
-    onError: (error) => {
-      toast.error(getTimeTrackErrorMessage(error, "Failed to save time entry"))
-    },
-  })
+  const [isSavingEntry, setIsSavingEntry] = useState(false)
 
   const addTrackedTaskMutation = useMutation({
     mutationFn: addTrackedTaskApi,
@@ -184,6 +197,10 @@ export function useTimeTrack() {
   )
 
   useEffect(() => {
+    activeTimerRef.current = activeTimer
+  }, [activeTimer])
+
+  useEffect(() => {
     if (hasRestoredSelection.current || !dashboardQuery.data) return
 
     const lastTaskId = dashboardQuery.data.settings.lastSelectedTaskId
@@ -218,37 +235,148 @@ export function useTimeTrack() {
   const saveSession = useCallback(
     async (taskId: string, durationSeconds: number, sessionStart: string) => {
       if (durationSeconds <= 0) return
-      await createEntryMutation.mutateAsync({
-        task_id: taskId,
-        duration_seconds: durationSeconds,
-        start_time: sessionStart,
-        end_time: new Date().toISOString(),
-        entry_date: today,
-      })
+      isSavingEntryRef.current = true
+      setIsSavingEntry(true)
+      try {
+        await createTimeEntry({
+          task_id: taskId,
+          duration_seconds: durationSeconds,
+          start_time: sessionStart,
+          end_time: new Date().toISOString(),
+          entry_date: today,
+        })
+        scheduleInvalidateTimeTrack()
+      } catch (error) {
+        toast.error(getTimeTrackErrorMessage(error, "Failed to save time entry"))
+        throw error
+      } finally {
+        isSavingEntryRef.current = false
+        setIsSavingEntry(false)
+      }
     },
-    [createEntryMutation, today]
+    [today, scheduleInvalidateTimeTrack]
   )
+
+  const flushRunningSession = useCallback(async () => {
+    if (isFlushingRef.current) return
+
+    const timer = activeTimerRef.current
+    if (timer.status !== "running" || !timer.taskId || !timer.sessionStartTime) return
+    if (timer.elapsedSeconds <= 0) return
+
+    const { taskId, elapsedSeconds, sessionStartTime } = timer
+
+    isFlushingRef.current = true
+    try {
+      await saveSession(taskId, elapsedSeconds, sessionStartTime)
+      if (runningDisplayTaskIdRef.current === taskId) {
+        runningDisplayBaseRef.current += elapsedSeconds
+      }
+      setActiveTimer((prev) => {
+        if (prev.status !== "running" || prev.taskId !== taskId) return prev
+        return {
+          ...prev,
+          elapsedSeconds: 0,
+          sessionStartTime: new Date().toISOString(),
+        }
+      })
+    } catch {
+      // Error toast is handled by callers that need it; autosave retries on next interval
+    } finally {
+      isFlushingRef.current = false
+    }
+  }, [saveSession])
+
+  flushRunningSessionRef.current = flushRunningSession
+
+  useEffect(() => {
+    if (activeTimer.status !== "running") return
+    if (activeTimer.elapsedSeconds <= 0) return
+    if (activeTimer.elapsedSeconds % TIMER_AUTO_SAVE_SECONDS !== 0) return
+
+    void flushRunningSessionRef.current?.()
+  }, [activeTimer.status, activeTimer.taskId, activeTimer.elapsedSeconds])
+
+  useEffect(() => {
+    const flushOnExit = () => {
+      const timer = activeTimerRef.current
+      if (timer.status !== "running" || !timer.taskId || !timer.sessionStartTime) return
+      if (timer.elapsedSeconds <= 0 || isSavingEntryRef.current) return
+
+      const token = store.getState().auth?.accessToken
+      if (!token) return
+
+      createTimeEntryKeepalive(
+        {
+          task_id: timer.taskId,
+          duration_seconds: timer.elapsedSeconds,
+          start_time: timer.sessionStartTime,
+          end_time: new Date().toISOString(),
+          entry_date: getTodayString(),
+        },
+        token
+      )
+    }
+
+    window.addEventListener("beforeunload", flushOnExit)
+    window.addEventListener("pagehide", flushOnExit)
+
+    return () => {
+      window.removeEventListener("beforeunload", flushOnExit)
+      window.removeEventListener("pagehide", flushOnExit)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (invalidateDebounceRef.current) {
+        clearTimeout(invalidateDebounceRef.current)
+      }
+    }
+  }, [])
 
   const activeTask = useMemo(() => {
     if (!activeTimer.taskId) return null
     return resolveTrackedTask(activeTimer.taskId, trackedTasks, allTasksForPicker)
   }, [activeTimer.taskId, trackedTasks, allTasksForPicker])
 
+  const getRunningTaskDisplaySeconds = useCallback(
+    (taskId: string, serverTotalSeconds: number, elapsedSeconds: number) => {
+      if (runningDisplayTaskIdRef.current === taskId) {
+        return runningDisplayBaseRef.current + elapsedSeconds
+      }
+      return serverTotalSeconds + elapsedSeconds
+    },
+    []
+  )
+
   const displayClockSeconds = useMemo(() => {
-    if (!activeTask) return 0
+    if (!activeTask || !activeTimer.taskId) return 0
     if (activeTimer.status === "running") {
-      return activeTask.totalSecondsToday + activeTimer.elapsedSeconds
+      return getRunningTaskDisplaySeconds(
+        activeTimer.taskId,
+        activeTask.totalSecondsToday,
+        activeTimer.elapsedSeconds
+      )
     }
     return activeTask.totalSecondsToday
-  }, [activeTask, activeTimer])
+  }, [activeTask, activeTimer, getRunningTaskDisplaySeconds])
 
   const todayTotalSeconds = useMemo(() => {
     const fromTracked = trackedTasks.reduce((sum, t) => sum + t.totalSecondsToday, 0)
     if (activeTimer.status !== "running" || !activeTimer.taskId) return fromTracked
+
     const runningTask = trackedTasks.find((t) => t.taskId === activeTimer.taskId)
     if (!runningTask) return fromTracked
-    return fromTracked + activeTimer.elapsedSeconds
-  }, [trackedTasks, activeTimer])
+
+    const runningLive = getRunningTaskDisplaySeconds(
+      activeTimer.taskId,
+      runningTask.totalSecondsToday,
+      activeTimer.elapsedSeconds
+    )
+
+    return fromTracked - runningTask.totalSecondsToday + runningLive
+  }, [trackedTasks, activeTimer, getRunningTaskDisplaySeconds])
 
   const entriesInDateRange = useMemo(
     () =>
@@ -272,13 +400,7 @@ export function useTimeTrack() {
   const selectTask = useCallback(
     async (taskId: string) => {
       if (activeTimer.status === "running" && activeTimer.taskId !== taskId) {
-        if (activeTimer.sessionStartTime && activeTimer.elapsedSeconds > 0) {
-          await saveSession(
-            activeTimer.taskId!,
-            activeTimer.elapsedSeconds,
-            activeTimer.sessionStartTime
-          )
-        }
+        await flushRunningSession()
       }
 
       setActiveTimer({
@@ -289,7 +411,7 @@ export function useTimeTrack() {
       })
       persistSelectedTask(taskId)
     },
-    [activeTimer, saveSession, persistSelectedTask]
+    [activeTimer, flushRunningSession, persistSelectedTask]
   )
 
   const addTrackedTask = useCallback(
@@ -301,13 +423,18 @@ export function useTimeTrack() {
 
   const removeTrackedTask = useCallback(
     async (taskId: string) => {
+      if (activeTimer.taskId === taskId && activeTimer.status === "running") {
+        await flushRunningSession()
+      }
       if (activeTimer.taskId === taskId) {
+        runningDisplayBaseRef.current = 0
+        runningDisplayTaskIdRef.current = null
         setActiveTimer(DEFAULT_TIMER)
         persistSelectedTask(null)
       }
       await removeTrackedTaskMutation.mutateAsync(taskId)
     },
-    [activeTimer.taskId, removeTrackedTaskMutation, persistSelectedTask]
+    [activeTimer, flushRunningSession, removeTrackedTaskMutation, persistSelectedTask]
   )
 
   const startTimer = useCallback(
@@ -320,14 +447,11 @@ export function useTimeTrack() {
         activeTimer.taskId &&
         activeTimer.taskId !== taskId
       ) {
-        if (activeTimer.sessionStartTime) {
-          await saveSession(
-            activeTimer.taskId,
-            activeTimer.elapsedSeconds,
-            activeTimer.sessionStartTime
-          )
-        }
+        await flushRunningSession()
       }
+
+      runningDisplayBaseRef.current = task.totalSecondsToday
+      runningDisplayTaskIdRef.current = taskId
 
       setActiveTimer({
         taskId,
@@ -337,7 +461,7 @@ export function useTimeTrack() {
       })
       persistSelectedTask(taskId)
     },
-    [trackedTasks, allTasksForPicker, activeTimer, saveSession, persistSelectedTask]
+    [trackedTasks, allTasksForPicker, activeTimer, flushRunningSession, persistSelectedTask]
   )
 
   const pauseTimer = useCallback(async () => {
@@ -345,13 +469,10 @@ export function useTimeTrack() {
 
     const taskId = activeTimer.taskId
 
-    if (activeTimer.sessionStartTime && activeTimer.elapsedSeconds > 0) {
-      await saveSession(
-        taskId,
-        activeTimer.elapsedSeconds,
-        activeTimer.sessionStartTime
-      )
-    }
+    await flushRunningSession()
+
+    runningDisplayBaseRef.current = 0
+    runningDisplayTaskIdRef.current = null
 
     setActiveTimer({
       taskId,
@@ -360,7 +481,7 @@ export function useTimeTrack() {
       sessionStartTime: null,
     })
     persistSelectedTask(taskId)
-  }, [activeTimer, saveSession, persistSelectedTask])
+  }, [activeTimer, flushRunningSession, persistSelectedTask])
 
   const stopTimer = useCallback(() => {
     void pauseTimer()
@@ -422,7 +543,7 @@ export function useTimeTrack() {
 
   const isLoading = dashboardQuery.isLoading || tasksQuery.isLoading
   const isSaving =
-    createEntryMutation.isPending ||
+    isSavingEntry ||
     addTrackedTaskMutation.isPending ||
     removeTrackedTaskMutation.isPending ||
     deleteEntryMutation.isPending
