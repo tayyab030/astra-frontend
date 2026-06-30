@@ -1,12 +1,12 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import { useTimeTrack, type UseTimeTrackReturn } from "../_hooks/useTimeTrack"
+import { useTimeTrackCore, type UseTimeTrackCoreReturn } from "../_hooks/useTimeTrackCore"
 
-const TimeTrackContext = createContext<UseTimeTrackReturn | null>(null)
+const TimeTrackContext = createContext<UseTimeTrackCoreReturn | null>(null)
 
 export function TimeTrackProvider({ children }: { children: React.ReactNode }) {
-  const value = useTimeTrack()
+  const value = useTimeTrackCore()
   return <TimeTrackContext.Provider value={value}>{children}</TimeTrackContext.Provider>
 }
 

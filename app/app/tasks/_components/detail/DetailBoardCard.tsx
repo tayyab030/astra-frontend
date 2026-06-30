@@ -6,7 +6,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, GripVertical, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { TaskItem } from "@/lib/api/tasks"
-import { TaskTimeTrackControls } from "../TaskTimeTrackControls"
+import dynamic from "next/dynamic"
+
+const TaskTimeTrackControls = dynamic(
+  () =>
+    import("../TaskTimeTrackControls").then((m) => ({ default: m.TaskTimeTrackControls })),
+  { ssr: false }
+)
 
 function getPriorityColor(priority: string) {
   switch (priority) {

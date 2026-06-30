@@ -11,7 +11,11 @@ import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { TimeTrackProvider, useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider";
-import { TimeTrackActivityBar } from "./components/TimeTrackActivityBar";
+
+const TimeTrackActivityBar = dynamic(
+  () => import("./components/TimeTrackActivityBar").then((m) => ({ default: m.TimeTrackActivityBar })),
+  { ssr: false }
+);
 
 const SidebarContent = dynamic(() => import("./components/SidebarContent"), {
   ssr: false,

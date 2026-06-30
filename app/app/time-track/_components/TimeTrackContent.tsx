@@ -1,21 +1,55 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import dynamic from "next/dynamic"
 import { format } from "date-fns"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTimeTrackContext } from "../_context/TimeTrackProvider"
+import { useTimeTrackPageData } from "../_hooks/useTimeTrackPageData"
+import type { UseTimeTrackReturn } from "../_hooks/useTimeTrack"
 import NavigationTabs from "./NavigationTabs"
 import type { TimeTrackTabId } from "./constants"
-import { TimerTab } from "./TimerTab"
-import { DashboardTab } from "./DashboardTab"
-import { ReportsTab } from "./ReportsTab"
-import { WeeklyTab } from "./WeeklyTab"
-import { SettingsTab } from "./SettingsTab"
+
+const TimerTab = dynamic(
+  () => import("./TimerTab").then((m) => ({ default: m.TimerTab })),
+  { loading: () => <TabSkeleton /> }
+)
+const DashboardTab = dynamic(
+  () => import("./DashboardTab").then((m) => ({ default: m.DashboardTab })),
+  { loading: () => <TabSkeleton tall /> }
+)
+const ReportsTab = dynamic(
+  () => import("./ReportsTab").then((m) => ({ default: m.ReportsTab })),
+  { loading: () => <TabSkeleton /> }
+)
+const WeeklyTab = dynamic(
+  () => import("./WeeklyTab").then((m) => ({ default: m.WeeklyTab })),
+  { loading: () => <TabSkeleton tall /> }
+)
+const SettingsTab = dynamic(
+  () => import("./SettingsTab").then((m) => ({ default: m.SettingsTab })),
+  { loading: () => <TabSkeleton /> }
+)
+
+function TabSkeleton({ tall }: { tall?: boolean }) {
+  return <Skeleton className={`w-full bg-slate-800/50 ${tall ? "h-72" : "h-48"}`} />
+}
 
 export default function TimeTrackContent() {
   const [currentView, setCurrentView] = useState<TimeTrackTabId>("timer")
-  const timeTrack = useTimeTrackContext()
+  const core = useTimeTrackContext()
+  const page = useTimeTrackPageData(core)
+
+  const timeTrack = useMemo<UseTimeTrackReturn>(
+    () => ({
+      ...core,
+      ...page,
+      isLoading: core.isLoading || page.isPageLoading,
+      isSaving: core.isSaving || page.isSavingPage,
+    }),
+    [core, page]
+  )
 
   if (timeTrack.isLoading) {
     return (
@@ -42,19 +76,19 @@ export default function TimeTrackContent() {
 
       <Tabs value={currentView} className="mt-4">
         <TabsContent value="timer" className="mt-0">
-          <TimerTab timeTrack={timeTrack} />
+          {currentView === "timer" ? <TimerTab timeTrack={timeTrack} /> : null}
         </TabsContent>
         <TabsContent value="dashboard" className="mt-0">
-          <DashboardTab timeTrack={timeTrack} />
+          {currentView === "dashboard" ? <DashboardTab timeTrack={timeTrack} /> : null}
         </TabsContent>
         <TabsContent value="reports" className="mt-0">
-          <ReportsTab timeTrack={timeTrack} />
+          {currentView === "reports" ? <ReportsTab timeTrack={timeTrack} /> : null}
         </TabsContent>
         <TabsContent value="weekly" className="mt-0">
-          <WeeklyTab timeTrack={timeTrack} />
+          {currentView === "weekly" ? <WeeklyTab timeTrack={timeTrack} /> : null}
         </TabsContent>
         <TabsContent value="settings" className="mt-0">
-          <SettingsTab timeTrack={timeTrack} />
+          {currentView === "settings" ? <SettingsTab timeTrack={timeTrack} /> : null}
         </TabsContent>
       </Tabs>
     </div>
