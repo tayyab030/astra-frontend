@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, Clock, FileText, Settings } from "lucide-react"
+import { BarChart3, CalendarDays, Clock, FileText, Settings, TrendingUp } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { DateRangePreset } from "../_types/timeTrack.types"
 
@@ -6,6 +6,7 @@ export const TIME_TRACK_TABS = [
   { id: "timer", label: "Timer", icon: Clock },
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "reports", label: "Reports", icon: FileText },
+  { id: "patterns", label: "Patterns", icon: TrendingUp },
   { id: "weekly", label: "Weekly", icon: CalendarDays },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const

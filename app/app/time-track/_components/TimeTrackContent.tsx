@@ -27,6 +27,10 @@ const WeeklyTab = dynamic(
   () => import("./WeeklyTab").then((m) => ({ default: m.WeeklyTab })),
   { loading: () => <TabSkeleton tall /> }
 )
+const PatternsTab = dynamic(
+  () => import("./PatternsTab").then((m) => ({ default: m.PatternsTab })),
+  { loading: () => <TabSkeleton tall /> }
+)
 const SettingsTab = dynamic(
   () => import("./SettingsTab").then((m) => ({ default: m.SettingsTab })),
   { loading: () => <TabSkeleton /> }
@@ -83,6 +87,9 @@ export default function TimeTrackContent() {
         </TabsContent>
         <TabsContent value="reports" className="mt-0">
           {currentView === "reports" ? <ReportsTab timeTrack={timeTrack} /> : null}
+        </TabsContent>
+        <TabsContent value="patterns" className="mt-0">
+          {currentView === "patterns" ? <PatternsTab /> : null}
         </TabsContent>
         <TabsContent value="weekly" className="mt-0">
           {currentView === "weekly" ? <WeeklyTab timeTrack={timeTrack} /> : null}
