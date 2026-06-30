@@ -6,9 +6,24 @@ import { useHealthContext } from "../../_context/HealthProvider"
 import { HealthPeriodFilterBar } from "../shared/HealthPeriodFilterBar"
 import { HealthTrendChart } from "../shared/HealthTrendChart"
 
+function getPeriodLabels(mode: string) {
+  switch (mode) {
+    case "day":
+      return { exercise: "Exercise Minutes", sleep: "Sleep Hours" }
+    case "week":
+      return { exercise: "Weekly Exercise Minutes", sleep: "Average Sleep" }
+    case "month":
+      return { exercise: "Monthly Exercise Minutes", sleep: "Average Sleep" }
+    case "year":
+      return { exercise: "Yearly Exercise Minutes", sleep: "Average Sleep" }
+    default:
+      return { exercise: "Exercise Minutes", sleep: "Average Sleep" }
+  }
+}
+
 export function InsightsTab() {
   const {
-    habits,
+    summary,
     periodFilter,
     weightChartData,
     waterChartData,
@@ -17,7 +32,7 @@ export function InsightsTab() {
     setPeriodFilter,
   } = useHealthContext()
 
-  const longestStreak = habits.reduce((max, h) => Math.max(max, h.streak), 0)
+  const labels = getPeriodLabels(periodFilter.mode)
 
   return (
     <div className="space-y-6 pb-6">
@@ -26,20 +41,26 @@ export function InsightsTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardContent className="py-6 text-center">
-            <div className="text-2xl font-bold font-mono text-cyan-400">{longestStreak}</div>
+            <div className="text-2xl font-bold font-mono text-cyan-400">
+              {summary.longestHabitStreak}
+            </div>
             <p className="text-sm text-slate-400 font-mono">Longest Habit Streak</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardContent className="py-6 text-center">
-            <div className="text-2xl font-bold font-mono text-blue-400">180</div>
-            <p className="text-sm text-slate-400 font-mono">Weekly Exercise Minutes</p>
+            <div className="text-2xl font-bold font-mono text-blue-400">
+              {summary.periodExerciseMinutes}
+            </div>
+            <p className="text-sm text-slate-400 font-mono">{labels.exercise}</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardContent className="py-6 text-center">
-            <div className="text-2xl font-bold font-mono text-cyan-400">7.2h</div>
-            <p className="text-sm text-slate-400 font-mono">Average Sleep</p>
+            <div className="text-2xl font-bold font-mono text-cyan-400">
+              {summary.periodAvgSleepHours > 0 ? `${summary.periodAvgSleepHours}h` : "—"}
+            </div>
+            <p className="text-sm text-slate-400 font-mono">{labels.sleep}</p>
           </CardContent>
         </Card>
       </div>

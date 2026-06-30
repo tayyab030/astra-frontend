@@ -46,16 +46,17 @@ export interface DailyMetricEntry {
 }
 
 export interface Habit {
-  id: number
+  id: string
   name: string
   streak: number
   completed: boolean
   target: number
   current: number
+  frequency?: string
 }
 
 export interface Workout {
-  id: number
+  id: string
   type: string
   duration: number
   calories: number
@@ -83,6 +84,12 @@ export interface ChartPoint {
   label: string
   value: number
   formatted: string
+}
+
+export interface HealthSummary {
+  longestHabitStreak: number
+  periodExerciseMinutes: number
+  periodAvgSleepHours: number
 }
 
 export interface BmiStatus {

@@ -1,12 +1,12 @@
 "use client"
 
 import { createContext, useContext, type ReactNode } from "react"
-import { useHealthMock, type UseHealthMockReturn } from "../_hooks/useHealthMock"
+import { useHealth, type UseHealthReturn } from "../_hooks/useHealth"
 
-const HealthContext = createContext<UseHealthMockReturn | null>(null)
+const HealthContext = createContext<UseHealthReturn | null>(null)
 
 export function HealthProvider({ children }: { children: ReactNode }) {
-  const value = useHealthMock()
+  const value = useHealth()
   return <HealthContext.Provider value={value}>{children}</HealthContext.Provider>
 }
 

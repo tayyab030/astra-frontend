@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import dynamic from "next/dynamic"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -40,12 +39,15 @@ function TabSkeleton({ tall }: { tall?: boolean }) {
   return <Skeleton className={`w-full bg-slate-800/50 ${tall ? "h-72" : "h-48"}`} />
 }
 
-export function HealthContent() {
-  const [currentView, setCurrentView] = useState<HealthTabId>("overview")
+interface HealthContentProps {
+  currentView: HealthTabId
+  onTabChange: (tab: HealthTabId) => void
+}
 
+export function HealthContent({ currentView, onTabChange }: HealthContentProps) {
   return (
     <>
-      <NavigationTabs activeTab={currentView} onTabChange={setCurrentView} />
+      <NavigationTabs activeTab={currentView} onTabChange={onTabChange} />
 
       <Tabs value={currentView} className="mt-0">
         <TabsContent value="overview" className="mt-4">

@@ -31,6 +31,12 @@ export const MOOD_OPTIONS = [
   { value: "terrible", label: "Terrible", color: "text-red-400" },
 ] as const
 
+export const AI_HEALTH_INSIGHTS = [
+  "You're doing great with water intake! Keep it up.",
+  "You've been sleeping below your target lately. Consider adjusting your bedtime.",
+  "Your cardio workouts are consistent — try adding a short strength session this week.",
+]
+
 export const METRIC_STEP = {
   water: 1,
   sleep: 0.5,

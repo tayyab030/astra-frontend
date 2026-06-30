@@ -3,7 +3,7 @@
 import { Dumbbell, Droplets, Moon, Target, Zap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { AI_HEALTH_INSIGHTS } from "../../_data/mockHealthData"
+import { AI_HEALTH_INSIGHTS } from "../constants"
 import { useHealthContext } from "../../_context/HealthProvider"
 import { METRIC_STEP } from "../constants"
 import { MetricStepperCard } from "../shared/MetricStepperCard"

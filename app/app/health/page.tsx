@@ -1,15 +1,33 @@
 "use client"
 
+import { useState } from "react"
 import { format } from "date-fns"
 import { Heart } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { HealthProvider, useHealthContext } from "./_context/HealthProvider"
 import { HealthContent } from "./_components/HealthContent"
 import { HealthPageBackground } from "./_components/HealthPageBackground"
 import { TodaySummaryRow } from "./_components/TodaySummaryRow"
+import type { HealthTabId } from "./_types/health.types"
 
 function HealthPageInner() {
-  const { healthScore } = useHealthContext()
+  const { healthScore, isLoading } = useHealthContext()
+  const [currentView, setCurrentView] = useState<HealthTabId>("overview")
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden p-6 space-y-6">
+        <Skeleton className="h-10 w-64 bg-slate-800/50" />
+        <div className="grid grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-28 bg-slate-800/50" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full bg-slate-800/50" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -33,7 +51,7 @@ function HealthPageInner() {
         </div>
 
         <TodaySummaryRow />
-        <HealthContent />
+        <HealthContent currentView={currentView} onTabChange={setCurrentView} />
       </div>
     </div>
   )

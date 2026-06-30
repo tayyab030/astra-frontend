@@ -74,6 +74,19 @@ export const API_ENDPOINTS = {
     SETTINGS: "/time-track/settings/",
   },
 
+  // Health endpoints
+  HEALTH: {
+    DASHBOARD: "/health/",
+    PROFILE: "/health/profile/",
+    TARGETS: "/health/targets/",
+    METRICS_ADJUST: "/health/metrics/adjust/",
+    WEIGHT: "/health/weight/",
+    HABITS: "/health/habits/",
+    HABIT_TOGGLE: (id: string) => `/health/habits/${id}/toggle/`,
+    WORKOUTS: "/health/workouts/",
+    MOOD: "/health/mood/",
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

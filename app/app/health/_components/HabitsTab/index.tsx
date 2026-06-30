@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { CheckCircle2, Flame, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,7 +26,17 @@ import { useHealthContext } from "../../_context/HealthProvider"
 import { HealthEmptyState } from "../shared/HealthEmptyState"
 
 export function HabitsTab() {
-  const { habits, toggleHabit } = useHealthContext()
+  const { habits, toggleHabit, createHabit, isSaving } = useHealthContext()
+  const [habitName, setHabitName] = useState("")
+  const [frequency, setFrequency] = useState("daily")
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const handleCreateHabit = async () => {
+    if (!habitName.trim()) return
+    await createHabit(habitName.trim(), frequency)
+    setHabitName("")
+    setDialogOpen(false)
+  }
 
   if (habits.length === 0) {
     return (
@@ -47,7 +58,7 @@ export function HabitsTab() {
               <Flame className="mr-2 h-5 w-5 text-orange-400" />
               Habit Tracker
             </CardTitle>
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button
                   size="sm"
@@ -69,17 +80,19 @@ export function HabitsTab() {
                     <Label htmlFor="habit-name" className="text-slate-200 font-mono">
                       Habit Name
                     </Label>
-                    <Input
-                      id="habit-name"
-                      placeholder="e.g., Drink 8 glasses of water"
-                      className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
-                    />
+                      <Input
+                        id="habit-name"
+                        placeholder="e.g., Drink 8 glasses of water"
+                        value={habitName}
+                        onChange={(e) => setHabitName(e.target.value)}
+                        className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
+                      />
                   </div>
                   <div>
                     <Label htmlFor="habit-frequency" className="text-slate-200 font-mono">
                       Frequency
                     </Label>
-                    <Select>
+                      <Select value={frequency} onValueChange={setFrequency}>
                       <SelectTrigger className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono">
                         <SelectValue placeholder="Select frequency" />
                       </SelectTrigger>
@@ -90,9 +103,13 @@ export function HabitsTab() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-mono">
-                    Create Habit
-                  </Button>
+                    <Button
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-mono"
+                      onClick={handleCreateHabit}
+                      disabled={!habitName.trim() || isSaving}
+                    >
+                      Create Habit
+                    </Button>
                 </div>
               </DialogContent>
             </Dialog>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Brain, Frown, Meh, Smile } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,7 +20,13 @@ const MOOD_ICONS = {
 } as const
 
 export function WellnessTab() {
-  const { moodToday, moodNotes, setMoodToday, setMoodNotes } = useHealthContext()
+  const { moodToday, moodNotes, setMoodToday, setMoodNotes, saveMood, moodEntries, isSaving } =
+    useHealthContext()
+
+  const handleSaveMood = async () => {
+    if (!moodToday) return
+    await saveMood(moodToday as MoodValue, moodNotes || undefined)
+  }
 
   return (
     <div className="space-y-6 pb-6">
@@ -67,7 +74,11 @@ export function WellnessTab() {
               className="mt-1 bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
             />
           </div>
-          <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-mono">
+          <Button
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-mono"
+            onClick={handleSaveMood}
+            disabled={!moodToday || isSaving}
+          >
             Save Mood Check-in
           </Button>
         </CardContent>
@@ -78,11 +89,30 @@ export function WellnessTab() {
           <CardTitle className="font-mono text-cyan-300 text-base">Mood History</CardTitle>
         </CardHeader>
         <CardContent>
-          <HealthEmptyState
-            icon={Brain}
-            title="No mood history yet"
-            description="Your mood check-ins will appear here once you start logging how you feel each day."
-          />
+          {moodEntries.length === 0 ? (
+            <HealthEmptyState
+              icon={Brain}
+              title="No mood history yet"
+              description="Your mood check-ins will appear here once you start logging how you feel each day."
+            />
+          ) : (
+            <div className="space-y-3">
+              {moodEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="p-3 bg-slate-700/30 rounded-lg border border-slate-600/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono text-slate-200 capitalize">{entry.mood}</p>
+                    <p className="text-xs text-slate-400 font-mono">{entry.date}</p>
+                  </div>
+                  {entry.notes && (
+                    <p className="text-sm text-slate-400 font-mono mt-1">{entry.notes}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
