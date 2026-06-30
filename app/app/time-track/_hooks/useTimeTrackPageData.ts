@@ -19,6 +19,9 @@ import {
 } from "../_utils/dateRange"
 import { resolveTrackedTask, type UseTimeTrackCoreReturn } from "./useTimeTrackCore"
 import { timeTrackKeys } from "./queryKeys"
+import { useDebouncedValue } from "./useDebouncedValue"
+
+const SEARCH_DEBOUNCE_MS = 300
 
 const DEFAULT_TIMER = {
   taskId: null as string | null,
@@ -46,20 +49,16 @@ export function useTimeTrackPageData(core: UseTimeTrackCoreReturn) {
 
   const [dateRange, setDateRange] = useState<DateRangeFilter>(getInitialDateRange)
   const [reportsSearch, setReportsSearch] = useState("")
+  const debouncedReportsSearch = useDebouncedValue(reportsSearch, SEARCH_DEBOUNCE_MS)
   const [taskPickerOpen, setTaskPickerOpen] = useState(false)
   const weekRange = getCurrentWeekRange()
 
   const analyticsQuery = useQuery({
-    queryKey: timeTrackKeys.dashboard(
-      dateRange.startDate,
-      dateRange.endDate,
-      reportsSearch.trim()
-    ),
+    queryKey: timeTrackKeys.dashboard(dateRange.startDate, dateRange.endDate),
     queryFn: () =>
       fetchTimeTrackDashboard({
         start_date: dateRange.startDate,
         end_date: dateRange.endDate,
-        ...(reportsSearch.trim() ? { search: reportsSearch.trim() } : {}),
       }),
     staleTime: 60_000,
   })
@@ -116,10 +115,10 @@ export function useTimeTrackPageData(core: UseTimeTrackCoreReturn) {
   )
 
   const filteredEntries = useMemo(() => {
-    if (!reportsSearch.trim()) return entriesInDateRange
-    const query = reportsSearch.toLowerCase()
+    if (!debouncedReportsSearch.trim()) return entriesInDateRange
+    const query = debouncedReportsSearch.toLowerCase()
     return entriesInDateRange.filter((e) => e.taskTitle.toLowerCase().includes(query))
-  }, [entriesInDateRange, reportsSearch])
+  }, [entriesInDateRange, debouncedReportsSearch])
 
   const availableTasksToAdd = useMemo(
     () => allTasksForPicker.filter((task) => !trackedTasks.some((t) => t.taskId === task.id)),
@@ -234,7 +233,9 @@ export function useTimeTrackPageData(core: UseTimeTrackCoreReturn) {
   )
 
   const isPageLoading =
-    analyticsQuery.isLoading || weekQuery.isLoading || (taskPickerOpen && tasksQuery.isLoading)
+    (analyticsQuery.isLoading && !analyticsQuery.data) ||
+    (weekQuery.isLoading && !weekQuery.data) ||
+    (taskPickerOpen && tasksQuery.isLoading && !tasksQuery.data)
 
   const isSaving = deleteEntryMutation.isPending
 

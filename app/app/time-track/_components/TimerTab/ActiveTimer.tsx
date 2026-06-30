@@ -4,15 +4,22 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Pause, Play, Square } from "lucide-react"
 import type { UseTimeTrackReturn } from "../../_hooks/useTimeTrack"
-import { formatTimerClock } from "../../_utils/formatTime"
+import { formatTimerClock, formatWorkedTotal } from "../../_utils/formatTime"
 
 interface ActiveTimerProps {
   timeTrack: UseTimeTrackReturn
 }
 
 export function ActiveTimer({ timeTrack }: ActiveTimerProps) {
-  const { activeTask, activeTimer, displayClockSeconds, startTimer, pauseTimer, stopTimer } =
-    timeTrack
+  const {
+    activeTask,
+    activeTimer,
+    displayClockSeconds,
+    todayTotalSeconds,
+    startTimer,
+    pauseTimer,
+    stopTimer,
+  } = timeTrack
 
   const isRunning = activeTimer.status === "running"
   const hasActiveTask = Boolean(activeTask)
@@ -29,6 +36,13 @@ export function ActiveTimer({ timeTrack }: ActiveTimerProps) {
         {activeTask?.projectTitle && (
           <p className="text-sm text-slate-500 font-mono">{activeTask.projectTitle}</p>
         )}
+        <p className="mt-3 text-sm font-mono text-slate-400">
+          Today:{" "}
+          <span className="font-semibold text-cyan-300/90">
+            {formatWorkedTotal(todayTotalSeconds)}
+          </span>{" "}
+          worked
+        </p>
 
         <div className="mt-8 flex items-center gap-3">
           {!isRunning ? (

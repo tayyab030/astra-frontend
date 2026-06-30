@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Clock } from "lucide-react"
-import { formatDuration } from "../../_utils/formatTime"
+import { formatWorkedTotal } from "../../_utils/formatTime"
 
 interface TodaySummaryProps {
   totalSeconds: number
@@ -16,8 +16,10 @@ export function TodaySummary({ totalSeconds }: TodaySummaryProps) {
           <Clock className="h-5 w-5 text-cyan-300" />
         </div>
         <div>
-          <p className="text-sm text-slate-400 font-mono">Total today</p>
-          <p className="text-xl font-bold text-white font-mono">{formatDuration(totalSeconds)}</p>
+          <p className="text-sm text-slate-400 font-mono">Total worked today</p>
+          <p className="text-xl font-bold text-white font-mono">
+            {formatWorkedTotal(totalSeconds)}
+          </p>
         </div>
       </CardContent>
     </Card>

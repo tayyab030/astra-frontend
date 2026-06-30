@@ -10,8 +10,19 @@ interface ReportsFiltersProps {
 }
 
 export function ReportsFilters({ timeTrack }: ReportsFiltersProps) {
-  const { reportsSearch, setReportsSearch, dateRange, setDateRangePreset, setCustomDateRange } =
-    timeTrack
+  const {
+    reportsSearch,
+    setReportsSearch,
+    dateRange,
+    setDateRangePreset,
+    setCustomDateRange,
+    entriesInDateRange,
+  } = timeTrack
+
+  const periodTotalSeconds = entriesInDateRange.reduce(
+    (sum, entry) => sum + entry.durationSeconds,
+    0
+  )
 
   return (
     <div className="space-y-4">
@@ -19,6 +30,7 @@ export function ReportsFilters({ timeTrack }: ReportsFiltersProps) {
         dateRange={dateRange}
         onPresetChange={setDateRangePreset}
         onCustomChange={setCustomDateRange}
+        totalSeconds={periodTotalSeconds}
       />
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -27,6 +39,7 @@ export function ReportsFilters({ timeTrack }: ReportsFiltersProps) {
           value={reportsSearch}
           onChange={(e) => setReportsSearch(e.target.value)}
           className="pl-9 bg-slate-800/50 border-slate-600 text-white font-mono"
+          autoComplete="off"
         />
       </div>
     </div>

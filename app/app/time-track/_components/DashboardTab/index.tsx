@@ -21,6 +21,11 @@ export function DashboardTab({ timeTrack }: DashboardTabProps) {
 
   const stats = useMemo(() => getDashboardStats(entriesInDateRange), [entriesInDateRange])
 
+  const periodTotalSeconds = useMemo(
+    () => entriesInDateRange.reduce((sum, entry) => sum + entry.durationSeconds, 0),
+    [entriesInDateRange]
+  )
+
   const dailyData = useMemo(
     () => buildDailyTrendData(entriesInDateRange, dateRange.startDate, dateRange.endDate),
     [entriesInDateRange, dateRange]
@@ -34,6 +39,7 @@ export function DashboardTab({ timeTrack }: DashboardTabProps) {
         dateRange={dateRange}
         onPresetChange={setDateRangePreset}
         onCustomChange={setCustomDateRange}
+        totalSeconds={periodTotalSeconds}
       />
       <DashboardStats stats={stats} />
       <DailyTimeChart data={dailyData} />

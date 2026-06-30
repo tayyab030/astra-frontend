@@ -10,6 +10,19 @@ export function formatDuration(totalSeconds: number): string {
   return `${hours}h ${minutes}m`
 }
 
+/** Human-readable total for summary labels (e.g. "2 hr 15 min") */
+export function formatWorkedTotal(totalSeconds: number): string {
+  if (totalSeconds === 0) return "0 min"
+  if (totalSeconds < 60) return "< 1 min"
+
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+
+  if (hours === 0) return `${minutes} min`
+  if (minutes === 0) return `${hours} hr`
+  return `${hours} hr ${minutes} min`
+}
+
 export function formatTimerClock(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
