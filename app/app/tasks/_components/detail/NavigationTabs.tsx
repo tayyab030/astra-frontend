@@ -16,12 +16,12 @@ const navigationItems = [
   { id: "dashboard", label: "Dashboard", icon: Network },
 ]
 
-const NavigationTabs: React.FC<NavigationTabsProps> = ({
+export default function NavigationTabs({
   activeTab = "list",
   onTabChange,
-}) => {
+}: NavigationTabsProps) {
   return (
-    <div className="flex items-center space-x-1 border-b border-slate-700/50 bg-slate-900/50 px-4 py-2 backdrop-blur-sm">
+    <div className="flex items-center space-x-1 overflow-x-auto border-b border-slate-700/50 bg-slate-900/50 px-4 py-2 backdrop-blur-sm">
       {navigationItems.map((item) => {
         const Icon = item.icon
         const isActive = activeTab === item.id
@@ -32,14 +32,11 @@ const NavigationTabs: React.FC<NavigationTabsProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onTabChange?.(item.id)}
-            className={`
-              flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200
-              ${
-                isActive
-                  ? "border-b-2 border-white bg-transparent text-white"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
-              }
-            `}
+            className={`flex shrink-0 items-center space-x-2 px-3 py-2 text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? "border-b-2 border-white bg-transparent text-white"
+                : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+            }`}
           >
             <Icon className="h-4 w-4" />
             <span>{item.label}</span>
@@ -49,5 +46,3 @@ const NavigationTabs: React.FC<NavigationTabsProps> = ({
     </div>
   )
 }
-
-export default NavigationTabs

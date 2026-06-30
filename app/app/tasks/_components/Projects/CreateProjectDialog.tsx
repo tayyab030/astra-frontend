@@ -19,7 +19,7 @@ import ColorIconSelector from "./ColorIconSelector";
 import { IconName } from "./iconHelper";
 import SelectField from "@/components/common/SelectField";
 import { PROJECT_STATUS_OPTIONS } from "@/constants/dropdownOptions";
-import { DatePicker } from "@/components/common/DatePicker";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useForm } from "react-hook-form";
 import {
     formDefaultValues,
@@ -28,22 +28,32 @@ import {
 } from "../../_schemas/project.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { authApi } from "@/lib/api/simpleApi";
-import { TASKS } from "@/lib/api";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useActiveItem } from "@/hooks/handleparams";
 import MainLoader from "@/components/common/MainLoader";
-import { AxiosResponse } from "axios";
+import { useProjectDetails, useProjects } from "../../_hooks/useProjects";
 
 interface CreateProjectDialogProps {
     refetchProjects: () => void;
+}
+
+function buildProjectPayload(data: ProjectType) {
+    return {
+        title: data.title.trim(),
+        starred: data.starred,
+        status: data.status,
+        color: data.color,
+        description: data.description.trim(),
+        due_date: data.due_date || null,
+        icon: data.icon,
+    };
 }
 
 const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     refetchProjects,
 }) => {
     const [open, setOpen] = useState(false);
+    const { createProject, updateProject, isCreatingProject, isUpdatingProject } =
+        useProjects();
 
     const {
         activeItem: selectedProjectId,
@@ -68,32 +78,22 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
         defaultValues: formDefaultValues,
     });
 
-    // get project details from api by id
-    const getProjectDetails = async (projectId: string) => {
-        try {
-            const response = await authApi.get(`${TASKS.PROJECTS}${projectId}/`);
-            return response.data;
-        } catch (error: any) {
-            console.error(error);
-            toast.error(
-                error?.response?.data?.message || "Failed to get project details"
-            );
-        }
-    };
-
-    const { data: projectDetails, isLoading: isLoadingProjectDetails } = useQuery(
-        {
-            queryKey: ["projectDetails", selectedProjectId],
-            queryFn: () => getProjectDetails(selectedProjectId),
-            enabled: !!selectedProjectId && open,
-        }
-    );
+    const { data: projectDetails, isLoading: isLoadingProjectDetails } =
+        useProjectDetails(selectedProjectId, open);
 
     useEffect(() => {
         if (projectDetails) {
-            reset(projectDetails);
+            reset({
+                title: projectDetails.title,
+                starred: projectDetails.starred,
+                status: projectDetails.status,
+                color: projectDetails.color,
+                description: projectDetails.description ?? "",
+                due_date: projectDetails.due_date,
+                icon: projectDetails.icon,
+            });
         }
-    }, [projectDetails]);
+    }, [projectDetails, reset]);
 
     const handleDialog = (status: boolean) => {
         setOpen(status);
@@ -104,30 +104,19 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
     };
 
     const onSubmit = async (data: ProjectType) => {
-        try {
-            let response: AxiosResponse<any, any, {}>;
-            if (selectedProjectId) {
-                response = await authApi.put(
-                    `${TASKS.PROJECTS}${selectedProjectId}/`,
-                    data
-                );
-            } else {
-                response = await authApi.post(TASKS.PROJECTS, data);
-            }
-            toast.success(response?.data?.message || "Profile created successfully");
-            refetchProjects();
-            handleDialog(false);
-            return response.data;
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error?.response?.data?.message || "Failed to create project");
+        const payload = buildProjectPayload(data);
+
+        if (selectedProjectId) {
+            await updateProject({ id: selectedProjectId, data: payload });
+        } else {
+            await createProject(payload);
         }
+
+        refetchProjects();
+        handleDialog(false);
     };
 
-    const { mutate: handleCreateProject, isPending: isCreatingProject } =
-        useMutation({
-            mutationFn: onSubmit,
-        });
+    const isSaving = isCreatingProject || isUpdatingProject;
 
     return (
         <Dialog open={open} onOpenChange={handleDialog}>
@@ -146,7 +135,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
                             <Plus className="w-5 h-5 text-white" />
                         </div>
-                        Create New Project
+                        {selectedProjectId ? "Edit Project" : "Create New Project"}
                     </DialogTitle>
                     <p className="text-gray-400 text-sm mt-2">
                         Set up your project with all the details you need
@@ -156,9 +145,8 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                 {isLoadingProjectDetails ? (
                     <MainLoader size={48} />
                 ) : (
-                    <form onSubmit={handleSubmit((data) => handleCreateProject(data))}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] my-4 pr-2">
-                            {/* Project Title Section */}
                             <div className="space-y-2">
                                 <Label
                                     htmlFor="title"
@@ -214,9 +202,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 )}
                             </div>
 
-                            {/* Project Details Grid */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {/* Status Card */}
                                 <div className="space-y-3">
                                     <Label
                                         htmlFor="status"
@@ -237,7 +223,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     />
                                 </div>
 
-                                {/* Due Date Card */}
                                 <div className="space-y-3">
                                     <Label
                                         htmlFor="due_date"
@@ -247,25 +232,16 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                         Due Date
                                     </Label>
                                     <DatePicker
-                                        value={
-                                            watch("due_date")
-                                                ? new Date(watch("due_date")!)
-                                                : undefined
-                                        }
+                                        value={watch("due_date") || undefined}
                                         onChange={(value) =>
-                                            setValue(
-                                                "due_date",
-                                                typeof value === "string"
-                                                    ? value
-                                                    : value?.toISOString(),
-                                                { shouldDirty: true }
-                                            )
+                                            setValue("due_date", value ?? null, { shouldDirty: true })
                                         }
+                                        placeholder="Pick due date"
+                                        buttonClassName="!w-full bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/50 hover:text-white"
                                     />
                                 </div>
                             </div>
 
-                            {/* Description Card */}
                             <div className="space-y-3">
                                 <Label
                                     htmlFor="description"
@@ -289,7 +265,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 />
                             </div>
 
-                            {/* Color and Icon Selector Card */}
                             <div className="space-y-4">
                                 <Label className="text-white text-sm font-medium flex items-center">
                                     <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
@@ -309,7 +284,6 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             </div>
                         </div>
 
-                        {/* Form Actions */}
                         <DialogFooter>
                             <DialogClose asChild>
                                 <Button
@@ -323,14 +297,14 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             <Button
                                 type="submit"
                                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 h-11 shadow-lg hover:shadow-blue-500/25 transition-all duration-200"
-                                disabled={isCreatingProject || !isDirty}
+                                disabled={isSaving || !isDirty}
                             >
                                 {selectedProjectId ? (
                                     <Pencil className="w-4 h-4 mr-2" />
                                 ) : (
                                     <Plus className="w-4 h-4 mr-2" />
                                 )}
-                                {isCreatingProject ? (
+                                {isSaving ? (
                                     <>
                                         <Loader2 className="w-4 h-4 ml-2 animate-spin" />
                                         <span>

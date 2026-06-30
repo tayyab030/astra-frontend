@@ -12,11 +12,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-interface DatePickerProps {
+export interface DatePickerProps {
   value?: Date | string
   onChange?: (date: string | undefined) => void
   placeholder?: string
-  disabled?: (date: Date) => boolean
+  disabled?: boolean | ((date: Date) => boolean)
   className?: string
   buttonClassName?: string
   label?: string
@@ -24,6 +24,7 @@ interface DatePickerProps {
   error?: string
   fromYear?: number
   toYear?: number
+  id?: string
 }
 
 function parseDateValue(value?: Date | string) {
@@ -46,25 +47,34 @@ export function DatePicker({
   error,
   fromYear = 1900,
   toYear = new Date().getFullYear() + 10,
+  id,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false)
   const selectedDate = useMemo(() => parseDateValue(value), [value])
+  const isButtonDisabled = typeof disabled === "boolean" ? disabled : false
+  const disabledDays = typeof disabled === "function" ? disabled : undefined
 
   return (
     <div className={cn("flex flex-col space-y-2", className)}>
-      {label && (
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      {label ? (
+        <label
+          htmlFor={id}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           {label}
         </label>
-      )}
+      ) : null}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
+            id={id}
             type="button"
+            disabled={isButtonDisabled}
             className={cn(
               "w-full h-10 px-3 rounded-md text-left font-normal flex items-center justify-between bg-slate-800/50 border-slate-700 border",
               !selectedDate && "text-muted-foreground",
-              buttonClassName
+              error && "border-destructive",
+              buttonClassName,
             )}
           >
             {selectedDate ? format(selectedDate, "PPP") : <span>{placeholder}</span>}
@@ -81,7 +91,7 @@ export function DatePicker({
                 setOpen(false)
               }
             }}
-            disabled={disabled}
+            disabled={disabledDays}
             captionLayout="dropdown"
             startMonth={new Date(fromYear, 0)}
             endMonth={new Date(toYear, 11)}
@@ -89,8 +99,8 @@ export function DatePicker({
           />
         </PopoverContent>
       </Popover>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+      {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+      {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
     </div>
   )
 }

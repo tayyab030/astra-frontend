@@ -25,21 +25,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import ColorIconSelector from "./ColorIconSelector";
-import { authApi, TASKS } from "@/lib/api";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { Project } from ".";
+import type { PatchProjectPayload, Project } from "@/lib/api/tasks";
 import { useActiveItem } from "@/hooks/handleparams";
 
 interface ProjectDropdownMenuProps {
     selectedProject: Project;
     refetchProjects: () => void;
-}
-
-export interface HandlePatchProjectPayload {
-    starred?: boolean;
-    color?: string;
-    icon?: string;
+    onPatchProject: (payload: { id: string; data: PatchProjectPayload }) => Promise<unknown>;
+    onDeleteProject: (id: string) => Promise<unknown>;
+    isPatchingProject?: boolean;
+    isDeletingProject?: boolean;
 }
 
 const handleMenuContent = ({
@@ -48,9 +43,9 @@ const handleMenuContent = ({
     onStarred,
     starred
 }: {
-    onEdit: (projectId: number) => void;
-    onDelete: (projectId: number) => void;
-    onStarred: (projectId: number) => void;
+    onEdit: (projectId: string) => void;
+    onDelete: (projectId: string) => void;
+    onStarred: (projectId: string) => void;
     starred: boolean;
 }) => {
     const menuContent = [
@@ -87,7 +82,11 @@ const handleMenuContent = ({
 
 const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
     selectedProject,
-    refetchProjects
+    refetchProjects,
+    onPatchProject,
+    onDeleteProject,
+    isPatchingProject,
+    isDeletingProject,
 }) => {
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -96,53 +95,30 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
 
     const { id: projectId, starred, color: projectColor, icon: projectIcon } = selectedProject;
 
-    // handle delete project
     const handleDelete = async () => {
-        try {
-            const response = await authApi.delete(`${TASKS.PROJECTS}${projectId}/`);
-            toast.success(response?.data?.message || "Project deleted successfully");
-            setShowDeleteConfirmation(false);
-            refetchProjects();
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error?.response?.data?.message || "Failed to delete project");
-        }
-    }
+        await onDeleteProject(projectId);
+        setShowDeleteConfirmation(false);
+        refetchProjects();
+    };
 
-    const { mutate: handleDeleteProject, isPending: isDeletingProject } = useMutation({
-        mutationFn: handleDelete,
-    })
-
-    // handle star project
-    const handlePatchProject = async (payload: HandlePatchProjectPayload) => {
-        // Return early if payload is empty
+    const handlePatchProject = async (payload: PatchProjectPayload) => {
         if (Object.keys(payload).length === 0) {
             return;
         }
 
-        try {
-            await authApi.patch(`${TASKS.PROJECTS}${projectId}/`, payload);
-            // toast.success(response?.data?.message || "Project starred successfully");
-            refetchProjects();
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error?.response?.data?.message || "Failed to star project");
-        }
-    }
-
-    const { mutate: handlePatchMutation, isPending: isStarringProject } = useMutation({
-        mutationFn: handlePatchProject,
-    })
+        await onPatchProject({ id: projectId, data: payload });
+        refetchProjects();
+    };
 
     const menuContent = handleMenuContent({
         onEdit: () => {
-            setSelectedProjectId(projectId.toString());
+            setSelectedProjectId(projectId);
         },
         onDelete: () => {
             setShowDeleteConfirmation(true);
         },
         onStarred: () => {
-            handlePatchMutation({ starred: !starred });
+            void handlePatchProject({ starred: !starred });
         },
         starred
     });
@@ -172,7 +148,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                                     selectedColor={projectColor}
                                                     selectedIcon={projectIcon}
                                                     className="w-80"
-                                                    handlePatchMutation={handlePatchMutation}
+                                                    handlePatchMutation={handlePatchProject}
                                                 />
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>
@@ -183,7 +159,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                                         <DropdownMenuItem
                                             onClick={() => handleClick(projectId)}
                                             className={cn("flex items-center gap-3 p-3", itemClassName)}
-                                            disabled={isDeletingProject || isStarringProject}
+                                            disabled={isDeletingProject || isPatchingProject}
                                         >
                                             {icon}
                                             <span>{label}</span>
@@ -209,7 +185,7 @@ const ProjectDropdownMenu: React.FC<ProjectDropdownMenuProps> = ({
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
-                                handleDeleteProject();
+                                void handleDelete();
                             }}
                             className="bg-red-600 hover:bg-red-700 text-white"
                             disabled={isDeletingProject}

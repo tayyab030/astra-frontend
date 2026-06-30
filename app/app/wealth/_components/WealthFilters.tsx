@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -51,10 +51,15 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
   const [endYear, setEndYear] = useState(String(currentYear))
 
   const startYearNumber = Number(startYear)
+  const onChangeRef = useRef(onChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
 
   useEffect(() => {
     if (mode === "month") {
-      onChange?.({
+      onChangeRef.current?.({
         mode: "month",
         year: Number(monthYear),
         month: Number(month),
@@ -62,12 +67,12 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
       return
     }
 
-    onChange?.({
+    onChangeRef.current?.({
       mode: "year",
       startYear: startYearNumber,
       endYear: Number(endYear),
     })
-  }, [mode, monthYear, month, startYear, endYear, startYearNumber, onChange])
+  }, [mode, monthYear, month, startYear, endYear, startYearNumber])
 
   const handleStartYearChange = (value: string) => {
     setStartYear(value)

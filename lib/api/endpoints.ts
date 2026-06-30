@@ -37,11 +37,22 @@ export const API_ENDPOINTS = {
 
   // Tasks endpoints
   TASKS: {
+    LIST: "/tasks/",
+    TASK: (id: string) => `/tasks/${id}/`,
     PROJECTS: "/tasks/projects/",
+    PROJECT: (id: string) => `/tasks/projects/${id}/`,
     PROJECT_TASKS: (projectId: string) =>
       `/tasks/projects/${projectId}/tasks/`,
-    // TAGS: "/tasks/tags/",
-    // COMPLETED_TASKS: "/tasks/completed-tasks/",
+  },
+
+  // Goals endpoints
+  GOALS: {
+    DASHBOARD: "/goals/",
+    GOALS: "/goals/",
+    GOAL: (id: string) => `/goals/${id}/`,
+    MILESTONES: (goalId: string) => `/goals/${goalId}/milestones/`,
+    MILESTONE: (goalId: string, milestoneId: string) =>
+      `/goals/${goalId}/milestones/${milestoneId}/`,
   },
 
   // Wealth endpoints
