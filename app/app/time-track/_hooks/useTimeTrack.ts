@@ -366,6 +366,25 @@ export function useTimeTrack() {
     void pauseTimer()
   }, [pauseTimer])
 
+  const playTask = useCallback(
+    async (task: AvailableTask) => {
+      const isTracked = trackedTasks.some((t) => t.taskId === task.id)
+      if (!isTracked) {
+        await addTrackedTaskMutation.mutateAsync({ task_id: task.id, track_date: today })
+      }
+      await startTimer(task.id)
+    },
+    [trackedTasks, addTrackedTaskMutation, today, startTimer]
+  )
+
+  const stopTask = useCallback(
+    async (taskId: string) => {
+      if (activeTimer.taskId !== taskId || activeTimer.status !== "running") return
+      await pauseTimer()
+    },
+    [activeTimer, pauseTimer]
+  )
+
   const resumeTimer = useCallback(
     (taskId: string) => {
       void startTimer(taskId)
@@ -436,6 +455,8 @@ export function useTimeTrack() {
     startTimer,
     pauseTimer,
     stopTimer,
+    playTask,
+    stopTask,
     resumeTimer,
     setDateRangePreset,
     setCustomDateRange,
