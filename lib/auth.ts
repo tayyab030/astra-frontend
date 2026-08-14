@@ -1,35 +1,42 @@
-import { store, persistor } from "@/store/store";
-import { removeRefreshTokenCookie } from "@/lib/cookies";
-import { revertAll } from "@/store/slice/resetStore";
-import { ROUTES } from "@/constants/routes";
-import { toast } from "sonner";
+import { store, persistor } from "@/store/store"
+import { removeRefreshTokenCookie } from "@/lib/cookies"
+import { revertAll } from "@/store/slice/resetStore"
+import { ROUTES } from "@/constants/routes"
+import { toast } from "sonner"
+import { resetLogoutGuard } from "@/lib/auth/tokenManager"
 
-export const logout = async () => {
-  // Clear all auth data from Redux store
-  store.dispatch(revertAll());
+export type LogoutOptions = {
+  reason?: "expired" | "manual"
+}
 
-  // Clear persisted state
-  persistor.purge();
+export const logout = async (options?: LogoutOptions) => {
+  const reason = options?.reason ?? "manual"
 
-  // Remove refresh token from cookie
-  await removeRefreshTokenCookie();
-  toast.success("Logged out successfully");
+  store.dispatch(revertAll())
+  await persistor.purge()
+  await removeRefreshTokenCookie()
 
-  // Redirect to login page
-  window.location.href = ROUTES.AUTH.LOGIN;
-};
+  if (reason === "expired") {
+    toast.error("Your session has expired. Please log in again.")
+  } else {
+    toast.success("Logged out successfully")
+  }
+
+  resetLogoutGuard()
+  window.location.href = ROUTES.AUTH.LOGIN
+}
 
 export const isAuthenticated = (): boolean => {
-  const state = store.getState();
-  return state.auth?.isAuthenticated && state.user?.isAuthenticated;
-};
+  const state = store.getState()
+  return state.auth?.isAuthenticated && state.user?.isAuthenticated
+}
 
 export const getCurrentUser = () => {
-  const state = store.getState();
-  return state.user?.user;
-};
+  const state = store.getState()
+  return state.user?.user
+}
 
 export const getAccessToken = () => {
-  const state = store.getState();
-  return state.auth?.accessToken;
-};
+  const state = store.getState()
+  return state.auth?.accessToken
+}

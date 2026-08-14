@@ -87,6 +87,19 @@ export const API_ENDPOINTS = {
     MOOD: "/health/mood/",
   },
 
+  // Notes endpoints
+  NOTES: {
+    DASHBOARD: "/notes/",
+    NOTES: "/notes/",
+    NOTE: (id: string) => `/notes/${id}/`,
+    PERMANENT: (id: string) => `/notes/${id}/permanent/`,
+    RESTORE: (id: string) => `/notes/${id}/restore/`,
+    ARCHIVE: (id: string) => `/notes/${id}/archive/`,
+    DUPLICATE: (id: string) => `/notes/${id}/duplicate/`,
+    BULK: "/notes/bulk/",
+    RESTORE_VERSION: (id: string) => `/notes/${id}/versions/restore/`,
+  },
+
   // Assistant endpoints
   ASSISTANT: {
     // CHAT: "/assistant/chat",

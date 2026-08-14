@@ -10,6 +10,7 @@ import { Menu } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { useAuthSession } from "@/hooks/useAuthSession";
 import { TimeTrackProvider, useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider";
 
 const TimeTrackActivityBar = dynamic(
@@ -31,6 +32,7 @@ const AuthLayoutShell = ({
 }>) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
+  useAuthSession();
   const { settings } = useTimeTrackContext();
   const isGoalDetailPage = /^\/app\/tasks\/goals\/[^/]+$/.test(pathname);
   const isScrollLockedTaskView =
