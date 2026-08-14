@@ -4,6 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { Bot, Mic, Send, Square, Trash2, User, Volume2, VolumeX } from "lucide-react"
 
+import { VoiceWaveform } from "@/components/assistant/VoiceWaveform"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -48,6 +49,7 @@ export default function AssistantPage() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [speakReplies, setSpeakReplies] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [micStream, setMicStream] = useState<MediaStream | null>(null)
 
   const historyRef = useRef<ChatMessage[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -296,6 +298,7 @@ export default function AssistantPage() {
       stopSpeechRef.current = false
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream
+      setMicStream(stream)
       chunksRef.current = []
 
       const mimeType = pickRecorderMimeType()
@@ -314,6 +317,7 @@ export default function AssistantPage() {
             const blob = new Blob(chunksRef.current, { type: blobType })
             mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
             mediaStreamRef.current = null
+            setMicStream(null)
 
             if (blob.size < 1000) {
               setError("Recording was too short. Hold a bit longer, then tap mic again.")
@@ -344,6 +348,7 @@ export default function AssistantPage() {
           } finally {
             setIsTranscribing(false)
             setIsRecording(false)
+            setMicStream(null)
           }
         })()
       }
@@ -352,6 +357,9 @@ export default function AssistantPage() {
       setIsRecording(true)
       setError(null)
     } catch (err) {
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
+      mediaStreamRef.current = null
+      setMicStream(null)
       setError(
         err instanceof Error
           ? err.message
@@ -365,17 +373,12 @@ export default function AssistantPage() {
     const recorder = mediaRecorderRef.current
     if (!recorder || recorder.state === "inactive") {
       setIsRecording(false)
+      setMicStream(null)
       return
     }
+    // Return composer to text mode immediately; transcription continues in onstop.
+    setIsRecording(false)
     recorder.stop()
-  }
-
-  const toggleRecording = () => {
-    if (isRecording) {
-      stopRecording()
-      return
-    }
-    void startRecording()
   }
 
   const clearChat = () => {
@@ -394,7 +397,7 @@ export default function AssistantPage() {
   }
 
   const statusLabel = isRecording
-    ? "Listening… click mic to send"
+    ? "Listening… click send to finish"
     : isTranscribing
       ? "Transcribing with Whisper…"
       : isLoading
@@ -402,6 +405,17 @@ export default function AssistantPage() {
         : isSpeaking
           ? "Astra is speaking…"
           : null
+
+  const sendDisabled =
+    isTranscribing || isLoading || (!isRecording && !input.trim())
+
+  const onSendPress = () => {
+    if (isRecording) {
+      stopRecording()
+      return
+    }
+    void handleSendText(input)
+  }
 
   return (
     <div className="astra-page font-mono">
@@ -508,29 +522,65 @@ export default function AssistantPage() {
 
         <Card className="astra-card">
           <div className="p-4">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={isRecording ? "destructive" : "outline"}
-                size="icon"
-                onClick={toggleRecording}
-                disabled={isLoading || isSpeaking || isTranscribing}
-                aria-label={isRecording ? "Stop recording" : "Start recording"}
+            <div className="flex items-center gap-2">
+              <div
+                className={`overflow-hidden transition-all duration-200 ease-out ${
+                  isRecording
+                    ? "pointer-events-none w-0 scale-95 opacity-0"
+                    : "w-10 scale-100 opacity-100"
+                }`}
               >
-                {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder={isRecording ? "Listening…" : "Ask Astra anything..."}
-                className="astra-input flex-1"
-                disabled={isLoading || isRecording || isTranscribing}
-              />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => void startRecording()}
+                  disabled={isLoading || isSpeaking || isTranscribing || isRecording}
+                  aria-label="Start recording"
+                  className="h-10 w-10"
+                >
+                  {isTranscribing ? (
+                    <span className="h-4 w-4 animate-pulse rounded-full bg-muted-foreground/50" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+
+              <div className="relative min-h-10 flex-1">
+                <div
+                  className={`transition-all duration-200 ease-out ${
+                    isRecording
+                      ? "pointer-events-none absolute inset-0 -translate-y-1 opacity-0"
+                      : "relative translate-y-0 opacity-100"
+                  }`}
+                >
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder="Ask Astra anything..."
+                    className="astra-input w-full"
+                    disabled={isLoading || isRecording || isTranscribing}
+                  />
+                </div>
+
+                <div
+                  className={`transition-all duration-200 ease-out ${
+                    isRecording
+                      ? "relative translate-y-0 opacity-100"
+                      : "pointer-events-none absolute inset-0 translate-y-1 opacity-0"
+                  }`}
+                >
+                  <VoiceWaveform stream={micStream} active={isRecording} />
+                </div>
+              </div>
+
               <Button
-                onClick={() => void handleSendText(input)}
-                disabled={!input.trim() || isLoading || isRecording || isTranscribing}
+                onClick={onSendPress}
+                disabled={sendDisabled}
                 className="astra-btn-primary"
+                aria-label={isRecording ? "Stop and send" : "Send message"}
               >
                 <Send className="h-4 w-4" />
               </Button>
