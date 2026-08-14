@@ -271,7 +271,7 @@ export function TransactionsTab({
                     </SelectTrigger>
                     <SelectContent
                       position="popper"
-                      className="bg-slate-800 border-slate-600/50 max-h-48 overflow-y-auto [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:max-h-44"
+                      className="bg-slate-800 border-slate-600/50 max-h-72 overflow-y-auto [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:max-h-64"
                     >
                       <SelectGroup>
                         <SelectLabel className="font-mono text-slate-400">Expenses</SelectLabel>

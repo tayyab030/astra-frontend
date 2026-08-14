@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   User,
   Palette,
@@ -36,10 +39,28 @@ import {
   Plus,
 } from "lucide-react"
 import CurrencySelect from "@/components/common/CurrencySelect"
+import TimezoneSelect from "@/components/common/TimezoneSelect"
 import { useCurrency } from "@/hooks/useCurrency"
+import {
+  fetchCurrentUser,
+  getUserErrorMessage,
+  updateCurrentUser,
+} from "@/lib/api/user"
+import { getCountryByCode } from "@/lib/countries"
+import { setCurrency as setCurrencyAction } from "@/store/slice/currencySlice"
+import { setUser } from "@/store/slice/userSlice"
+import { useAppDispatch } from "@/store/hooks"
 
 export default function SettingsPage() {
+  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { currency, setCurrency, formatCurrency } = useCurrency()
+
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [profileCurrency, setProfileCurrency] = useState(currency)
+  const [timezone, setTimezone] = useState("UTC")
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -62,6 +83,69 @@ export default function SettingsPage() {
     insights: true,
     dataScope: "all",
   })
+
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isError: isProfileError,
+  } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: fetchCurrentUser,
+  })
+
+  useEffect(() => {
+    if (!profile) return
+    setFirstName(profile.first_name ?? "")
+    setLastName(profile.last_name ?? "")
+    setEmail(profile.email ?? "")
+    const nextCurrency = profile.currency || "USD"
+    setProfileCurrency(nextCurrency)
+    setTimezone(profile.timezone || "UTC")
+    dispatch(setUser(profile))
+    dispatch(setCurrencyAction(nextCurrency))
+  }, [profile, dispatch])
+
+  const initials = useMemo(() => {
+    const first = firstName.trim().charAt(0)
+    const last = lastName.trim().charAt(0)
+    return `${first}${last}`.toUpperCase() || "U"
+  }, [firstName, lastName])
+
+  const { mutate: saveProfile, isPending: isSavingProfile } = useMutation({
+    mutationFn: updateCurrentUser,
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+      if (user.currency) {
+        dispatch(setCurrencyAction(user.currency))
+        setCurrency(user.currency)
+        setProfileCurrency(user.currency)
+      }
+      queryClient.setQueryData(["auth", "me"], user)
+      toast.success("Profile updated")
+    },
+    onError: (error) => {
+      toast.error(getUserErrorMessage(error, "Failed to update profile"))
+    },
+  })
+
+  const handleSaveProfile = () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error("First name and last name are required")
+      return
+    }
+
+    saveProfile({
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      currency: profileCurrency,
+      timezone,
+    })
+  }
+
+  const handleCurrencyChange = (nextCurrency: string) => {
+    setProfileCurrency(nextCurrency)
+    setCurrency(nextCurrency)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -195,109 +279,145 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20 border-2 border-cyan-500/30">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" />
-                    <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xl font-mono">
-                      TA
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-slate-900/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-mono"
-                    >
-                      Change Photo
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-red-400 hover:bg-red-500/10 font-mono">
-                      Remove
-                    </Button>
+                {isProfileLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-20 w-20 rounded-full bg-slate-800/80" />
+                    <Skeleton className="h-10 w-full bg-slate-800/80" />
+                    <Skeleton className="h-10 w-full bg-slate-800/80" />
+                    <Skeleton className="h-10 w-full bg-slate-800/80" />
                   </div>
-                </div>
+                ) : isProfileError ? (
+                  <p className="font-mono text-sm text-red-400">
+                    Could not load your profile. Please refresh and try again.
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-20 w-20 border-2 border-cyan-500/30">
+                        <AvatarImage src="/placeholder.svg?height=80&width=80" />
+                        <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xl font-mono">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-1">
+                        <p className="font-mono text-slate-200">
+                          @{profile?.username}
+                        </p>
+                        <p className="font-mono text-xs text-slate-500">
+                          Account email is managed securely and cannot be changed here.
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName" className="font-mono text-slate-300">
-                      Full Name
-                    </Label>
-                    <Input
-                      id="fullName"
-                      defaultValue="Tayyab Ahmad"
-                      className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="font-mono text-slate-300">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      defaultValue="tayyab@example.com"
-                      className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone" className="font-mono text-slate-300">
-                      Timezone
-                    </Label>
-                    <Select defaultValue="utc-5">
-                      <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-cyan-500/30">
-                        <SelectItem value="utc-5" className="font-mono">
-                          UTC-5 (Eastern)
-                        </SelectItem>
-                        <SelectItem value="utc-8" className="font-mono">
-                          UTC-8 (Pacific)
-                        </SelectItem>
-                        <SelectItem value="utc+0" className="font-mono">
-                          UTC+0 (GMT)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="language" className="font-mono text-slate-300">
-                      Language
-                    </Label>
-                    <Select defaultValue="en">
-                      <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-cyan-500/30">
-                        <SelectItem value="en" className="font-mono">
-                          English
-                        </SelectItem>
-                        <SelectItem value="es" className="font-mono">
-                          Spanish
-                        </SelectItem>
-                        <SelectItem value="fr" className="font-mono">
-                          French
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="currency" className="font-mono text-slate-300">
-                      Currency Format
-                    </Label>
-                    <CurrencySelect value={currency} onValueChange={setCurrency} />
-                    <p className="text-xs text-slate-500 font-mono">
-                      Search and select your preferred currency. Amounts across the app update automatically.
-                    </p>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName" className="font-mono text-slate-300">
+                          First Name
+                        </Label>
+                        <Input
+                          id="firstName"
+                          value={firstName}
+                          onChange={(event) => setFirstName(event.target.value)}
+                          className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName" className="font-mono text-slate-300">
+                          Last Name
+                        </Label>
+                        <Input
+                          id="lastName"
+                          value={lastName}
+                          onChange={(event) => setLastName(event.target.value)}
+                          className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="font-mono text-slate-300">
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          disabled
+                          className="bg-slate-800/50 border-cyan-500/30 text-slate-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="country" className="font-mono text-slate-300">
+                          Country
+                        </Label>
+                        <Input
+                          id="country"
+                          value={
+                            profile?.country
+                              ? getCountryByCode(profile.country)?.name ?? profile.country
+                              : "Not set"
+                          }
+                          disabled
+                          className="bg-slate-800/50 border-cyan-500/30 text-slate-400 font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="timezone" className="font-mono text-slate-300">
+                          Timezone
+                        </Label>
+                        <TimezoneSelect value={timezone} onValueChange={setTimezone} />
+                        <p className="text-xs text-slate-500 font-mono">
+                          Defaults from your country at signup. You can change it anytime.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="language" className="font-mono text-slate-300">
+                          Language
+                        </Label>
+                        <Select defaultValue="en">
+                          <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-cyan-500/30">
+                            <SelectItem value="en" className="font-mono">
+                              English
+                            </SelectItem>
+                            <SelectItem value="es" className="font-mono">
+                              Spanish
+                            </SelectItem>
+                            <SelectItem value="fr" className="font-mono">
+                              French
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="currency" className="font-mono text-slate-300">
+                          Currency Format
+                        </Label>
+                        <CurrencySelect value={profileCurrency} onValueChange={handleCurrencyChange} />
+                        <p className="text-xs text-slate-500 font-mono">
+                          Saved to your account. Amounts across the app update automatically.
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 rounded-lg">
-                  <div>
-                    <h4 className="font-semibold text-cyan-400 font-mono">Two-Factor Authentication</h4>
-                    <p className="text-sm text-slate-400 font-mono">Add an extra layer of security</p>
-                  </div>
-                  <Switch />
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center">
+                      <div className="flex items-center justify-between p-4 bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 rounded-lg">
+                        <div>
+                          <h4 className="font-semibold text-cyan-400 font-mono">Two-Factor Authentication</h4>
+                          <p className="text-sm text-slate-400 font-mono">Add an extra layer of security</p>
+                        </div>
+                        <Switch />
+                      </div>
+                      <Button
+                        onClick={handleSaveProfile}
+                        disabled={isSavingProfile}
+                        className="font-mono bg-gradient-to-r from-cyan-500 to-blue-600 text-white md:min-w-[140px]"
+                      >
+                        {isSavingProfile ? "Saving..." : "Save Profile"}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -223,7 +223,11 @@ export default function WealthPage() {
             isUpdatingBudget={isUpdatingBudget}
             isDeletingBudget={isDeletingBudget}
           />
-          <CategoriesTab categoryTotals={dashboard?.category_totals ?? []} isLoading={isLoading} />
+          <CategoriesTab
+            categoryTotals={dashboard?.category_totals ?? []}
+            incomeCategoryTotals={dashboard?.income_category_totals ?? []}
+            isLoading={isLoading}
+          />
           <TransactionsTab
             transactions={dashboard?.transactions ?? []}
             isLoading={isLoading}

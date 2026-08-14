@@ -75,6 +75,7 @@ export interface WealthDashboard {
   waste_spending: number
   transactions: WealthTransaction[]
   category_totals: WealthCategoryTotal[]
+  income_category_totals: WealthCategoryTotal[]
   category_budgets: WealthCategoryBudget[]
 }
 

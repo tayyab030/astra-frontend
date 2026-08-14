@@ -21,6 +21,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AUTH, publicApi } from "@/lib/api";
 import { toast } from "sonner";
 import { ROUTES } from "@/constants/routes";
+import CountrySelect from "@/components/common/CountrySelect";
+import { getCountryByCode } from "@/lib/countries";
 
 export default function SignupForm() {
     const {
@@ -31,6 +33,10 @@ export default function SignupForm() {
         formState: { errors, isSubmitting },
     } = useForm<SignUpType>({
         resolver: zodResolver(schema),
+        defaultValues: {
+            country: "",
+            terms: false,
+        },
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -39,6 +45,8 @@ export default function SignupForm() {
 
     const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
+    const country = watch("country", "");
+    const selectedCountry = country ? getCountryByCode(country) : undefined;
 
     const passwordRules = [
         { rule: "At least 1 uppercase letter", test: /[A-Z]/.test(password) },
@@ -203,6 +211,31 @@ export default function SignupForm() {
                             {errors.email && (
                                 <p className="text-red-400 text-xs font-mono">
                                     {errors.email.message}
+                                </p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="country" className="text-cyan-200 font-mono">
+                                Where are you from?
+                            </Label>
+                            <CountrySelect
+                                value={country}
+                                onValueChange={(value) =>
+                                    setValue("country", value, { shouldValidate: true })
+                                }
+                            />
+                            {selectedCountry && (
+                                <p className="text-xs text-slate-400 font-mono">
+                                    Default currency:{" "}
+                                    <span className="text-cyan-300">{selectedCountry.currency}</span>
+                                    {" · "}
+                                    Default timezone:{" "}
+                                    <span className="text-cyan-300">{selectedCountry.timezone}</span>
+                                </p>
+                            )}
+                            {errors.country && (
+                                <p className="text-red-400 text-xs font-mono">
+                                    {errors.country.message}
                                 </p>
                             )}
                         </div>

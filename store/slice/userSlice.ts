@@ -2,11 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { revertAll } from "./resetStore";
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   first_name: string;
   last_name: string;
+  currency?: string;
+  country?: string | null;
+  timezone?: string;
 }
 
 interface UserState {

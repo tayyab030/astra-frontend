@@ -15,6 +15,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useDispatch } from 'react-redux'
 import { setAccessToken } from '@/store/slice/authSlice'
+import { setCurrency } from '@/store/slice/currencySlice'
 import { setUser } from '@/store/slice/userSlice'
 import { setRefreshTokenCookie } from '@/lib/cookies'
 import { useRouter } from 'next/navigation'
@@ -52,6 +53,9 @@ const LoginForm = () => {
 
             dispatch(setAccessToken(access));
             dispatch(setUser(user));
+            if (user?.currency) {
+                dispatch(setCurrency(user.currency));
+            }
             await setRefreshTokenCookie(refresh);
 
             toast.success("Login successful");
