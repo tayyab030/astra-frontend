@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
+import { MonthPicker } from "@/components/ui/month-picker"
 import type { HealthPeriodFilter, HealthPeriodMode } from "../../_types/health.types"
 
 const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => String(new Date().getFullYear() - i))
@@ -55,15 +56,12 @@ export function HealthPeriodFilterBar({ filter, onChange }: HealthPeriodFilterBa
       )}
 
       {filter.mode === "month" && (
-        <div>
-          <Label className="text-slate-400 font-mono text-xs mb-2 block">Month</Label>
-          <input
-            type="month"
-            value={filter.selectedMonth}
-            onChange={(e) => onChange({ ...filter, selectedMonth: e.target.value })}
-            className="h-9 rounded-md border border-slate-600/50 bg-slate-900/50 px-3 text-sm font-mono text-white"
-          />
-        </div>
+        <MonthPicker
+          label="Month"
+          value={filter.selectedMonth}
+          onChange={(month) => month && onChange({ ...filter, selectedMonth: month })}
+          buttonClassName="h-9 min-w-[180px] border-slate-600/50 bg-slate-900/50 font-mono text-white"
+        />
       )}
 
       {filter.mode === "year" && (

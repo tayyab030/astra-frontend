@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { DatePicker } from "@/components/ui/date-picker"
+import { MonthPicker } from "@/components/ui/month-picker"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fetchTimeTrackDashboard } from "@/lib/api/timeTrack"
@@ -122,15 +123,12 @@ export function PatternsTab() {
         )}
 
         {mode === "month" && (
-          <div>
-            <Label className="text-slate-400 font-mono text-xs mb-2 block">Month</Label>
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(event) => setSelectedMonth(event.target.value)}
-              className="h-9 rounded-md border border-slate-600/50 bg-slate-900/50 px-3 text-sm font-mono text-white"
-            />
-          </div>
+          <MonthPicker
+            label="Month"
+            value={selectedMonth}
+            onChange={(month) => month && setSelectedMonth(month)}
+            buttonClassName="h-9 min-w-[180px] border-slate-600/50 bg-slate-900/50 font-mono text-white"
+          />
         )}
 
         {mode === "year" && (

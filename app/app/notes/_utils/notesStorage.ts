@@ -24,7 +24,12 @@ export function saveLayoutPreferences(prefs: NotesLayoutPreferences) {
 }
 
 export function getWordCount(content: string): number {
-  return content.trim() ? content.trim().split(/\s+/).length : 0
+  const plain = content
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#*`>_\[\]()!-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+  return plain ? plain.split(/\s+/).length : 0
 }
 
 export function exportNotesAsJson(notes: Note[]): string {

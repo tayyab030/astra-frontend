@@ -17,6 +17,7 @@ import { NoteEditorFullscreen } from "./NoteEditorFullscreen"
 import type { NoteFormValues } from "../_schemas/notes.schema"
 import type { NoteType } from "../_types/notes.types"
 import { TAB_TO_NOTE_TYPE } from "./constants"
+import { sanitizeNoteHtml } from "@/lib/sanitizeNoteHtml"
 
 export function NotesContent() {
   const {
@@ -60,7 +61,7 @@ export function NotesContent() {
     if (formMode === "add") {
       await createNote({
         title: values.title,
-        content: values.content ?? "",
+        content: sanitizeNoteHtml(values.content ?? ""),
         noteType: values.noteType as NoteType,
         category: values.category,
         tags,
@@ -75,7 +76,7 @@ export function NotesContent() {
     } else if (editingNote) {
       updateNote(editingNote.id, {
         title: values.title,
-        content: values.content ?? "",
+        content: sanitizeNoteHtml(values.content ?? ""),
         noteType: values.noteType as NoteType,
         category: values.category,
         tags,

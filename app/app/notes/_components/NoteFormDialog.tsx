@@ -16,7 +16,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/date-time-picker"
+import { cn } from "@/lib/utils"
 import type { Note, NoteType } from "../_types/notes.types"
 import {
   noteDefaultValues,
@@ -98,9 +100,9 @@ export function NoteFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600 text-slate-100 flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="font-poppins text-2xl text-cyan-300">
+      <DialogContent className="flex max-h-[75vh] max-w-3xl flex-col gap-3 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-700 border-slate-600 p-5 text-slate-100 sm:max-w-3xl">
+        <DialogHeader className="shrink-0 pr-6">
+          <DialogTitle className="font-poppins text-xl text-cyan-300">
             {mode === "add" ? "Create New Note" : "Edit Note"}
           </DialogTitle>
           <DialogDescription className="font-inter text-slate-300">
@@ -108,11 +110,11 @@ export function NoteFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
           <form
             id="note-form"
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-5 py-2"
+            className="space-y-4 py-1"
           >
             <div className="space-y-2">
               <Label className="text-slate-200">Title</Label>
@@ -121,10 +123,10 @@ export function NoteFormDialog({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label className="text-slate-200">Type</Label>
                 <Select value={noteType} onValueChange={(v) => setValue("noteType", v as NoteType)}>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className={cn(inputClassName, "w-full")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -134,10 +136,10 @@ export function NoteFormDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label className="text-slate-200">Category</Label>
                 <Select value={watch("category")} onValueChange={(v) => setValue("category", v)}>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className={cn(inputClassName, "w-full")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -147,10 +149,10 @@ export function NoteFormDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label className="text-slate-200">Priority</Label>
                 <Select value={watch("priority")} onValueChange={(v) => setValue("priority", v as NoteFormValues["priority"])}>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className={cn(inputClassName, "w-full")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -163,14 +165,14 @@ export function NoteFormDialog({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label className="text-slate-200">Tags (comma separated)</Label>
                 <Input {...register("tags")} placeholder="tag1, tag2" className={inputClassName} />
               </div>
-              <div className="space-y-2">
+              <div className="min-w-0 space-y-2">
                 <Label className="text-slate-200">Color</Label>
                 <Select value={watch("color") ?? ""} onValueChange={(v) => setValue("color", v)}>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className={cn(inputClassName, "w-full")}>
                     <SelectValue placeholder="Select color" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -190,11 +192,11 @@ export function NoteFormDialog({
                     <div key={field.key} className="space-y-1">
                       <Label className="text-slate-400 text-xs">{field.label}</Label>
                       {field.type === "date" ? (
-                        <Input
-                          type="date"
+                        <DatePicker
                           value={(metadata[field.key] as string) ?? ""}
-                          onChange={(e) => handleMetadataChange(field.key, e.target.value)}
-                          className={inputClassName}
+                          onChange={(date) => handleMetadataChange(field.key, date ?? "")}
+                          placeholder="Pick a date"
+                          buttonClassName={inputClassName}
                         />
                       ) : (
                         <Textarea
@@ -215,7 +217,8 @@ export function NoteFormDialog({
               <RichTextEditor
                 value={watch("content") ?? ""}
                 onChange={(v) => setValue("content", v)}
-                minHeight="min-h-[180px]"
+                minHeight="min-h-[15rem]"
+                maxHeight="max-h-[15rem]"
               />
             </div>
 
@@ -229,14 +232,19 @@ export function NoteFormDialog({
                   <Star className="h-4 w-4" /> Favorite
                 </Label>
               </div>
-              <div className="space-y-1">
+              <div className="min-w-[240px] flex-1 space-y-1">
                 <Label className="text-slate-400 text-xs">Reminder</Label>
-                <Input type="datetime-local" {...register("reminder")} className={inputClassName} />
+                <DateTimePicker
+                  value={watch("reminder")}
+                  onChange={(value) => setValue("reminder", value)}
+                  placeholder="Pick date & time"
+                  buttonClassName={inputClassName}
+                />
               </div>
-              <div className="space-y-1">
+              <div className="min-w-[160px] space-y-1">
                 <Label className="text-slate-400 text-xs">Visibility</Label>
                 <Select value={watch("visibility")} onValueChange={(v) => setValue("visibility", v as NoteFormValues["visibility"])}>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className={cn(inputClassName, "w-full")}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-600">
@@ -248,9 +256,9 @@ export function NoteFormDialog({
               </div>
             </div>
           </form>
-        </ScrollArea>
+        </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-600/50">
+        <div className="flex shrink-0 justify-end gap-3 border-t border-slate-600/50 pt-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-600 text-slate-300">
             Cancel
           </Button>

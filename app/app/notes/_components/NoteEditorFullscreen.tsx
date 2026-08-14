@@ -44,6 +44,7 @@ export function NoteEditorFullscreen({ note, open, onClose }: NoteEditorFullscre
           value={note.content}
           onChange={(content) => updateNote(note.id, { content })}
           minHeight="min-h-[60vh]"
+          maxHeight="max-h-[70vh]"
         />
         <p className="text-xs text-slate-500 font-mono mt-4 text-center">Auto-saved · Press Esc to exit</p>
       </div>

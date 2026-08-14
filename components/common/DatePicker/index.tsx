@@ -85,7 +85,12 @@ export function DatePicker({
             <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+        <PopoverContent
+          className="w-auto p-0 bg-slate-800 border-slate-700"
+          align="start"
+          side="bottom"
+          collisionPadding={16}
+        >
           <Calendar
             mode="single"
             selected={selectedDate}

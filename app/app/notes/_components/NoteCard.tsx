@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { Note } from "../_types/notes.types"
 import { getWordCount } from "../_utils/notesStorage"
+import { noteHtmlToPlainText } from "@/lib/sanitizeNoteHtml"
 import { cardClassName, NOTE_PRIORITIES } from "./constants"
 import { cn } from "@/lib/utils"
 
@@ -159,7 +160,9 @@ export function NoteCard({
       </CardHeader>
       {viewMode !== "compact" && (
         <CardContent className="space-y-3 pt-0">
-          <p className="text-sm text-slate-300 font-inter line-clamp-3">{note.content.replace(/[#*`]/g, "")}</p>
+          <p className="text-sm text-slate-300 font-inter line-clamp-3">
+            {noteHtmlToPlainText(note.content)}
+          </p>
           <div className="flex flex-wrap gap-1">
             {note.tags.slice(0, 4).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs border-slate-600 text-slate-400">

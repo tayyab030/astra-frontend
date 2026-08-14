@@ -40,6 +40,7 @@ import {
 } from "lucide-react"
 import CurrencySelect from "@/components/common/CurrencySelect"
 import TimezoneSelect from "@/components/common/TimezoneSelect"
+import { TimePicker } from "@/components/ui/time-picker"
 import { useCurrency } from "@/hooks/useCurrency"
 import {
   fetchCurrentUser,
@@ -121,6 +122,7 @@ export default function SettingsPage() {
     inApp: true,
     digest: "daily",
   })
+  const [quietHours, setQuietHours] = useState({ start: "22:00", end: "08:00" })
 
   const [moduleWeights, setModuleWeights] = useState({
     productivity: 25,
@@ -925,22 +927,22 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-primary">Quiet Hours</h4>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="font-mono text-muted-foreground">Start Time</Label>
-                      <Input
-                        type="time"
-                        defaultValue="22:00"
-                        className="bg-secondary/60 border-border text-foreground font-mono"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-mono text-muted-foreground">End Time</Label>
-                      <Input
-                        type="time"
-                        defaultValue="08:00"
-                        className="bg-secondary/60 border-border text-foreground font-mono"
-                      />
-                    </div>
+                    <TimePicker
+                      label="Start Time"
+                      value={quietHours.start}
+                      onChange={(value) =>
+                        value && setQuietHours((prev) => ({ ...prev, start: value }))
+                      }
+                      buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
+                    />
+                    <TimePicker
+                      label="End Time"
+                      value={quietHours.end}
+                      onChange={(value) =>
+                        value && setQuietHours((prev) => ({ ...prev, end: value }))
+                      }
+                      buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
+                    />
                   </div>
                 </div>
               </CardContent>

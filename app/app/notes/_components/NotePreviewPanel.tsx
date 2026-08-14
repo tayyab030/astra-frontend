@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { useNotes } from "../_hooks/useNotes"
 import { cardClassName, NOTE_PRIORITIES } from "./constants"
 import { AiActionsPanel } from "./AiActionsPanel"
+import { SafeNoteContent } from "./SafeNoteContent"
 import { getWordCount } from "../_utils/notesStorage"
 
 interface NotePreviewPanelProps {
@@ -81,9 +82,7 @@ export function NotePreviewPanel({ onEdit, onFullscreen }: NotePreviewPanelProps
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           <div className="prose prose-invert prose-sm max-w-none">
-            <p className="text-slate-300 font-inter text-sm whitespace-pre-wrap leading-relaxed">
-              {note.content}
-            </p>
+            <SafeNoteContent html={note.content} />
           </div>
 
           {note.linkedItems.length > 0 && (
