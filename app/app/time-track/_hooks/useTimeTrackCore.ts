@@ -209,11 +209,11 @@ export function useTimeTrackCore() {
   )
 
   const flushRunningSession = useCallback(async () => {
-    if (isFlushingRef.current) return false
+    if (isFlushingRef.current) return
 
     const timer = activeTimerRef.current
-    if (timer.status !== "running" || !timer.taskId || !timer.sessionStartTime) return false
-    if (timer.elapsedSeconds <= 0) return false
+    if (timer.status !== "running" || !timer.taskId || !timer.sessionStartTime) return
+    if (timer.elapsedSeconds <= 0) return
 
     const { taskId, elapsedSeconds, sessionStartTime } = timer
 
@@ -231,10 +231,8 @@ export function useTimeTrackCore() {
           sessionStartTime: new Date().toISOString(),
         }
       })
-      return true
     } catch {
       // Autosave retries on the next interval
-      return false
     } finally {
       isFlushingRef.current = false
     }
@@ -399,14 +397,6 @@ export function useTimeTrackCore() {
     persistSelectedTask(taskId)
   }, [activeTimer, flushRunningSession, persistSelectedTask])
 
-  const saveTimer = useCallback(async () => {
-    const timer = activeTimerRef.current
-    if (timer.status !== "running" || !timer.taskId || timer.elapsedSeconds <= 0) return
-
-    const saved = await flushRunningSession()
-    if (saved) toast.success("Time saved")
-  }, [flushRunningSession])
-
   const stopTimer = useCallback(() => {
     void pauseTimer()
   }, [pauseTimer])
@@ -464,7 +454,6 @@ export function useTimeTrackCore() {
     startTimer,
     pauseTimer,
     stopTimer,
-    saveTimer,
     playTask,
     stopTask,
     resumeTimer,
