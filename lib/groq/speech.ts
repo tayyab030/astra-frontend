@@ -1,5 +1,6 @@
 import {
   GROQ_SPEECH_URL,
+  GROQ_TTS_DIRECTION,
   GROQ_TTS_MAX_CHARS,
   GROQ_TTS_MODEL,
   GROQ_TTS_VOICE,
@@ -12,14 +13,27 @@ export function sanitizeForSpeech(text: string): string {
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/[_#>[\]()]/g, " ")
+    .replace(/[_#>]/g, " ")
+    .replace(/[[\]]/g, " ")
     .replace(/\s+/g, " ")
     .trim()
 }
 
-export function chunkForSpeech(text: string, maxChars = GROQ_TTS_MAX_CHARS): string[] {
+function spokenChunkLimit() {
+  return Math.max(40, GROQ_TTS_MAX_CHARS - (GROQ_TTS_DIRECTION.length + 1))
+}
+
+function withJarvisDirection(text: string): string {
+  const body = sanitizeForSpeech(text)
+  if (!body) return ""
+  return `${GROQ_TTS_DIRECTION} ${body}`.slice(0, GROQ_TTS_MAX_CHARS).trim()
+}
+
+export function chunkForSpeech(text: string): string[] {
   const cleaned = sanitizeForSpeech(text)
   if (!cleaned) return []
+
+  const maxChars = spokenChunkLimit()
   if (cleaned.length <= maxChars) return [cleaned]
 
   const chunks: string[] = []
@@ -50,7 +64,7 @@ export async function createSpeechWav(text: string): Promise<ArrayBuffer> {
     throw new Error("Missing CONSOLE_GROQ_API_KEY.")
   }
 
-  const input = sanitizeForSpeech(text).slice(0, GROQ_TTS_MAX_CHARS)
+  const input = withJarvisDirection(text)
   if (!input) {
     throw new Error("Nothing to speak.")
   }
@@ -87,7 +101,6 @@ export async function createSpeechWav(text: string): Promise<ArrayBuffer> {
     throw new Error("Groq returned empty audio.")
   }
 
-  // Guard against JSON error bodies returned with odd status handling.
   if (contentType.includes("application/json")) {
     try {
       const err = JSON.parse(new TextDecoder().decode(buffer)) as {
