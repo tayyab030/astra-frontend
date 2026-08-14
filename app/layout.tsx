@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { ReduxProvider } from "@/store/Providers"
 import QueryProviders from "@/ReatQuery/provider"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 
 import "./globals.css"
 
@@ -38,12 +39,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} ${poppins.variable}`}>
         <Suspense fallback={null}>
-          <ReduxProvider>
-            <QueryProviders>
-              {children}
-              <Toaster richColors position="top-right" />
-            </QueryProviders>
-          </ReduxProvider>
+          <ThemeProvider>
+            <ReduxProvider>
+              <QueryProviders>
+                {children}
+                <Toaster richColors position="top-right" />
+              </QueryProviders>
+            </ReduxProvider>
+          </ThemeProvider>
         </Suspense>
         <Analytics />
       </body>

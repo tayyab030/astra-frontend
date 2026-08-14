@@ -92,65 +92,24 @@ export default function AnalyticsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 opacity-20">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-            linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)
-          `,
-            backgroundSize: "50px 50px",
-            animation: "grid-move 20s linear infinite",
-          }}
-        />
-      </div>
-
-      {/* Floating Orbs */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" />
-      <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse delay-1000" />
-      <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-full blur-xl animate-pulse delay-2000" />
-
-      {/* Holographic Rings */}
-      <div className="absolute top-1/4 right-1/3 w-64 h-64 border border-cyan-500/20 rounded-full animate-spin-slow" />
-      <div className="absolute bottom-1/3 left-1/4 w-48 h-48 border border-blue-500/20 rounded-full animate-spin-slow-reverse" />
-
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-cyan-400/60 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${10 + Math.random() * 20}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="relative z-10 space-y-8 p-6">
+    <div className="astra-page space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold font-poppins text-cyan-300">Analytics Dashboard</h1>
-            <p className="text-slate-300 font-inter mt-2 text-lg">Your Personal Life Intelligence Report</p>
+            <h1 className="astra-title text-4xl">Analytics Dashboard</h1>
+            <p className="astra-subtitle mt-2 text-lg">Your Personal Life Intelligence Report</p>
           </div>
           <div className="flex items-center space-x-3">
             <Button
               variant="outline"
-              className="font-inter bg-slate-800/50 border-slate-600 text-slate-200 hover:bg-slate-700/50"
+              className="border-border bg-card/50 text-foreground hover:bg-accent"
             >
               <Download className="mr-2 h-4 w-4" />
               Export Report
             </Button>
             <Badge
               variant="secondary"
-              className="text-lg px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
+              className="astra-score-badge text-lg px-4 py-2"
             >
               <Star className="mr-2 h-4 w-4" />
               Life Score: {lifeScoreData.overall}
@@ -159,13 +118,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Life Score Overview */}
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins text-cyan-300 flex items-center">
+            <CardTitle className="font-poppins text-primary flex items-center">
               <BarChart3 className="mr-2 h-5 w-5" />
               Life Score Breakdown
             </CardTitle>
-            <CardDescription className="font-inter text-slate-400">
+            <CardDescription className="font-inter text-muted-foreground">
               Combined metric across all life domains
             </CardDescription>
           </CardHeader>
@@ -174,14 +133,14 @@ export default function AnalyticsPage() {
               {lifeScoreData.categories.map((category) => (
                 <div key={category.name} className="text-center space-y-3">
                   <div className="flex items-center justify-center space-x-2">
-                    <h3 className="font-semibold font-inter text-sm text-slate-200">{category.name}</h3>
+                    <h3 className="font-semibold font-inter text-sm text-foreground">{category.name}</h3>
                     {category.trend === "up" ? (
-                      <TrendingUp className="h-4 w-4 text-cyan-400" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                     ) : (
                       <TrendingDown className="h-4 w-4 text-red-400" />
                     )}
                   </div>
-                  <div className="text-3xl font-bold font-poppins text-cyan-200">{category.score}</div>
+                  <div className="text-3xl font-bold font-poppins text-primary">{category.score}</div>
                   <Progress value={category.score} className="h-2" />
                 </div>
               ))}
@@ -190,9 +149,9 @@ export default function AnalyticsPage() {
         </Card>
 
         {/* Today's Snapshot */}
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins text-slate-200 flex items-center">
+            <CardTitle className="font-poppins text-foreground flex items-center">
               <Calendar className="mr-2 h-5 w-5" />
               Today's Snapshot
             </CardTitle>
@@ -200,36 +159,36 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center space-y-2">
-                <CheckSquare className="h-8 w-8 mx-auto text-cyan-400" />
-                <div className="text-2xl font-bold font-poppins text-slate-200">
+                <CheckSquare className="h-8 w-8 mx-auto text-primary" />
+                <div className="text-2xl font-bold font-poppins text-foreground">
                   {dailySnapshot.tasksCompleted}/{dailySnapshot.tasksCompleted + dailySnapshot.tasksPending}
                 </div>
-                <p className="text-sm font-inter text-slate-400">Tasks Completed</p>
+                <p className="text-sm font-inter text-muted-foreground">Tasks Completed</p>
               </div>
               <div className="text-center space-y-2">
-                <DollarSign className="h-8 w-8 mx-auto text-cyan-400" />
-                <div className="text-2xl font-bold font-poppins text-slate-200">
+                <DollarSign className="h-8 w-8 mx-auto text-primary" />
+                <div className="text-2xl font-bold font-poppins text-foreground">
                   {formatCurrency(dailySnapshot.spending)}/{formatCurrency(dailySnapshot.budget)}
                 </div>
-                <p className="text-sm font-inter text-slate-400">Spending vs Budget</p>
+                <p className="text-sm font-inter text-muted-foreground">Spending vs Budget</p>
               </div>
               <div className="text-center space-y-2">
-                <Activity className="h-8 w-8 mx-auto text-cyan-400" />
-                <div className="text-2xl font-bold font-poppins text-slate-200">
+                <Activity className="h-8 w-8 mx-auto text-primary" />
+                <div className="text-2xl font-bold font-poppins text-foreground">
                   {dailySnapshot.steps.toLocaleString()}
                 </div>
-                <p className="text-sm font-inter text-slate-400">Steps Today</p>
+                <p className="text-sm font-inter text-muted-foreground">Steps Today</p>
               </div>
               <div className="text-center space-y-2">
-                <Clock className="h-8 w-8 mx-auto text-cyan-400" />
-                <div className="text-2xl font-bold font-poppins text-slate-200">{dailySnapshot.focusTime}h</div>
-                <p className="text-sm font-inter text-slate-400">Focus Time</p>
+                <Clock className="h-8 w-8 mx-auto text-primary" />
+                <div className="text-2xl font-bold font-poppins text-foreground">{dailySnapshot.focusTime}h</div>
+                <p className="text-sm font-inter text-muted-foreground">Focus Time</p>
               </div>
             </div>
-            <div className="mt-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
+            <div className="mt-6 p-4 astra-panel">
               <div className="flex items-center">
-                <Brain className="h-5 w-5 text-cyan-400 mr-2" />
-                <p className="font-inter text-sm text-slate-300">
+                <Brain className="h-5 w-5 text-primary mr-2" />
+                <p className="font-inter text-sm text-muted-foreground">
                   <strong>AI Insight:</strong> You're on track in Wealth & Health, but Productivity dropped 15% this
                   week.
                 </p>
@@ -240,22 +199,22 @@ export default function AnalyticsPage() {
 
         {/* Analytics Tabs */}
         <Tabs value={selectedPeriod} onValueChange={setSelectedPeriod} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-600">
+          <TabsList className="astra-tabs grid w-full grid-cols-3">
             <TabsTrigger
               value="day"
-              className="font-inter data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+              className="font-inter astra-tab"
             >
               Daily
             </TabsTrigger>
             <TabsTrigger
               value="week"
-              className="font-inter data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+              className="font-inter astra-tab"
             >
               Weekly
             </TabsTrigger>
             <TabsTrigger
               value="month"
-              className="font-inter data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+              className="font-inter astra-tab"
             >
               Monthly
             </TabsTrigger>
@@ -264,30 +223,30 @@ export default function AnalyticsPage() {
           <TabsContent value="week" className="space-y-6">
             {/* Weekly Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+              <Card className="astra-card">
                 <CardHeader>
-                  <CardTitle className="font-poppins flex items-center text-slate-200">
+                  <CardTitle className="font-poppins flex items-center text-foreground">
                     <BarChart3 className="mr-2 h-5 w-5" />
                     Tasks Completion
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-48 flex items-center justify-center text-slate-400">
+                  <div className="h-48 flex items-center justify-center text-muted-foreground">
                     <BarChart3 className="h-16 w-16" />
                     <span className="ml-3 font-inter">Weekly task completion chart</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+              <Card className="astra-card">
                 <CardHeader>
-                  <CardTitle className="font-poppins flex items-center text-slate-200">
+                  <CardTitle className="font-poppins flex items-center text-foreground">
                     <PieChart className="mr-2 h-5 w-5" />
                     Expense Distribution
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-48 flex items-center justify-center text-slate-400">
+                  <div className="h-48 flex items-center justify-center text-muted-foreground">
                     <PieChart className="h-16 w-16" />
                     <span className="ml-3 font-inter">Expense category breakdown</span>
                   </div>
@@ -296,9 +255,9 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Weekly Highlights */}
-            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-poppins flex items-center text-slate-200">
+                <CardTitle className="font-poppins flex items-center text-foreground">
                   <Award className="mr-2 h-5 w-5" />
                   Weekly Highlights
                 </CardTitle>
@@ -310,11 +269,11 @@ export default function AnalyticsPage() {
                     return (
                       <div
                         key={index}
-                        className="text-center p-4 bg-slate-800/30 border border-slate-600/30 rounded-lg backdrop-blur-sm"
+                        className="text-center p-4 astra-panel"
                       >
-                        <Icon className="h-8 w-8 mx-auto mb-2 text-cyan-400" />
-                        <h3 className="font-semibold font-inter text-sm mb-1 text-slate-200">{highlight.title}</h3>
-                        <p className="text-xs font-inter text-slate-400">{highlight.value}</p>
+                        <Icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+                        <h3 className="font-semibold font-inter text-sm mb-1 text-foreground">{highlight.title}</h3>
+                        <p className="text-xs font-inter text-muted-foreground">{highlight.value}</p>
                       </div>
                     )
                   })}
@@ -324,20 +283,20 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="month" className="space-y-6">
-            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-poppins flex items-center text-slate-200">
+                <CardTitle className="font-poppins flex items-center text-foreground">
                   <LineChart className="mr-2 h-5 w-5" />
                   Monthly Trends
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 flex items-center justify-center text-slate-400">
+                <div className="h-64 flex items-center justify-center text-muted-foreground">
                   <LineChart className="h-16 w-16" />
                   <span className="ml-3 font-inter">Monthly trend analysis</span>
                 </div>
-                <div className="mt-4 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
-                  <p className="font-inter text-sm text-slate-300">
+                <div className="mt-4 p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
                     <strong>Monthly Insight:</strong> You saved 12% more than last month but slept 30 min less per
                     night.
                   </p>
@@ -348,13 +307,13 @@ export default function AnalyticsPage() {
         </Tabs>
 
         {/* Cross-Domain Insights */}
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins flex items-center text-cyan-300">
+            <CardTitle className="font-poppins flex items-center text-primary">
               <Zap className="mr-2 h-5 w-5 text-yellow-400" />
               Cross-Domain Insights (ASTRA Magic)
             </CardTitle>
-            <CardDescription className="font-inter text-slate-400">
+            <CardDescription className="font-inter text-muted-foreground">
               Discover hidden patterns across your life domains
             </CardDescription>
           </CardHeader>
@@ -365,23 +324,23 @@ export default function AnalyticsPage() {
                 return (
                   <div
                     key={index}
-                    className="p-4 bg-slate-800/30 border border-slate-600/30 rounded-lg backdrop-blur-sm"
+                    className="p-4 astra-panel"
                   >
                     <div className="flex items-start space-x-3">
-                      <Icon className="h-5 w-5 mt-0.5 text-cyan-400" />
+                      <Icon className="h-5 w-5 mt-0.5 text-primary" />
                       <div>
-                        <h3 className="font-semibold font-inter text-sm mb-1 text-slate-200">{insight.title}</h3>
-                        <p className="text-sm font-inter text-slate-400">{insight.insight}</p>
+                        <h3 className="font-semibold font-inter text-sm mb-1 text-foreground">{insight.title}</h3>
+                        <p className="text-sm font-inter text-muted-foreground">{insight.insight}</p>
                       </div>
                     </div>
                   </div>
                 )
               })}
             </div>
-            <div className="mt-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
+            <div className="mt-6 p-4 astra-panel">
               <div className="flex items-center">
-                <Coffee className="h-5 w-5 text-cyan-400 mr-2" />
-                <p className="font-inter text-sm text-slate-300">
+                <Coffee className="h-5 w-5 text-primary mr-2" />
+                <p className="font-inter text-sm text-muted-foreground">
                   <strong>AI Story of the Week:</strong> This week you worked 20% more hours, slept 1 hour less per
                   night, and spent 10% more on coffee ☕.
                 </p>
@@ -392,9 +351,9 @@ export default function AnalyticsPage() {
 
         {/* Gamification & Achievements */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader>
-              <CardTitle className="font-poppins flex items-center text-slate-200">
+              <CardTitle className="font-poppins flex items-center text-foreground">
                 <Award className="mr-2 h-5 w-5" />
                 Achievements & Badges
               </CardTitle>
@@ -407,15 +366,15 @@ export default function AnalyticsPage() {
                     <div
                       key={index}
                       className={`p-3 rounded-lg text-center ${achievement.earned
-                          ? "bg-gradient-to-br from-slate-700/50 to-slate-600/50 border border-cyan-500/30"
-                          : "bg-slate-800/30 border border-slate-600/30 opacity-50"
+                          ? "astra-panel"
+                          : "bg-secondary/40 border border-border opacity-50"
                         } backdrop-blur-sm`}
                     >
                       <Icon
-                        className={`h-6 w-6 mx-auto mb-2 ${achievement.earned ? "text-cyan-400" : "text-slate-500"}`}
+                        className={`h-6 w-6 mx-auto mb-2 ${achievement.earned ? "text-primary" : "text-muted-foreground"}`}
                       />
-                      <h3 className="font-semibold font-inter text-xs mb-1 text-slate-200">{achievement.name}</h3>
-                      <p className="text-xs font-inter text-slate-400">{achievement.description}</p>
+                      <h3 className="font-semibold font-inter text-xs mb-1 text-foreground">{achievement.name}</h3>
+                      <p className="text-xs font-inter text-muted-foreground">{achievement.description}</p>
                     </div>
                   )
                 })}
@@ -423,9 +382,9 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader>
-              <CardTitle className="font-poppins flex items-center text-slate-200">
+              <CardTitle className="font-poppins flex items-center text-foreground">
                 <Target className="mr-2 h-5 w-5" />
                 Goal Progress
               </CardTitle>
@@ -434,28 +393,28 @@ export default function AnalyticsPage() {
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-inter text-sm text-slate-200">Save {formatCurrency(10000)}</span>
-                    <span className="font-inter text-sm text-slate-400">75%</span>
+                    <span className="font-inter text-sm text-foreground">Save {formatCurrency(10000)}</span>
+                    <span className="font-inter text-sm text-muted-foreground">75%</span>
                   </div>
                   <Progress value={75} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-inter text-sm text-slate-200">Run 10K</span>
-                    <span className="font-inter text-sm text-slate-400">90%</span>
+                    <span className="font-inter text-sm text-foreground">Run 10K</span>
+                    <span className="font-inter text-sm text-muted-foreground">90%</span>
                   </div>
                   <Progress value={90} className="h-2" />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-inter text-sm text-slate-200">Read 24 Books</span>
-                    <span className="font-inter text-sm text-slate-400">50%</span>
+                    <span className="font-inter text-sm text-foreground">Read 24 Books</span>
+                    <span className="font-inter text-sm text-muted-foreground">50%</span>
                   </div>
                   <Progress value={50} className="h-2" />
                 </div>
               </div>
-              <div className="mt-4 p-3 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
-                <p className="font-inter text-sm text-slate-300">
+              <div className="mt-4 p-3 astra-panel">
+                <p className="font-inter text-sm text-muted-foreground">
                   <strong>AI Prediction:</strong> You're 75% done with your 10K run goal. Keep up the streak — finish in
                   2 weeks.
                 </p>
@@ -465,9 +424,9 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Future Predictions */}
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins flex items-center text-slate-200">
+            <CardTitle className="font-poppins flex items-center text-foreground">
               <Brain className="mr-2 h-5 w-5" />
               AI Predictions & Coaching
             </CardTitle>
@@ -475,27 +434,27 @@ export default function AnalyticsPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="font-semibold font-inter text-slate-200">Predictive Forecasts</h3>
-                <div className="p-4 bg-slate-800/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-                  <p className="font-inter text-sm text-slate-300">
+                <h3 className="font-semibold font-inter text-foreground">Predictive Forecasts</h3>
+                <div className="p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
                     If you keep this pace, your Life Score will reach 90/100 in 2 months.
                   </p>
                 </div>
-                <div className="p-4 bg-slate-800/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-                  <p className="font-inter text-sm text-slate-300">
+                <div className="p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
                     At this savings rate, you'll reach your {formatCurrency(10000)} goal by December.
                   </p>
                 </div>
               </div>
               <div className="space-y-4">
-                <h3 className="font-semibold font-inter text-slate-200">AI Coach Recommendations</h3>
-                <div className="p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
-                  <p className="font-inter text-sm text-slate-300">
+                <h3 className="font-semibold font-inter text-foreground">AI Coach Recommendations</h3>
+                <div className="p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
                     <strong>Next Week Focus:</strong> Prioritize sleep + budgeting for optimal performance.
                   </p>
                 </div>
-                <div className="p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-cyan-500/30 rounded-lg backdrop-blur-sm">
-                  <p className="font-inter text-sm text-slate-300">
+                <div className="p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
                     <strong>Scenario:</strong> Cut {formatCurrency(50)} dining + add 2 workouts = 8-point Life Score boost.
                   </p>
                 </div>
@@ -503,31 +462,6 @@ export default function AnalyticsPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <style jsx>{`
-        @keyframes grid-move {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes spin-slow-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-10px) translateX(5px); }
-          50% { transform: translateY(-5px) translateX(-5px); }
-          75% { transform: translateY(-15px) translateX(10px); }
-        }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        .animate-spin-slow-reverse { animation: spin-slow-reverse 25s linear infinite; }
-        .animate-float { animation: float var(--duration, 10s) ease-in-out infinite; }
-      `}</style>
     </div>
   )
 }

@@ -19,6 +19,8 @@ import { setCurrency } from '@/store/slice/currencySlice'
 import { setUser } from '@/store/slice/userSlice'
 import { setRefreshTokenCookie } from '@/lib/cookies'
 import { useRouter } from 'next/navigation'
+import { useTheme } from 'next-themes'
+import { isAppTheme } from '@/lib/theme'
 
 type UnverifiedState = {
     userId: string
@@ -31,6 +33,7 @@ const LoginForm = () => {
     const [unverified, setUnverified] = useState<UnverifiedState | null>(null)
     const dispatch = useDispatch()
     const router = useRouter()
+    const { setTheme } = useTheme()
     const redirectTo = ROUTES.APP.DASHBOARD
 
     const {
@@ -55,6 +58,9 @@ const LoginForm = () => {
             dispatch(setUser(user));
             if (user?.currency) {
                 dispatch(setCurrency(user.currency));
+            }
+            if (isAppTheme(user?.theme)) {
+                setTheme(user.theme);
             }
             await setRefreshTokenCookie(refresh);
 

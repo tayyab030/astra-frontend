@@ -12,6 +12,7 @@ export interface AuthUser {
   currency: string
   country: string | null
   timezone: string
+  theme: "light" | "dark" | "neon"
 }
 
 export interface UpdateProfilePayload {
@@ -19,6 +20,7 @@ export interface UpdateProfilePayload {
   last_name?: string
   currency?: string
   timezone?: string
+  theme?: "light" | "dark" | "neon"
 }
 
 export function getUserErrorMessage(error: unknown, fallback: string) {

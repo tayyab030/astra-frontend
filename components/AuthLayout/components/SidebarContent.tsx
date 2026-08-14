@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ROUTES } from "@/constants/routes";
 import { logout } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import {
     Home,
     CheckSquare,
@@ -43,6 +44,13 @@ const sidebarItems = [
     { id: "life-score", label: "Life Score", icon: Star, href: ROUTES.APP.LIFE_SCORE },
 ];
 
+const navButtonClass = (isActive: boolean, isSidebarOpen: boolean) =>
+    cn(
+        "w-full font-inter transition-all duration-200",
+        isSidebarOpen ? "justify-start" : "justify-center",
+        isActive ? "astra-nav-active" : "astra-nav-idle"
+    );
+
 const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const pathname = usePathname();
     const router = useRouter();
@@ -57,11 +65,8 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 return (
                     <Button
                         key={item.id}
-                        variant={isActive ? "secondary" : "ghost"}
-                        className={`w-full justify-start font-inter transition-all duration-200 ${isActive
-                            ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
-                            : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
-                            } ${isSidebarOpen ? "justify-start" : "justify-center"}`}
+                        variant="ghost"
+                        className={navButtonClass(isActive, isSidebarOpen)}
                         onClick={() => router.push(item.href)}
                     >
                         <Icon className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
@@ -70,13 +75,10 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 );
             })}
 
-            <div className="pt-4 mt-4 border-t border-slate-700/50">
+            <div className="mt-4 border-t border-border pt-4">
                 <Button
                     variant="ghost"
-                    className={`w-full justify-start font-inter transition-all duration-200 ${pathname.includes(ROUTES.APP.SETTINGS)
-                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 shadow-lg shadow-cyan-500/25"
-                        : "hover:bg-gradient-to-r hover:from-slate-800/50 hover:to-slate-700/50 text-slate-300 hover:text-cyan-300 border-transparent hover:border-cyan-500/30"
-                        } ${isSidebarOpen ? "justify-start" : "justify-center"}`}
+                    className={navButtonClass(pathname.includes(ROUTES.APP.SETTINGS), isSidebarOpen)}
                     onClick={() => router.push(ROUTES.APP.SETTINGS)}
                 >
                     <Settings
@@ -86,8 +88,10 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 </Button>
                 <Button
                     variant="ghost"
-                    className={`w-full justify-start font-inter text-red-400 hover:text-red-300 hover:bg-gradient-to-r hover:from-red-900/20 hover:to-red-800/20 border-transparent hover:border-red-500/30 ${isSidebarOpen ? "justify-start" : "justify-center"
-                        }`}
+                    className={cn(
+                        "w-full border-transparent font-inter text-destructive hover:bg-destructive/10 hover:text-destructive",
+                        isSidebarOpen ? "justify-start" : "justify-center"
+                    )}
                     onClick={() => setShowLogoutConfirmation(true)}
                 >
                     <LogOut className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
@@ -108,7 +112,7 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => logout()}
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className="bg-red-600 text-white hover:bg-red-700"
                         >
                             Log out
                         </AlertDialogAction>

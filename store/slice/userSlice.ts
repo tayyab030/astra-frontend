@@ -10,6 +10,7 @@ export interface User {
   currency?: string;
   country?: string | null;
   timezone?: string;
+  theme?: "light" | "dark" | "neon";
 }
 
 interface UserState {

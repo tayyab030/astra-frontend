@@ -1,21 +1,24 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useTheme } from "next-themes"
 import { getRefreshTokenCookie } from "@/lib/cookies"
 import { logoutSession, resolveAccessToken } from "@/lib/auth/tokenManager"
 import { fetchCurrentUser } from "@/lib/api/user"
 import { setCurrency } from "@/store/slice/currencySlice"
 import { setUser } from "@/store/slice/userSlice"
 import { useAppDispatch } from "@/store/hooks"
+import { isAppTheme } from "@/lib/theme"
 
 /**
  * Validates the session when the protected app shell mounts.
- * Loads the current user profile and syncs currency preference.
+ * Loads the current user profile and syncs currency/theme preferences.
  * Logs the user out if both access and refresh tokens are invalid.
  */
 export function useAuthSession() {
   const hasChecked = useRef(false)
   const dispatch = useAppDispatch()
+  const { setTheme } = useTheme()
 
   useEffect(() => {
     if (hasChecked.current) return
@@ -40,11 +43,14 @@ export function useAuthSession() {
         if (user.currency) {
           dispatch(setCurrency(user.currency))
         }
+        if (isAppTheme(user.theme)) {
+          setTheme(user.theme)
+        }
       } catch {
         // Token may still be valid for other routes; profile can retry from Settings.
       }
     }
 
     void validateSession()
-  }, [dispatch])
+  }, [dispatch, setTheme])
 }

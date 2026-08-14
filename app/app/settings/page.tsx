@@ -45,22 +45,75 @@ import {
   fetchCurrentUser,
   getUserErrorMessage,
   updateCurrentUser,
+  type AuthUser,
 } from "@/lib/api/user"
 import { getCountryByCode } from "@/lib/countries"
 import { setCurrency as setCurrencyAction } from "@/store/slice/currencySlice"
 import { setUser } from "@/store/slice/userSlice"
 import { useAppDispatch } from "@/store/hooks"
+import { useTheme } from "next-themes"
+import { cn } from "@/lib/utils"
+import {
+  DEFAULT_THEME,
+  THEME_ACCENT,
+  THEME_OPTIONS,
+  isAppTheme,
+  type AppTheme,
+} from "@/lib/theme"
+
+const ACCENT_OPTIONS = [
+  {
+    id: "cyan",
+    label: "Cyan",
+    color: "#06b6d4",
+    glow: "0 0 16px rgba(6,182,212,0.55)",
+  },
+  {
+    id: "blue",
+    label: "Blue",
+    color: "#3b82f6",
+    glow: "0 0 16px rgba(59,130,246,0.55)",
+  },
+  {
+    id: "slate",
+    label: "Slate",
+    color: "#94a3b8",
+    glow: "0 0 16px rgba(148,163,184,0.55)",
+  },
+  {
+    id: "purple",
+    label: "Purple",
+    color: "#a855f7",
+    glow: "0 0 16px rgba(168,85,247,0.55)",
+  },
+  {
+    id: "emerald",
+    label: "Emerald",
+    color: "#10b981",
+    glow: "0 0 16px rgba(16,185,129,0.55)",
+  },
+  {
+    id: "pink",
+    label: "Pink",
+    color: "#ec4899",
+    glow: "0 0 16px rgba(236,72,153,0.55)",
+  },
+] as const
+
+type UserTheme = AppTheme
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { currency, setCurrency, formatCurrency } = useCurrency()
+  const { setTheme } = useTheme()
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [profileCurrency, setProfileCurrency] = useState(currency)
   const [timezone, setTimezone] = useState("UTC")
+  const [themePreference, setThemePreference] = useState<UserTheme>(DEFAULT_THEME)
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -101,9 +154,12 @@ export default function SettingsPage() {
     const nextCurrency = profile.currency || "USD"
     setProfileCurrency(nextCurrency)
     setTimezone(profile.timezone || "UTC")
+    const nextTheme = isAppTheme(profile.theme) ? profile.theme : DEFAULT_THEME
+    setThemePreference(nextTheme)
+    setTheme(nextTheme)
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
-  }, [profile, dispatch])
+  }, [profile, dispatch, setTheme])
 
   const initials = useMemo(() => {
     const first = firstName.trim().charAt(0)
@@ -120,11 +176,30 @@ export default function SettingsPage() {
         setCurrency(user.currency)
         setProfileCurrency(user.currency)
       }
+      if (isAppTheme(user.theme)) {
+        setThemePreference(user.theme)
+        setTheme(user.theme)
+      }
       queryClient.setQueryData(["auth", "me"], user)
       toast.success("Profile updated")
     },
     onError: (error) => {
       toast.error(getUserErrorMessage(error, "Failed to update profile"))
+    },
+  })
+
+  const { mutate: saveTheme, isPending: isSavingTheme } = useMutation({
+    mutationFn: updateCurrentUser,
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+      const nextTheme = isAppTheme(user.theme) ? user.theme : DEFAULT_THEME
+      setThemePreference(nextTheme)
+      setTheme(nextTheme)
+      queryClient.setQueryData(["auth", "me"], user)
+      toast.success("Theme updated")
+    },
+    onError: (error) => {
+      toast.error(getUserErrorMessage(error, "Failed to update theme"))
     },
   })
 
@@ -147,144 +222,118 @@ export default function SettingsPage() {
     setCurrency(nextCurrency)
   }
 
+  const handleThemeChange = (nextTheme: UserTheme) => {
+    if (nextTheme === themePreference || isSavingTheme) return
+    setThemePreference(nextTheme)
+    setTheme(nextTheme)
+    saveTheme({ theme: nextTheme })
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated Background Grid */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse" />
-
-      {/* Floating Orbs */}
-      <div className="pointer-events-none absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" />
-      <div className="pointer-events-none absolute top-40 right-32 w-24 h-24 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse delay-1000" />
-      <div className="pointer-events-none absolute bottom-32 left-1/3 w-40 h-40 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-xl animate-pulse delay-2000" />
-
-      {/* Holographic Rings */}
-      <div className="pointer-events-none absolute top-1/4 right-1/4 w-64 h-64 border border-cyan-500/20 rounded-full animate-spin-slow" />
-      <div className="pointer-events-none absolute bottom-1/4 left-1/4 w-48 h-48 border border-blue-500/20 rounded-full animate-spin-slow-reverse" />
-
-      {/* Floating Particles */}
-      <div className="pointer-events-none absolute inset-0">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-cyan-400/60 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
+    <div className="astra-page space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="astra-title">Settings</h1>
+          <p className="astra-subtitle mt-1">
+            Your ASTRA Control Center - personalize your Life OS
+          </p>
+        </div>
+        <Badge variant="secondary" className="astra-badge-accent">
+          <Settings2 className="mr-2 h-4 w-4" />
+          Pro Plan
+        </Badge>
       </div>
 
-      <div className="relative z-10 space-y-8 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold font-mono text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]">
-              Settings
-            </h1>
-            <p className="text-slate-300 font-mono mt-1">Your ASTRA Control Center - personalize your Life OS</p>
-          </div>
-          <Badge
-            variant="secondary"
-            className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/30 backdrop-blur-sm font-mono"
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="astra-tabs grid w-full grid-cols-5 lg:grid-cols-10">
+          <TabsTrigger
+            value="profile"
+            className="astra-tab flex items-center gap-2"
           >
-            <Settings2 className="mr-2 h-4 w-4" />
-            Pro Plan
-          </Badge>
-        </div>
-
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-slate-900/50 backdrop-blur-sm border border-cyan-500/30">
-            <TabsTrigger
-              value="profile"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="personalization"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Palette className="h-4 w-4" />
-              <span className="hidden sm:inline">Theme</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="modules"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Settings2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Modules</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="integrations"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Cloud className="h-4 w-4" />
-              <span className="hidden sm:inline">Connect</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="security"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="billing"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <CreditCard className="h-4 w-4" />
-              <span className="hidden sm:inline">Billing</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="notifications"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">Alerts</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="ai"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Bot className="h-4 w-4" />
-              <span className="hidden sm:inline">AI</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="advanced"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <Zap className="h-4 w-4" />
-              <span className="hidden sm:inline">Advanced</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="support"
-              className="flex items-center gap-2 font-mono text-slate-300 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Help</span>
-            </TabsTrigger>
-          </TabsList>
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="personalization"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Palette className="h-4 w-4" />
+            <span className="hidden sm:inline">Theme</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="modules"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Settings2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Modules</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="integrations"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Cloud className="h-4 w-4" />
+            <span className="hidden sm:inline">Connect</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="security"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Security</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="billing"
+            className="astra-tab flex items-center gap-2"
+          >
+            <CreditCard className="h-4 w-4" />
+            <span className="hidden sm:inline">Billing</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="notifications"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Bell className="h-4 w-4" />
+            <span className="hidden sm:inline">Alerts</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="ai"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Bot className="h-4 w-4" />
+            <span className="hidden sm:inline">AI</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="advanced"
+            className="astra-tab flex items-center gap-2"
+          >
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Advanced</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="support"
+            className="astra-tab flex items-center gap-2"
+          >
+            <HelpCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Help</span>
+          </TabsTrigger>
+        </TabsList>
 
           {/* Profile & Account */}
           <TabsContent value="profile" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-cyan-400">Profile & Account</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Profile & Account</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Manage your personal information and account settings
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {isProfileLoading ? (
                   <div className="space-y-4">
-                    <Skeleton className="h-20 w-20 rounded-full bg-slate-800/80" />
-                    <Skeleton className="h-10 w-full bg-slate-800/80" />
-                    <Skeleton className="h-10 w-full bg-slate-800/80" />
-                    <Skeleton className="h-10 w-full bg-slate-800/80" />
+                    <Skeleton className="h-20 w-20 rounded-full bg-muted" />
+                    <Skeleton className="h-10 w-full bg-muted" />
+                    <Skeleton className="h-10 w-full bg-muted" />
+                    <Skeleton className="h-10 w-full bg-muted" />
                   </div>
                 ) : isProfileError ? (
                   <p className="font-mono text-sm text-red-400">
@@ -293,17 +342,17 @@ export default function SettingsPage() {
                 ) : (
                   <>
                     <div className="flex items-center space-x-4">
-                      <Avatar className="h-20 w-20 border-2 border-cyan-500/30">
+                      <Avatar className="h-20 w-20 border-2 border-border">
                         <AvatarImage src="/placeholder.svg?height=80&width=80" />
-                        <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xl font-mono">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl font-mono">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
-                        <p className="font-mono text-slate-200">
+                        <p className="font-mono text-foreground">
                           @{profile?.username}
                         </p>
-                        <p className="font-mono text-xs text-slate-500">
+                        <p className="font-mono text-xs text-muted-foreground">
                           Account email is managed securely and cannot be changed here.
                         </p>
                       </div>
@@ -311,29 +360,29 @@ export default function SettingsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName" className="font-mono text-slate-300">
+                        <Label htmlFor="firstName" className="font-mono text-muted-foreground">
                           First Name
                         </Label>
                         <Input
                           id="firstName"
                           value={firstName}
                           onChange={(event) => setFirstName(event.target.value)}
-                          className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                          className="bg-secondary/60 border-border text-foreground font-mono"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName" className="font-mono text-slate-300">
+                        <Label htmlFor="lastName" className="font-mono text-muted-foreground">
                           Last Name
                         </Label>
                         <Input
                           id="lastName"
                           value={lastName}
                           onChange={(event) => setLastName(event.target.value)}
-                          className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                          className="bg-secondary/60 border-border text-foreground font-mono"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="font-mono text-slate-300">
+                        <Label htmlFor="email" className="font-mono text-muted-foreground">
                           Email
                         </Label>
                         <Input
@@ -341,11 +390,11 @@ export default function SettingsPage() {
                           type="email"
                           value={email}
                           disabled
-                          className="bg-slate-800/50 border-cyan-500/30 text-slate-400 font-mono"
+                          className="bg-secondary/40 border-border text-muted-foreground font-mono"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="country" className="font-mono text-slate-300">
+                        <Label htmlFor="country" className="font-mono text-muted-foreground">
                           Country
                         </Label>
                         <Input
@@ -356,27 +405,27 @@ export default function SettingsPage() {
                               : "Not set"
                           }
                           disabled
-                          className="bg-slate-800/50 border-cyan-500/30 text-slate-400 font-mono"
+                          className="bg-secondary/40 border-border text-muted-foreground font-mono"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="timezone" className="font-mono text-slate-300">
+                        <Label htmlFor="timezone" className="font-mono text-muted-foreground">
                           Timezone
                         </Label>
                         <TimezoneSelect value={timezone} onValueChange={setTimezone} />
-                        <p className="text-xs text-slate-500 font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           Defaults from your country at signup. You can change it anytime.
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="language" className="font-mono text-slate-300">
+                        <Label htmlFor="language" className="font-mono text-muted-foreground">
                           Language
                         </Label>
                         <Select defaultValue="en">
-                          <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono w-full">
+                          <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono w-full">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-cyan-500/30">
+                          <SelectContent className="bg-popover border-border">
                             <SelectItem value="en" className="font-mono">
                               English
                             </SelectItem>
@@ -390,28 +439,28 @@ export default function SettingsPage() {
                         </Select>
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="currency" className="font-mono text-slate-300">
+                        <Label htmlFor="currency" className="font-mono text-muted-foreground">
                           Currency Format
                         </Label>
                         <CurrencySelect value={profileCurrency} onValueChange={handleCurrencyChange} />
-                        <p className="text-xs text-slate-500 font-mono">
+                        <p className="text-xs text-muted-foreground font-mono">
                           Saved to your account. Amounts across the app update automatically.
                         </p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center">
-                      <div className="flex items-center justify-between p-4 bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 rounded-lg">
+                      <div className="flex items-center justify-between p-4 bg-secondary/50 backdrop-blur-sm border border-border rounded-lg">
                         <div>
-                          <h4 className="font-semibold text-cyan-400 font-mono">Two-Factor Authentication</h4>
-                          <p className="text-sm text-slate-400 font-mono">Add an extra layer of security</p>
+                          <h4 className="font-semibold text-primary font-mono">Two-Factor Authentication</h4>
+                          <p className="text-sm text-muted-foreground font-mono">Add an extra layer of security</p>
                         </div>
                         <Switch />
                       </div>
                       <Button
                         onClick={handleSaveProfile}
                         disabled={isSavingProfile}
-                        className="font-mono bg-gradient-to-r from-cyan-500 to-blue-600 text-white md:min-w-[140px]"
+                        className="font-mono bg-primary text-primary-foreground md:min-w-[140px]"
                       >
                         {isSavingProfile ? "Saving..." : "Save Profile"}
                       </Button>
@@ -424,76 +473,131 @@ export default function SettingsPage() {
 
           {/* Personalization */}
           <TabsContent value="personalization" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-purple-400">Personalization</CardTitle>
-                <CardDescription className="font-mono text-slate-300">Customize your ASTRA experience</CardDescription>
+                <CardTitle className="font-mono text-primary">Personalization</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">Customize your ASTRA experience</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <Label className="font-mono text-slate-300">Theme Preference</Label>
+                  <Label className="font-mono text-muted-foreground">Theme Preference</Label>
                   <div className="grid grid-cols-3 gap-4">
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-slate-800/50 border-cyan-500/30 text-slate-300 hover:bg-cyan-500/10 font-mono"
-                    >
-                      <div className="w-8 h-8 bg-white border rounded mb-2"></div>
-                      Light
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-slate-800/50 border-cyan-500/30 text-slate-300 hover:bg-cyan-500/10 font-mono"
-                    >
-                      <div className="w-8 h-8 bg-gray-900 rounded mb-2"></div>
-                      Dark
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-20 flex-col bg-slate-800/50 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 font-mono shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-                    >
-                      <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded mb-2"></div>
-                      Neon
-                    </Button>
+                    {THEME_OPTIONS.map((option) => {
+                      const isActive = themePreference === option.value
+                      const activeStyles =
+                        option.value === "neon"
+                          ? "border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.35)]"
+                          : option.value === "dark"
+                            ? "border-slate-300 bg-slate-500/15 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.25)]"
+                            : "border-blue-500 bg-blue-500/10 text-blue-600 shadow-[0_0_18px_rgba(59,130,246,0.25)]"
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          disabled={isSavingTheme}
+                          onClick={() => handleThemeChange(option.value)}
+                          aria-pressed={isActive}
+                          className={cn(
+                            "relative flex h-24 flex-col items-center justify-center gap-2 rounded-lg border-2 font-mono text-sm transition-all disabled:opacity-50",
+                            isActive
+                              ? activeStyles
+                              : "border-border bg-card/40 text-muted-foreground hover:border-muted-foreground/40 hover:bg-card/70"
+                          )}
+                        >
+                          {option.value === "light" && (
+                            <div className="h-9 w-9 rounded-md border border-slate-300 bg-gradient-to-br from-white to-slate-100 shadow-sm" />
+                          )}
+                          {option.value === "dark" && (
+                            <div className="h-9 w-9 rounded-md border border-slate-500 bg-gradient-to-br from-zinc-700 to-zinc-950 shadow-sm" />
+                          )}
+                          {option.value === "neon" && (
+                            <div className="h-9 w-9 rounded-md border border-cyan-400/60 bg-gradient-to-br from-cyan-500 to-blue-600 shadow-[0_0_12px_rgba(6,182,212,0.5)]" />
+                          )}
+                          <span className={cn(isActive && "font-semibold")}>
+                            {option.label}
+                          </span>
+                          {isActive && (
+                            <span
+                              className={cn(
+                                "absolute right-2 top-2 text-xs font-bold",
+                                option.value === "neon" && "text-cyan-400",
+                                option.value === "dark" && "text-slate-200",
+                                option.value === "light" && "text-blue-600"
+                              )}
+                            >
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    Neon is the cyan ASTRA look used across the app. Light and Dark are clean themes without neon accents.
+                  </p>
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="font-mono text-slate-300">Accent Color</Label>
-                  <div className="flex space-x-2">
-                    {["cyan", "purple", "blue", "emerald", "pink"].map((color) => (
-                      <Button
-                        key={color}
-                        variant="outline"
-                        size="sm"
-                        className={`w-12 h-12 p-0 bg-${color}-500 hover:bg-${color}-600 border-${color}-400/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]`}
-                      />
-                    ))}
+                  <Label className="font-mono text-muted-foreground">Accent Color</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {ACCENT_OPTIONS.map((accent) => {
+                      const isThemeAccent = THEME_ACCENT[themePreference] === accent.id
+                      return (
+                        <button
+                          key={accent.id}
+                          type="button"
+                          title={`${accent.label}${isThemeAccent ? ` · ${themePreference} theme` : ""}`}
+                          aria-label={accent.label}
+                          aria-pressed={isThemeAccent}
+                          className={cn(
+                            "relative h-12 w-12 rounded-md border-2 transition-all",
+                            isThemeAccent
+                              ? "scale-105 border-white"
+                              : "border-white/25 opacity-70 hover:opacity-100"
+                          )}
+                          style={{
+                            backgroundColor: accent.color,
+                            boxShadow: isThemeAccent ? accent.glow : undefined,
+                          }}
+                        >
+                          {isThemeAccent && (
+                            <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    Accent follows your theme: Neon → cyan, Light → blue, Dark → slate.
+                  </p>
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="font-mono text-slate-300">Dashboard Layout</Label>
+                  <Label className="font-mono text-muted-foreground">Dashboard Layout</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       variant="outline"
-                      className="h-16 flex-col bg-slate-800/50 border-cyan-500/30 text-slate-300 hover:bg-cyan-500/10 font-mono"
+                      className="h-16 flex-col bg-secondary/60 border-border text-foreground hover:bg-accent font-mono"
                     >
                       <div className="grid grid-cols-2 gap-1 w-8 h-6 mb-2">
-                        <div className="bg-cyan-500/50 rounded-sm"></div>
-                        <div className="bg-cyan-500/50 rounded-sm"></div>
-                        <div className="bg-cyan-500/50 rounded-sm"></div>
-                        <div className="bg-cyan-500/50 rounded-sm"></div>
+                        <div className="bg-primary/50 rounded-sm"></div>
+                        <div className="bg-primary/50 rounded-sm"></div>
+                        <div className="bg-primary/50 rounded-sm"></div>
+                        <div className="bg-primary/50 rounded-sm"></div>
                       </div>
                       Grid View
                     </Button>
                     <Button
                       variant="outline"
-                      className="h-16 flex-col bg-slate-800/50 border-cyan-500/30 text-slate-300 hover:bg-cyan-500/10 font-mono"
+                      className="h-16 flex-col bg-secondary/60 border-border text-foreground hover:bg-accent font-mono"
                     >
                       <div className="space-y-1 w-8 h-6 mb-2">
-                        <div className="bg-cyan-500/50 rounded-sm h-1"></div>
-                        <div className="bg-cyan-500/50 rounded-sm h-1"></div>
-                        <div className="bg-cyan-500/50 rounded-sm h-1"></div>
+                        <div className="bg-primary/50 rounded-sm h-1"></div>
+                        <div className="bg-primary/50 rounded-sm h-1"></div>
+                        <div className="bg-primary/50 rounded-sm h-1"></div>
                       </div>
                       List View
                     </Button>
@@ -505,20 +609,20 @@ export default function SettingsPage() {
 
           {/* Modules Management */}
           <TabsContent value="modules" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-green-500/30 shadow-[0_0_30px_rgba(0,255,0,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-green-400">Modules Management</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Modules Management</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Configure your Life OS modules and priorities
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <Label className="font-mono text-slate-300">Module Weights (affects Life Score calculation)</Label>
+                  <Label className="font-mono text-muted-foreground">Module Weights (affects Life Score calculation)</Label>
                   {Object.entries(moduleWeights).map(([module, weight]) => (
                     <div key={module} className="space-y-2">
                       <div className="flex justify-between">
-                        <Label className="capitalize font-mono text-slate-300">{module}</Label>
+                        <Label className="capitalize font-mono text-muted-foreground">{module}</Label>
                         <span className="text-sm text-muted-foreground font-mono">{weight}%</span>
                       </div>
                       <Slider
@@ -536,13 +640,13 @@ export default function SettingsPage() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <Label className="font-mono text-slate-300">Enable/Disable Modules</Label>
+                  <Label className="font-mono text-muted-foreground">Enable/Disable Modules</Label>
                   <div className="space-y-3">
                     {["Tasks", "Wealth", "Health", "Notes", "Communication", "Analytics"].map((module) => (
                       <div key={module} className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="font-mono text-slate-300">{module}</span>
+                          <span className="font-mono text-muted-foreground">{module}</span>
                         </div>
                         <Switch defaultChecked />
                       </div>
@@ -555,10 +659,10 @@ export default function SettingsPage() {
 
           {/* Integrations */}
           <TabsContent value="integrations" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-orange-500/30 shadow-[0_0_30px_rgba(255,165,0,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-orange-400">Integrations</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Integrations</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Connect your favorite apps and services
                 </CardDescription>
               </CardHeader>
@@ -602,7 +706,7 @@ export default function SettingsPage() {
                     >
                       <div className="flex items-center space-x-3">
                         <integration.icon className="h-6 w-6" />
-                        <span className="font-mono text-slate-300">{integration.name}</span>
+                        <span className="font-mono text-muted-foreground">{integration.name}</span>
                       </div>
                       <Button
                         variant={integration.connected ? "destructive" : "default"}
@@ -620,10 +724,10 @@ export default function SettingsPage() {
 
           {/* Security & Privacy */}
           <TabsContent value="security" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-red-500/30 shadow-[0_0_30px_rgba(255,0,0,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-red-400">Security & Privacy</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Security & Privacy</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Protect your data and manage privacy settings
                 </CardDescription>
               </CardHeader>
@@ -631,7 +735,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-red-400">Password</h4>
+                      <h4 className="font-semibold font-mono text-primary">Password</h4>
                       <p className="text-sm text-muted-foreground font-mono">Last changed 30 days ago</p>
                     </div>
                     <Button variant="outline" className="font-mono bg-transparent">
@@ -641,7 +745,7 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-red-400">Active Sessions</h4>
+                      <h4 className="font-semibold font-mono text-primary">Active Sessions</h4>
                       <p className="text-sm text-muted-foreground font-mono">3 devices currently logged in</p>
                     </div>
                     <Button variant="outline" className="font-mono bg-transparent">
@@ -652,7 +756,7 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-red-400">Data Export</h4>
+                      <h4 className="font-semibold font-mono text-primary">Data Export</h4>
                       <p className="text-sm text-muted-foreground font-mono">Download all your ASTRA data</p>
                     </div>
                     <Button variant="outline" className="font-mono bg-transparent">
@@ -680,10 +784,10 @@ export default function SettingsPage() {
 
           {/* Billing */}
           <TabsContent value="billing" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-yellow-400">Subscription & Billing</CardTitle>
-                <CardDescription className="font-mono text-slate-300">Manage your ASTRA subscription</CardDescription>
+                <CardTitle className="font-mono text-primary">Subscription & Billing</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">Manage your ASTRA subscription</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg">
@@ -700,12 +804,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-yellow-400">Payment Methods</h4>
+                  <h4 className="font-semibold font-mono text-primary">Payment Methods</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between p-4 border border-yellow-500/30 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <CreditCard className="h-5 w-5" />
-                        <span className="font-mono text-slate-300">•••• •••• •••• 4242</span>
+                        <span className="font-mono text-muted-foreground">•••• •••• •••• 4242</span>
                         <Badge variant="secondary" className="font-mono">
                           Primary
                         </Badge>
@@ -722,7 +826,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-yellow-400">Billing History</h4>
+                  <h4 className="font-semibold font-mono text-primary">Billing History</h4>
                   <div className="space-y-2">
                     {["Dec 2024", "Nov 2024", "Oct 2024"].map((billMonth, index) => (
                       <div
@@ -730,7 +834,7 @@ export default function SettingsPage() {
                         className="flex items-center justify-between p-3 border border-yellow-500/30 rounded"
                         style={{ backgroundColor: "rgba(255, 255, 0, 0.1)" }}
                       >
-                        <span className="font-mono text-slate-300">
+                        <span className="font-mono text-muted-foreground">
                           {billMonth} - {formatCurrency(19, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                         <Button variant="ghost" size="sm" className="font-mono">
@@ -746,20 +850,20 @@ export default function SettingsPage() {
 
           {/* Notifications */}
           <TabsContent value="notifications" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-cyan-400">Notifications & Alerts</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Notifications & Alerts</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Control how and when you receive notifications
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-cyan-400">Notification Types</h4>
+                  <h4 className="font-semibold font-mono text-primary">Notification Types</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="font-mono text-slate-300">Email Notifications</Label>
+                        <Label className="font-mono text-muted-foreground">Email Notifications</Label>
                         <p className="text-sm text-muted-foreground font-mono">Receive updates via email</p>
                       </div>
                       <Switch
@@ -770,7 +874,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="font-mono text-slate-300">Push Notifications</Label>
+                        <Label className="font-mono text-muted-foreground">Push Notifications</Label>
                         <p className="text-sm text-muted-foreground font-mono">Browser and mobile notifications</p>
                       </div>
                       <Switch
@@ -781,7 +885,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label className="font-mono text-slate-300">In-App Alerts</Label>
+                        <Label className="font-mono text-muted-foreground">In-App Alerts</Label>
                         <p className="text-sm text-muted-foreground font-mono">Notifications within ASTRA</p>
                       </div>
                       <Switch
@@ -796,15 +900,15 @@ export default function SettingsPage() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-cyan-400">Digest Frequency</h4>
+                  <h4 className="font-semibold font-mono text-primary">Digest Frequency</h4>
                   <Select
                     value={notifications.digest}
                     onValueChange={(value) => setNotifications((prev) => ({ ...prev, digest: value }))}
                   >
-                    <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
+                    <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-900 border-cyan-500/30">
+                    <SelectContent className="bg-popover border-border">
                       <SelectItem value="instant" className="font-mono">
                         Instant
                       </SelectItem>
@@ -819,22 +923,22 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-cyan-400">Quiet Hours</h4>
+                  <h4 className="font-semibold font-mono text-primary">Quiet Hours</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="font-mono text-slate-300">Start Time</Label>
+                      <Label className="font-mono text-muted-foreground">Start Time</Label>
                       <Input
                         type="time"
                         defaultValue="22:00"
-                        className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                        className="bg-secondary/60 border-border text-foreground font-mono"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="font-mono text-slate-300">End Time</Label>
+                      <Label className="font-mono text-muted-foreground">End Time</Label>
                       <Input
                         type="time"
                         defaultValue="08:00"
-                        className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono"
+                        className="bg-secondary/60 border-border text-foreground font-mono"
                       />
                     </div>
                   </div>
@@ -845,10 +949,10 @@ export default function SettingsPage() {
 
           {/* AI Settings */}
           <TabsContent value="ai" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-indigo-500/30 shadow-[0_0_30px_rgba(75,0,130,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-indigo-400">AI & Assistant Settings</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">AI & Assistant Settings</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Configure your AI assistant preferences
                 </CardDescription>
               </CardHeader>
@@ -856,7 +960,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="font-mono text-slate-300">Voice Mode</Label>
+                      <Label className="font-mono text-muted-foreground">Voice Mode</Label>
                       <p className="text-sm text-muted-foreground font-mono">Enable voice input and output</p>
                     </div>
                     <Switch
@@ -867,15 +971,15 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="font-mono text-slate-300">AI Personality</Label>
+                    <Label className="font-mono text-muted-foreground">AI Personality</Label>
                     <Select
                       value={aiSettings.personality}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, personality: value }))}
                     >
-                      <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
+                      <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-cyan-500/30">
+                      <SelectContent className="bg-popover border-border">
                         <SelectItem value="professional" className="font-mono">
                           Professional
                         </SelectItem>
@@ -891,7 +995,7 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="font-mono text-slate-300">Smart Insights</Label>
+                      <Label className="font-mono text-muted-foreground">Smart Insights</Label>
                       <p className="text-sm text-muted-foreground font-mono">AI-powered suggestions and analysis</p>
                     </div>
                     <Switch
@@ -902,15 +1006,15 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="font-mono text-slate-300">Data Analysis Scope</Label>
+                    <Label className="font-mono text-muted-foreground">Data Analysis Scope</Label>
                     <Select
                       value={aiSettings.dataScope}
                       onValueChange={(value) => setAiSettings((prev) => ({ ...prev, dataScope: value }))}
                     >
-                      <SelectTrigger className="bg-slate-800/50 border-cyan-500/30 text-slate-300 font-mono">
+                      <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-cyan-500/30">
+                      <SelectContent className="bg-popover border-border">
                         <SelectItem value="tasks" className="font-mono">
                           Tasks Only
                         </SelectItem>
@@ -930,13 +1034,13 @@ export default function SettingsPage() {
 
           {/* Advanced */}
           <TabsContent value="advanced" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-gray-500/30 shadow-[0_0_30px_rgba(128,128,128,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
                 <CardTitle className="font-mono flex items-center text-gray-400">
                   <Zap className="mr-2 h-5 w-5" />
                   Advanced Settings
                 </CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardDescription className="font-mono text-muted-foreground">
                   Pro features and developer options
                 </CardDescription>
               </CardHeader>
@@ -957,7 +1061,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border border-gray-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-gray-400">Developer Mode</h4>
+                      <h4 className="font-semibold font-mono text-primary">Developer Mode</h4>
                       <p className="text-sm text-muted-foreground font-mono">Access API keys and advanced features</p>
                     </div>
                     <Switch className="font-mono" />
@@ -965,7 +1069,7 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between p-4 border border-gray-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-gray-400">Cloud Backup</h4>
+                      <h4 className="font-semibold font-mono text-primary">Cloud Backup</h4>
                       <p className="text-sm text-muted-foreground font-mono">Encrypted backup of all your data</p>
                     </div>
                     <Button variant="outline" size="sm" className="font-mono bg-transparent">
@@ -976,7 +1080,7 @@ export default function SettingsPage() {
 
                   <div className="flex items-center justify-between p-4 border border-gray-500/30 rounded-lg">
                     <div>
-                      <h4 className="font-semibold font-mono text-gray-400">API Access</h4>
+                      <h4 className="font-semibold font-mono text-primary">API Access</h4>
                       <p className="text-sm text-muted-foreground font-mono">Personal API for custom integrations</p>
                     </div>
                     <Button variant="outline" size="sm" className="font-mono bg-transparent">
@@ -991,10 +1095,10 @@ export default function SettingsPage() {
 
           {/* Support */}
           <TabsContent value="support" className="space-y-6">
-            <Card className="bg-slate-900/50 backdrop-blur-sm border border-teal-500/30 shadow-[0_0_30px_rgba(0,255,255,0.2)]">
+            <Card className="astra-card">
               <CardHeader>
-                <CardTitle className="font-mono text-teal-400">Support & About</CardTitle>
-                <CardDescription className="font-mono text-slate-300">
+                <CardTitle className="font-mono text-primary">Support & About</CardTitle>
+                <CardDescription className="font-mono text-muted-foreground">
                   Get help and learn more about ASTRA
                 </CardDescription>
               </CardHeader>
@@ -1021,7 +1125,7 @@ export default function SettingsPage() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-teal-400">About ASTRA</h4>
+                  <h4 className="font-semibold font-mono text-primary">About ASTRA</h4>
                   <div className="space-y-2 text-sm text-muted-foreground font-mono">
                     <p>Version: 2.1.0</p>
                     <p>Last Updated: December 2024</p>
@@ -1035,7 +1139,6 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   )
 }

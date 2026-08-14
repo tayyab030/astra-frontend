@@ -25,145 +25,116 @@ import { useCurrency } from "@/hooks/useCurrency";
 export default function DashboardPage() {
   const { formatCurrency } = useCurrency();
 
-  // const renderContent = () => {
-  //   switch (activeTab) {
-  //     case "tasks":
-  //       return <TasksPage />;
-  //     case "goals":
-  //       return <GoalsPage />;
-  //     case "wealth":
-  //       return <WealthPage />;
-  //     case "health":
-  //       return <HealthPage />;
-  //     case "notes":
-  //       return <NotesPage />;
-  //     case "communication":
-  //       return <CommunicationPage />;
-  //     case "analytics":
-  //       return <AnalyticsPage />;
-  //     case "life-score":
-  //       return <LifeScorePage />;
-  //     case "settings":
-  //       return <SettingsPage />;
-  //     case "assistant":
-  //       return <AssistantPage />;
-  //     default:
-  //       return renderDashboard();
-  //   }
-  // };
-
   return (
-    <>
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold font-poppins text-cyan-300">
-              Good morning, Tayyab 🚀
-            </h1>
-            <p className="text-slate-300 font-inter mt-1">
-              "Success is the sum of small efforts repeated day in and day out."
-            </p>
-          </div>
-          <Badge
-            variant="secondary"
-            className="text-lg px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0 shadow-lg shadow-cyan-500/25"
-          >
-            <Star className="mr-2 h-4 w-4" />
-            Life Score: 85
-          </Badge>
+    <div className="astra-page">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="astra-title">
+            Good morning, Tayyab 🚀
+          </h1>
+          <p className="astra-subtitle mt-1">
+            &quot;Success is the sum of small efforts repeated day in and day out.&quot;
+          </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm shadow-lg shadow-cyan-500/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-cyan-300">
-                Tasks Due Today
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-poppins text-cyan-200">
-                5
-              </div>
-              <p className="text-xs text-slate-400">2 completed</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-500/30 backdrop-blur-sm shadow-lg shadow-blue-500/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-blue-300">
-                Daily Spending
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-poppins text-blue-200">
-                {formatCurrency(47)}
-              </div>
-              <p className="text-xs text-slate-400">Budget: {formatCurrency(80)}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-400/30 backdrop-blur-sm shadow-lg shadow-cyan-400/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-cyan-300">
-                Health Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-slate-300">
-                  <span>Water</span>
-                  <span>6/8 glasses</span>
-                </div>
-                <Progress value={75} className="h-2 bg-slate-700" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-400/30 backdrop-blur-sm shadow-lg shadow-blue-400/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-inter text-blue-300">
-                Focus Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-poppins text-blue-200">
-                3.2h
-              </div>
-              <p className="text-xs text-slate-400">4 Pomodoros</p>
-            </CardContent>
-          </Card>
-        </div>
+        <Badge
+          variant="secondary"
+          className="astra-score-badge text-lg px-4 py-2"
+        >
+          <Star className="mr-2 h-4 w-4" />
+          Life Score: 85
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="astra-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-primary">
+              Tasks Due Today
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              5
+            </div>
+            <p className="text-xs text-muted-foreground">2 completed</p>
+          </CardContent>
+        </Card>
+
+        <Card className="astra-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-primary">
+              Daily Spending
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              {formatCurrency(47)}
+            </div>
+            <p className="text-xs text-muted-foreground">Budget: {formatCurrency(80)}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="astra-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-primary">
+              Health Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Water</span>
+                <span>6/8 glasses</span>
+              </div>
+              <Progress value={75} className="h-2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="astra-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-primary">
+              Focus Time
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              3.2h
+            </div>
+            <p className="text-xs text-muted-foreground">4 Pomodoros</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins text-cyan-300">
+            <CardTitle className="text-primary">
               Weekly Expenses
             </CardTitle>
-            <CardDescription className="font-inter text-slate-400">
+            <CardDescription className="text-muted-foreground">
               Your spending vs income this week
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48 flex items-center justify-center text-slate-400">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
               <BarChart3 className="h-12 w-12" />
               <span className="ml-2">Chart visualization</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins text-cyan-300">
+            <CardTitle className="text-primary">
               Habit Streaks
             </CardTitle>
-            <CardDescription className="font-inter text-slate-400">
+            <CardDescription className="text-muted-foreground">
               Your consistency over time
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-48 flex items-center justify-center text-slate-400">
+            <div className="h-48 flex items-center justify-center text-muted-foreground">
               <TrendingUp className="h-12 w-12" />
               <span className="ml-2">Streak visualization</span>
             </div>
@@ -171,27 +142,27 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="mb-8 bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm">
+      <Card className="astra-card">
         <CardHeader>
-          <CardTitle className="font-poppins flex items-center">
-            <Zap className="mr-2 h-5 w-5 text-cyan-400" />
-            <span className="text-cyan-300">Smart Insights</span>
+          <CardTitle className="flex items-center">
+            <Zap className="mr-2 h-5 w-5 text-primary" />
+            <span className="text-primary">Smart Insights</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="p-3 bg-gradient-to-r from-cyan-900/30 to-blue-900/30 rounded-lg border border-cyan-500/30">
-              <p className="text-sm font-inter text-slate-200">
+            <div className="p-3 astra-panel">
+              <p className="text-sm">
                 🎉 You spent 20% less this week than last week!
               </p>
             </div>
-            <div className="p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-500/30">
-              <p className="text-sm font-inter text-slate-200">
-                🔥 You've kept a 10-day streak on workouts—keep going!
+            <div className="p-3 astra-panel">
+              <p className="text-sm">
+                🔥 You&apos;ve kept a 10-day streak on workouts—keep going!
               </p>
             </div>
-            <div className="p-3 bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-lg border border-slate-500/30">
-              <p className="text-sm font-inter text-slate-200">
+            <div className="p-3 astra-panel">
+              <p className="text-sm">
                 ⚠️ 3 tasks are overdue. Suggest rescheduling?
               </p>
             </div>
@@ -199,9 +170,9 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+      <Card className="astra-card">
         <CardHeader>
-          <CardTitle className="font-poppins text-cyan-300">
+          <CardTitle className="text-primary">
             Quick Actions
           </CardTitle>
         </CardHeader>
@@ -209,28 +180,28 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button
               variant="outline"
-              className="h-20 flex-col font-inter bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 hover:border-cyan-400/50 text-cyan-300 hover:text-cyan-200 backdrop-blur-sm"
+              className="h-20 flex-col astra-panel text-primary hover:text-primary"
             >
               <Plus className="h-5 w-5 mb-2" />
               <span>Add Task</span>
             </Button>
             <Button
               variant="outline"
-              className="h-20 flex-col font-inter bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-500/30 hover:border-blue-400/50 text-blue-300 hover:text-blue-200 backdrop-blur-sm"
+              className="h-20 flex-col astra-panel text-primary hover:text-primary"
             >
               <DollarSign className="h-5 w-5 mb-2" />
               <span>Log Expense</span>
             </Button>
             <Button
               variant="outline"
-              className="h-20 flex-col font-inter bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-400/30 hover:border-cyan-300/50 text-cyan-300 hover:text-cyan-200 backdrop-blur-sm"
+              className="h-20 flex-col astra-panel text-primary hover:text-primary"
             >
               <Heart className="h-5 w-5 mb-2" />
               <span>Log Habit</span>
             </Button>
             <Button
               variant="outline"
-              className="h-20 flex-col font-inter bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-blue-400/30 hover:border-blue-300/50 text-blue-300 hover:text-blue-200 backdrop-blur-sm"
+              className="h-20 flex-col astra-panel text-primary hover:text-primary"
             >
               <FileText className="h-5 w-5 mb-2" />
               <span>Quick Note</span>
@@ -238,6 +209,6 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

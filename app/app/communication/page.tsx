@@ -150,63 +150,22 @@ export default function CommunicationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 opacity-20">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-            linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)
-          `,
-            backgroundSize: "50px 50px",
-            animation: "grid-move 20s linear infinite",
-          }}
-        />
-      </div>
-
-      {/* Floating Orbs */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse" />
-      <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse delay-1000" />
-      <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-full blur-xl animate-pulse delay-2000" />
-
-      {/* Holographic Rings */}
-      <div className="absolute top-1/4 right-1/3 w-64 h-64 border border-cyan-500/20 rounded-full animate-spin-slow" />
-      <div className="absolute bottom-1/3 left-1/4 w-48 h-48 border border-blue-500/20 rounded-full animate-spin-slow-reverse" />
-
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-cyan-400/60 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${10 + Math.random() * 20}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="relative z-10 space-y-8 p-6">
+    <div className="astra-page space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold font-poppins text-cyan-300">Smart Inbox</h1>
-            <p className="text-slate-300 font-inter mt-2">AI-powered email management that turns chaos into clarity</p>
+            <h1 className="astra-title text-4xl">Smart Inbox</h1>
+            <p className="astra-subtitle mt-2">AI-powered email management that turns chaos into clarity</p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0">
+            <Button className="astra-btn-primary">
               <Plus className="mr-2 h-4 w-4" />
               Compose
             </Button>
             <Button
               variant="outline"
               size="icon"
-              className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200"
+              className="border-border bg-card/50 hover:bg-accent text-foreground"
             >
               <Settings className="h-4 w-4" />
             </Button>
@@ -215,77 +174,77 @@ export default function CommunicationPage() {
 
         {/* Inbox Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-inter text-cyan-300 flex items-center">
+              <CardTitle className="text-sm font-inter text-primary flex items-center">
                 <Inbox className="mr-2 h-4 w-4" />
                 Total Emails
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-poppins text-cyan-200">{inboxStats.total}</div>
-              <p className="text-xs text-slate-400">{inboxStats.unread} unread</p>
+              <div className="text-3xl font-bold font-poppins text-primary">{inboxStats.total}</div>
+              <p className="text-xs text-muted-foreground">{inboxStats.unread} unread</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-inter text-cyan-300 flex items-center">
+              <CardTitle className="text-sm font-inter text-primary flex items-center">
                 <Star className="mr-2 h-4 w-4" />
                 Important
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-poppins text-cyan-200">{inboxStats.important}</div>
-              <p className="text-xs text-slate-400">Needs attention</p>
+              <div className="text-3xl font-bold font-poppins text-primary">{inboxStats.important}</div>
+              <p className="text-xs text-muted-foreground">Needs attention</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-inter text-cyan-300 flex items-center">
+              <CardTitle className="text-sm font-inter text-primary flex items-center">
                 <FileText className="mr-2 h-4 w-4" />
                 Newsletters
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-poppins text-cyan-200">{inboxStats.newsletters}</div>
-              <p className="text-xs text-slate-400">Weekly digest</p>
+              <div className="text-3xl font-bold font-poppins text-primary">{inboxStats.newsletters}</div>
+              <p className="text-xs text-muted-foreground">Weekly digest</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-inter text-cyan-300 flex items-center">
+              <CardTitle className="text-sm font-inter text-primary flex items-center">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Promotions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-poppins text-cyan-200">{inboxStats.promotions}</div>
-              <p className="text-xs text-slate-400">Deals & offers</p>
+              <div className="text-3xl font-bold font-poppins text-primary">{inboxStats.promotions}</div>
+              <p className="text-xs text-muted-foreground">Deals & offers</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-inter text-cyan-300 flex items-center">
+              <CardTitle className="text-sm font-inter text-primary flex items-center">
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Response Time
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold font-poppins text-cyan-200">2.4h</div>
-              <p className="text-xs text-slate-400">Average reply</p>
+              <div className="text-3xl font-bold font-poppins text-primary">2.4h</div>
+              <p className="text-xs text-muted-foreground">Average reply</p>
             </CardContent>
           </Card>
         </div>
 
         {/* AI Insights */}
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+        <Card className="astra-card">
           <CardHeader>
-            <CardTitle className="font-poppins flex items-center text-slate-200">
-              <Bot className="mr-2 h-5 w-5 text-cyan-400" />
+            <CardTitle className="font-poppins flex items-center text-foreground">
+              <Bot className="mr-2 h-5 w-5 text-primary" />
               AI Insights & Recommendations
             </CardTitle>
           </CardHeader>
@@ -296,11 +255,11 @@ export default function CommunicationPage() {
                 return (
                   <div
                     key={index}
-                    className="p-4 rounded-lg border bg-slate-800/30 border-slate-600/30 backdrop-blur-sm"
+                    className="p-4 astra-panel"
                   >
                     <div className="flex items-start space-x-3">
-                      <Icon className="h-5 w-5 mt-0.5 text-cyan-400" />
-                      <p className="text-sm font-inter text-slate-300">{insight.message}</p>
+                      <Icon className="h-5 w-5 mt-0.5 text-primary" />
+                      <p className="text-sm font-inter text-muted-foreground">{insight.message}</p>
                     </div>
                   </div>
                 )
@@ -313,24 +272,24 @@ export default function CommunicationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Email List */}
           <div className="lg:col-span-2">
-            <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+            <Card className="astra-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="font-poppins text-slate-200">Inbox</CardTitle>
+                  <CardTitle className="font-poppins text-foreground">Inbox</CardTitle>
                   <div className="flex items-center space-x-2">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search emails..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 w-64 bg-slate-800/50 border-slate-600 text-slate-200 placeholder:text-slate-400"
+                        className="astra-input pl-10 w-64"
                       />
                     </div>
                     <Button
                       variant="outline"
                       size="icon"
-                      className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200"
+                      className="border-border bg-card/50 hover:bg-accent text-foreground"
                     >
                       <Filter className="h-4 w-4" />
                     </Button>
@@ -339,40 +298,40 @@ export default function CommunicationPage() {
 
                 {/* Smart Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-600">
+                  <TabsList className="astra-tabs grid w-full grid-cols-4">
                     <TabsTrigger
                       value="inbox"
-                      className="flex items-center space-x-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+                      className="flex items-center space-x-2 astra-tab"
                     >
                       <span>All</span>
-                      <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                      <Badge variant="secondary" className="text-xs bg-secondary text-muted-foreground">
                         {inboxStats.total}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger
                       value="important"
-                      className="flex items-center space-x-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+                      className="flex items-center space-x-2 astra-tab"
                     >
                       <span>✉️ Important</span>
-                      <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                      <Badge variant="secondary" className="text-xs bg-secondary text-muted-foreground">
                         {inboxStats.important}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger
                       value="newsletters"
-                      className="flex items-center space-x-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+                      className="flex items-center space-x-2 astra-tab"
                     >
                       <span>📰 News</span>
-                      <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                      <Badge variant="secondary" className="text-xs bg-secondary text-muted-foreground">
                         {inboxStats.newsletters}
                       </Badge>
                     </TabsTrigger>
                     <TabsTrigger
                       value="promotions"
-                      className="flex items-center space-x-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
+                      className="flex items-center space-x-2 astra-tab"
                     >
                       <span>🛒 Promos</span>
-                      <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-300">
+                      <Badge variant="secondary" className="text-xs bg-secondary text-muted-foreground">
                         {inboxStats.promotions}
                       </Badge>
                     </TabsTrigger>
@@ -384,14 +343,14 @@ export default function CommunicationPage() {
                   {getCategoryEmails(activeTab).map((email) => (
                     <div
                       key={email.id}
-                      className={`p-4 border-b border-slate-600/50 hover:bg-slate-700/30 cursor-pointer transition-colors ${email.unread ? "bg-cyan-500/10" : ""
-                        } ${selectedEmail?.id === email.id ? "bg-cyan-500/20" : ""}`}
+                      className={`p-4 border-b border-border hover:bg-accent/50 cursor-pointer transition-colors ${email.unread ? "bg-accent/40" : ""
+                        } ${selectedEmail?.id === email.id ? "bg-accent" : ""}`}
                       onClick={() => setSelectedEmail(email)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3 flex-1">
                           <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs bg-slate-700 text-slate-300">
+                            <AvatarFallback className="text-xs bg-secondary text-muted-foreground">
                               {email.sender
                                 .split(" ")
                                 .map((n) => n[0])
@@ -401,7 +360,7 @@ export default function CommunicationPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
                               <p
-                                className={`font-medium font-inter truncate text-slate-200 ${email.unread ? "font-semibold" : ""}`}
+                                className={`font-medium font-inter truncate text-foreground ${email.unread ? "font-semibold" : ""}`}
                               >
                                 {email.sender}
                               </p>
@@ -410,19 +369,19 @@ export default function CommunicationPage() {
                                   High
                                 </Badge>
                               )}
-                              {email.hasAttachment && <Paperclip className="h-3 w-3 text-slate-400" />}
+                              {email.hasAttachment && <Paperclip className="h-3 w-3 text-muted-foreground" />}
                             </div>
                             <p
-                              className={`text-sm truncate ${email.unread ? "font-medium text-slate-200" : "text-slate-400"}`}
+                              className={`text-sm truncate ${email.unread ? "font-medium text-foreground" : "text-muted-foreground"}`}
                             >
                               {email.subject}
                             </p>
-                            <p className="text-xs text-slate-500 truncate mt-1">{email.preview}</p>
+                            <p className="text-xs text-muted-foreground truncate mt-1">{email.preview}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2 text-xs text-slate-400">
+                        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                           <span>{email.time}</span>
-                          {email.unread && <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>}
+                          {email.unread && <div className="w-2 h-2 bg-primary rounded-full"></div>}
                         </div>
                       </div>
                     </div>
@@ -437,28 +396,28 @@ export default function CommunicationPage() {
             {selectedEmail ? (
               <>
                 {/* Email Preview */}
-                <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+                <Card className="astra-card">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="font-poppins text-lg text-slate-200">{selectedEmail.subject}</CardTitle>
+                      <CardTitle className="font-poppins text-lg text-foreground">{selectedEmail.subject}</CardTitle>
                       <div className="flex items-center space-x-1">
-                        <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                        <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                           <Reply className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                        <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                           <Forward className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                        <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                           <Archive className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                        <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-slate-400">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs bg-slate-700 text-slate-300">
+                        <AvatarFallback className="text-xs bg-secondary text-muted-foreground">
                           {selectedEmail.sender
                             .split(" ")
                             .map((n) => n[0])
@@ -471,7 +430,7 @@ export default function CommunicationPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose prose-sm max-w-none text-slate-300">
+                    <div className="prose prose-sm max-w-none text-muted-foreground">
                       <p>{selectedEmail.preview}</p>
                       <p className="mt-4">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
@@ -483,24 +442,24 @@ export default function CommunicationPage() {
                 </Card>
 
                 {/* AI Summary & Actions */}
-                <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-cyan-500/30 backdrop-blur-sm">
+                <Card className="astra-card">
                   <CardHeader>
-                    <CardTitle className="font-poppins flex items-center text-cyan-300">
+                    <CardTitle className="font-poppins flex items-center text-primary">
                       <Sparkles className="mr-2 h-4 w-4" />
                       AI Summary
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm font-inter mb-4 text-slate-300">{selectedEmail.aiSummary}</p>
+                    <p className="text-sm font-inter mb-4 text-muted-foreground">{selectedEmail.aiSummary}</p>
                     <div className="space-y-2">
-                      <p className="text-xs font-medium text-cyan-300">Suggested Actions:</p>
+                      <p className="text-xs font-medium text-primary">Suggested Actions:</p>
                       <div className="flex flex-wrap gap-2">
                         {selectedEmail.suggestedActions.map((action, index) => (
                           <Button
                             key={index}
                             variant="outline"
                             size="sm"
-                            className="text-xs bg-slate-800/50 border-slate-600 hover:bg-slate-700/50 text-slate-300"
+                            className="text-xs bg-secondary/50 border-slate-600 hover:bg-accent text-muted-foreground"
                           >
                             {action === "Create Task" && <CheckSquare className="mr-1 h-3 w-3" />}
                             {action === "Schedule Meeting" && <Calendar className="mr-1 h-3 w-3" />}
@@ -514,22 +473,22 @@ export default function CommunicationPage() {
                 </Card>
 
                 {/* Quick Reply */}
-                <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+                <Card className="astra-card">
                   <CardHeader>
-                    <CardTitle className="font-poppins text-sm text-slate-200">Quick Reply</CardTitle>
+                    <CardTitle className="font-poppins text-sm text-foreground">Quick Reply</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <Textarea
                         placeholder="Type your reply..."
-                        className="min-h-[100px] resize-none bg-slate-800/50 border-slate-600 text-slate-200 placeholder:text-slate-400"
+                        className="astra-input min-h-[100px] resize-none"
                       />
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                          <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                             <Paperclip className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="hover:bg-slate-700/50 text-slate-300">
+                          <Button variant="ghost" size="icon" className="hover:bg-accent text-muted-foreground">
                             <Mic className="h-4 w-4" />
                           </Button>
                         </div>
@@ -537,14 +496,14 @@ export default function CommunicationPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300"
+                            className="border-border bg-card/50 hover:bg-accent text-muted-foreground"
                           >
                             <Bot className="mr-1 h-3 w-3" />
                             AI Draft
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-0"
+                            className="astra-btn-primary"
                           >
                             <Send className="mr-1 h-3 w-3" />
                             Send
@@ -556,8 +515,8 @@ export default function CommunicationPage() {
                 </Card>
               </>
             ) : (
-              <Card className="h-96 flex items-center justify-center bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
-                <div className="text-center text-slate-400">
+              <Card className="astra-card h-96 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
                   <Mail className="h-12 w-12 mx-auto mb-4" />
                   <p className="font-inter">Select an email to view details</p>
                 </div>
@@ -568,9 +527,9 @@ export default function CommunicationPage() {
 
         {/* Analytics & Settings */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader>
-              <CardTitle className="font-poppins flex items-center text-slate-200">
+              <CardTitle className="font-poppins flex items-center text-foreground">
                 <BarChart3 className="mr-2 h-5 w-5" />
                 Email Analytics
               </CardTitle>
@@ -578,21 +537,21 @@ export default function CommunicationPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <div className="flex justify-between text-sm mb-2 text-slate-300">
+                  <div className="flex justify-between text-sm mb-2 text-muted-foreground">
                     <span>Response Rate</span>
                     <span>87%</span>
                   </div>
                   <Progress value={87} className="h-2" />
                 </div>
                 <div>
-                  <div className="flex justify-between text-sm mb-2 text-slate-300">
+                  <div className="flex justify-between text-sm mb-2 text-muted-foreground">
                     <span>Weekly Volume</span>
                     <span>142 emails</span>
                   </div>
                   <Progress value={65} className="h-2" />
                 </div>
                 <div>
-                  <div className="flex justify-between text-sm mb-2 text-slate-300">
+                  <div className="flex justify-between text-sm mb-2 text-muted-foreground">
                     <span>Productivity Score</span>
                     <span>92%</span>
                   </div>
@@ -602,9 +561,9 @@ export default function CommunicationPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+          <Card className="astra-card">
             <CardHeader>
-              <CardTitle className="font-poppins flex items-center text-slate-200">
+              <CardTitle className="font-poppins flex items-center text-foreground">
                 <Settings className="mr-2 h-5 w-5" />
                 Smart Settings
               </CardTitle>
@@ -613,39 +572,39 @@ export default function CommunicationPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium font-inter text-slate-200">Auto-categorization</p>
-                    <p className="text-xs text-slate-400">AI sorts emails automatically</p>
+                    <p className="font-medium font-inter text-foreground">Auto-categorization</p>
+                    <p className="text-xs text-muted-foreground">AI sorts emails automatically</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300"
+                    className="border-border bg-card/50 hover:bg-accent text-muted-foreground"
                   >
                     Enabled
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium font-inter text-slate-200">Smart notifications</p>
-                    <p className="text-xs text-slate-400">Only important emails</p>
+                    <p className="font-medium font-inter text-foreground">Smart notifications</p>
+                    <p className="text-xs text-muted-foreground">Only important emails</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300"
+                    className="border-border bg-card/50 hover:bg-accent text-muted-foreground"
                   >
                     Configure
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium font-inter text-slate-200">Digest mode</p>
-                    <p className="text-xs text-slate-400">Daily summary at 8 AM</p>
+                    <p className="font-medium font-inter text-foreground">Digest mode</p>
+                    <p className="text-xs text-muted-foreground">Daily summary at 8 AM</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300"
+                    className="border-border bg-card/50 hover:bg-accent text-muted-foreground"
                   >
                     Active
                   </Button>
@@ -654,31 +613,6 @@ export default function CommunicationPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes grid-move {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes spin-slow-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-10px) translateX(5px); }
-          50% { transform: translateY(-5px) translateX(-5px); }
-          75% { transform: translateY(-15px) translateX(10px); }
-        }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        .animate-spin-slow-reverse { animation: spin-slow-reverse 25s linear infinite; }
-        .animate-float { animation: float var(--duration, 10s) ease-in-out infinite; }
-      `}</style>
     </div>
   )
 }
