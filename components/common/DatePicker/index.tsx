@@ -71,14 +71,18 @@ export function DatePicker({
             type="button"
             disabled={isButtonDisabled}
             className={cn(
-              "w-full h-10 px-3 rounded-md text-left font-normal flex items-center justify-between bg-slate-800/50 border-slate-700 border",
+              "flex h-10 w-full items-center rounded-md border border-slate-700 bg-slate-800/50 px-3 text-left font-normal",
               !selectedDate && "text-muted-foreground",
               error && "border-destructive",
               buttonClassName,
+              // Keep date text and calendar icon separated globally (after buttonClassName so it always wins).
+              "gap-3",
             )}
           >
-            {selectedDate ? format(selectedDate, "PPP") : <span>{placeholder}</span>}
-            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+            <span className="min-w-0 flex-1 truncate text-left">
+              {selectedDate ? format(selectedDate, "PPP") : placeholder}
+            </span>
+            <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">

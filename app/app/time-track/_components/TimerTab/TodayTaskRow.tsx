@@ -1,11 +1,11 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Play, Pause, Trash2 } from "lucide-react"
 import type { TrackedTask } from "../../_types/timeTrack.types"
 import type { ActiveTimerState } from "../../_types/timeTrack.types"
 import { formatDuration } from "../../_utils/formatTime"
+import { TaskMetaBadges } from "./TaskMetaBadges"
 
 interface TodayTaskRowProps {
   task: TrackedTask
@@ -36,27 +36,23 @@ export function TodayTaskRow({
       tabIndex={0}
       onClick={() => onSelect(task.taskId)}
       onKeyDown={(e) => e.key === "Enter" && onSelect(task.taskId)}
-      className={`flex items-center justify-between rounded-lg border p-3 transition-colors cursor-pointer ${
+      className={`flex items-start justify-between rounded-lg border p-3 transition-colors cursor-pointer ${
         isSelected
           ? "border-cyan-500/50 bg-cyan-500/10"
           : "border-slate-700/50 bg-slate-800/30 hover:bg-slate-800/50"
       }`}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white font-mono truncate">{task.title}</p>
-        <div className="flex items-center gap-2 mt-1">
-          {task.projectTitle && (
-            <Badge variant="outline" className="text-xs font-mono border-slate-600 text-slate-400">
-              {task.projectTitle}
-            </Badge>
-          )}
-          <span className="text-sm text-cyan-300 font-mono tabular-nums">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm font-medium text-white font-mono truncate">{task.title}</p>
+          <span className="shrink-0 text-sm text-cyan-300 font-mono tabular-nums">
             {formatDuration(displaySeconds)}
           </span>
         </div>
+        <TaskMetaBadges task={task} compact className="mt-2" />
       </div>
 
-      <div className="flex items-center gap-1 ml-3">
+      <div className="flex items-center gap-1 ml-3 shrink-0">
         {isRunning ? (
           <Button
             size="icon"

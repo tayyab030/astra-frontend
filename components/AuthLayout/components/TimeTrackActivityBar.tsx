@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Pause, Play, Square } from "lucide-react"
+import { Pause, Play, Save, Square } from "lucide-react"
 import { useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider"
 import { formatTimerClock } from "@/app/app/time-track/_utils/formatTime"
 
@@ -13,26 +13,29 @@ export function TimeTrackActivityBar() {
     startTimer,
     pauseTimer,
     stopTimer,
+    saveTimer,
     settings,
     isLoading,
+    isSaving,
   } = useTimeTrackContext()
 
   if (isLoading || !settings.activityBarVisible) return null
 
   const isRunning = activeTimer.status === "running"
-  const hasTask = Boolean(activeTask)
+  const hasTask = Boolean(activeTimer.taskId)
+  const canSave = isRunning && activeTimer.elapsedSeconds > 0 && !isSaving
 
   return (
     <div className="fixed bottom-3 left-3 right-3 z-50 mx-auto max-w-2xl lg:left-[5.5rem] lg:right-6">
       <div className="astra-card flex items-center gap-2 px-3 py-1.5 shadow-xl shadow-black/20">
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium font-mono leading-tight text-foreground">
-            {activeTask?.title ?? "No task selected"}
+            {activeTask?.title ?? (hasTask ? "Tracking…" : "No task selected")}
           </p>
         </div>
 
         <div className="shrink-0 text-sm font-bold tabular-nums text-primary font-mono">
-          {hasTask ? formatTimerClock(displayClockSeconds) : formatTimerClock(0)}
+          {formatTimerClock(displayClockSeconds)}
         </div>
 
         <div className="flex shrink-0 items-center gap-0.5">
@@ -42,6 +45,7 @@ export function TimeTrackActivityBar() {
               disabled={!hasTask}
               onClick={() => activeTask && startTimer(activeTask.taskId)}
               className="astra-btn-primary h-7 w-7"
+              aria-label="Start timer"
             >
               <Play className="h-3.5 w-3.5" />
             </Button>
@@ -51,6 +55,7 @@ export function TimeTrackActivityBar() {
               variant="outline"
               onClick={() => void pauseTimer()}
               className="h-7 w-7 border-border text-foreground hover:bg-accent"
+              aria-label="Pause timer"
             >
               <Pause className="h-3.5 w-3.5" />
             </Button>
@@ -58,9 +63,21 @@ export function TimeTrackActivityBar() {
           <Button
             size="icon"
             variant="outline"
+            disabled={!canSave}
+            onClick={() => void saveTimer()}
+            className="h-7 w-7 border-border text-foreground hover:bg-accent"
+            aria-label="Save time"
+            title="Save time"
+          >
+            <Save className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
             disabled={!isRunning}
             onClick={stopTimer}
             className="h-7 w-7 border-destructive/50 text-destructive hover:bg-destructive/10"
+            aria-label="Stop timer"
           >
             <Square className="h-3.5 w-3.5" />
           </Button>

@@ -83,28 +83,28 @@ export function PatternsTab() {
     <div className="space-y-4 pb-6">
       <div className="flex flex-wrap items-end gap-4">
         <div>
-          <Label className="text-slate-400 font-mono text-xs mb-2 block">View</Label>
+          <Label className="mb-2 block font-mono text-xs text-slate-400">View</Label>
           <ToggleGroup
             type="single"
             value={mode}
             onValueChange={(value) => value && setMode(value as PatternViewMode)}
-            className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-1"
+            className="flex w-fit flex-wrap gap-2 rounded-lg border border-slate-700/50 bg-slate-800/50 p-1.5"
           >
             <ToggleGroupItem
               value="day"
-              className="font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
+              className="flex-none rounded-md px-4 font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
             >
               Day
             </ToggleGroupItem>
             <ToggleGroupItem
               value="month"
-              className="font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
+              className="flex-none rounded-md px-4 font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
             >
               Month
             </ToggleGroupItem>
             <ToggleGroupItem
               value="year"
-              className="font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
+              className="flex-none rounded-md px-4 font-mono text-xs data-[state=on]:bg-violet-500/20 data-[state=on]:text-violet-300"
             >
               Year
             </ToggleGroupItem>
@@ -116,7 +116,8 @@ export function PatternsTab() {
             label="Day"
             value={selectedDay}
             onChange={(date) => date && setSelectedDay(date)}
-            buttonClassName="bg-slate-900/50 border-slate-600/50 text-white font-mono h-9"
+            className="min-w-[220px]"
+            buttonClassName="h-9 min-w-[220px] border-slate-600/50 bg-slate-900/50 font-mono text-white"
           />
         )}
 
