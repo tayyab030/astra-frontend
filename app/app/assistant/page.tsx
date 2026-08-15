@@ -2,21 +2,25 @@
 
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
-import { Bot, Mic, Send, Square, Trash2, User, Volume2, VolumeX } from "lucide-react"
+import { Bot, Menu, MessageSquarePlus, Mic, Send, Square, User, Volume2, VolumeX } from "lucide-react"
 
+import { ConversationSidebar } from "@/components/assistant/ConversationSidebar"
 import { VoiceWaveform } from "@/components/assistant/VoiceWaveform"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   createAssistantConversation,
+  deleteAssistantConversation,
   fetchAssistantSpeechWav,
   getAssistantConversation,
   getAssistantErrorMessage,
   listAssistantConversations,
   sendAssistantMessage,
   transcribeAssistantAudioFile,
+  updateAssistantConversation,
   type AssistantChatMessage,
+  type AssistantConversation,
 } from "@/lib/api/assistant"
 import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
 
@@ -69,6 +73,11 @@ export default function AssistantPage() {
   const [speakReplies, setSpeakReplies] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
+  const [conversations, setConversations] = useState<AssistantConversation[]>([])
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
+  const [activeTitle, setActiveTitle] = useState("New chat")
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [historyBusy, setHistoryBusy] = useState(false)
 
   const conversationIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -118,13 +127,16 @@ export default function AssistantPage() {
     let cancelled = false
     void (async () => {
       try {
-        const conversations = await listAssistantConversations()
+        const list = await listAssistantConversations()
         if (cancelled) return
-        const latest = conversations[0]
+        setConversations(list)
+        const latest = list[0]
         if (!latest) return
         const detail = await getAssistantConversation(latest.id)
         if (cancelled) return
         conversationIdRef.current = detail.conversation.id
+        setActiveConversationId(detail.conversation.id)
+        setActiveTitle(detail.conversation.title)
         if (detail.messages.length > 0) {
           setMessages(detail.messages.map(mapApiMessage))
         }
@@ -275,6 +287,8 @@ export default function AssistantPage() {
         conversationId: conversationIdRef.current,
       })
       conversationIdRef.current = result.conversation.id
+      setActiveConversationId(result.conversation.id)
+      setActiveTitle(result.conversation.title)
 
       const userMessage = mapApiMessage(result.user_message)
       const assistantMessage = mapApiMessage(result.assistant_message)
@@ -283,6 +297,13 @@ export default function AssistantPage() {
         const withoutOptimistic = prev.filter((item) => item.id !== optimistic.id)
         return [...withoutOptimistic, userMessage, assistantMessage]
       })
+
+      try {
+        const list = await listAssistantConversations()
+        setConversations(list)
+      } catch {
+        // Keep chat usable if list refresh fails.
+      }
 
       if (speakRepliesRef.current) {
         try {
@@ -382,17 +403,109 @@ export default function AssistantPage() {
     recorder.stop()
   }
 
-  const clearChat = async () => {
-    stopSpeech()
-    if (isRecording) stopRecording()
+  const refreshConversations = async () => {
+    const list = await listAssistantConversations()
+    setConversations(list)
+    return list
+  }
+
+  const selectConversation = async (id: string) => {
+    if (isLoading || historyBusy) return
+    setHistoryBusy(true)
+    setError(null)
     try {
+      stopSpeech()
+      const detail = await getAssistantConversation(id)
+      conversationIdRef.current = detail.conversation.id
+      setActiveConversationId(detail.conversation.id)
+      setActiveTitle(detail.conversation.title)
+      setMessages(
+        detail.messages.length > 0
+          ? detail.messages.map(mapApiMessage)
+          : [{ ...WELCOME, id: createId(), timestamp: new Date() }]
+      )
+      setInput("")
+    } catch (err) {
+      setError(getAssistantErrorMessage(err, "Could not open that chat."))
+    } finally {
+      setHistoryBusy(false)
+    }
+  }
+
+  const createNewChat = async () => {
+    if (isLoading || historyBusy) return
+    setHistoryBusy(true)
+    setError(null)
+    try {
+      stopSpeech()
+      if (isRecording) stopRecording()
       const conversation = await createAssistantConversation("New chat")
       conversationIdRef.current = conversation.id
-    } catch {
+      setActiveConversationId(conversation.id)
+      setActiveTitle(conversation.title)
+      setMessages([{ ...WELCOME, id: createId(), timestamp: new Date() }])
+      setInput("")
+      await refreshConversations()
+    } catch (err) {
       conversationIdRef.current = null
+      setActiveConversationId(null)
+      setActiveTitle("New chat")
+      setMessages([{ ...WELCOME, id: createId(), timestamp: new Date() }])
+      setError(getAssistantErrorMessage(err, "Could not start a new chat."))
+    } finally {
+      setHistoryBusy(false)
     }
-    setMessages([{ ...WELCOME, id: createId(), timestamp: new Date() }])
+  }
+
+  const renameConversation = async (id: string, title: string) => {
+    const nextTitle = title.trim()
+    if (!nextTitle) return
+    setHistoryBusy(true)
     setError(null)
+    try {
+      const updated = await updateAssistantConversation(id, nextTitle)
+      setConversations((prev) => prev.map((item) => (item.id === id ? updated : item)))
+      if (conversationIdRef.current === id) {
+        setActiveTitle(updated.title)
+      }
+    } catch (err) {
+      setError(getAssistantErrorMessage(err, "Could not rename chat."))
+    } finally {
+      setHistoryBusy(false)
+    }
+  }
+
+  const removeConversation = async (id: string) => {
+    setHistoryBusy(true)
+    setError(null)
+    try {
+      stopSpeech()
+      await deleteAssistantConversation(id)
+      const list = await refreshConversations()
+      if (conversationIdRef.current === id) {
+        const next = list[0]
+        if (next) {
+          const detail = await getAssistantConversation(next.id)
+          conversationIdRef.current = detail.conversation.id
+          setActiveConversationId(detail.conversation.id)
+          setActiveTitle(detail.conversation.title)
+          setMessages(
+            detail.messages.length > 0
+              ? detail.messages.map(mapApiMessage)
+              : [{ ...WELCOME, id: createId(), timestamp: new Date() }]
+          )
+        } else {
+          conversationIdRef.current = null
+          setActiveConversationId(null)
+          setActiveTitle("New chat")
+          setMessages([{ ...WELCOME, id: createId(), timestamp: new Date() }])
+        }
+      }
+    } catch (err) {
+      setError(getAssistantErrorMessage(err, "Could not delete chat."))
+    } finally {
+      setHistoryBusy(false)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -425,13 +538,50 @@ export default function AssistantPage() {
 
   return (
     <div className="astra-page font-mono">
-      <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-4xl flex-col">
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h1 className="astra-title mb-2 text-4xl">AI Assistant</h1>
-            <p className="astra-subtitle">Whisper in · Groq chat · Orpheus out</p>
+      <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-6xl gap-0 overflow-hidden rounded-xl border border-border md:gap-4 md:border-0">
+        <ConversationSidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          conversations={conversations}
+          activeId={activeConversationId}
+          busy={historyBusy || isLoading}
+          onNewChat={() => void createNewChat()}
+          onSelect={(id) => void selectConversation(id)}
+          onRename={(id, title) => void renameConversation(id, title)}
+          onDelete={(id) => void removeConversation(id)}
+        />
+
+        <div className="flex min-w-0 flex-1 flex-col p-3 md:p-0">
+        <div className="mb-4 flex items-start justify-between gap-4 md:mb-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open chats"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 text-left">
+              <h1 className="astra-title truncate text-2xl md:text-4xl">
+                {activeTitle || "AI Assistant"}
+              </h1>
+              <p className="astra-subtitle text-xs md:text-sm">Chats save automatically</p>
+            </div>
           </div>
           <div className="flex shrink-0 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => void createNewChat()}
+              disabled={historyBusy || isLoading}
+              aria-label="New chat"
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -450,15 +600,6 @@ export default function AssistantPage() {
               aria-label="Stop speech"
             >
               <Square className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => void clearChat()}
-              aria-label="Clear chat"
-            >
-              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -593,6 +734,7 @@ export default function AssistantPage() {
             </div>
           </div>
         </Card>
+        </div>
       </div>
     </div>
   )
