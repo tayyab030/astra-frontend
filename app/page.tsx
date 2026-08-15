@@ -215,7 +215,7 @@ export default function HomePage() {
                     >
                       <module.icon className="w-7 h-7 text-white" />
                     </div>
-                    {module.isPro && (
+                    {"isPro" in module && module.isPro && (
                       <Badge
                         variant="secondary"
                         className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border-amber-500/30"

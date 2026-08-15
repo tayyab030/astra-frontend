@@ -2,38 +2,34 @@
 
 import dynamic from "next/dynamic"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton"
+import { TabPanelSkeleton } from "@/components/skeletons"
 import type { HealthTabId } from "../_types/health.types"
 import { NavigationTabs } from "./NavigationTabs"
 
 const OverviewTab = dynamic(
   () => import("./OverviewTab").then((m) => ({ default: m.OverviewTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 const WeightTab = dynamic(
   () => import("./WeightTab").then((m) => ({ default: m.WeightTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
 const TrackingTab = dynamic(
   () => import("./TrackingTab").then((m) => ({ default: m.TrackingTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
 const ExerciseTab = dynamic(
   () => import("./ExerciseTab").then((m) => ({ default: m.ExerciseTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 const WellnessTab = dynamic(
   () => import("./WellnessTab").then((m) => ({ default: m.WellnessTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 const InsightsTab = dynamic(
   () => import("./InsightsTab").then((m) => ({ default: m.InsightsTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
-
-function TabSkeleton({ tall }: { tall?: boolean }) {
-  return <Skeleton className={`w-full bg-slate-800/50 ${tall ? "h-72" : "h-48"}`} />
-}
 
 interface HealthContentProps {
   currentView: HealthTabId

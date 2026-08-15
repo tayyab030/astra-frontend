@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { CardGridSkeleton } from "@/components/skeletons"
 import { useNotes } from "../_hooks/useNotes"
 import { NoteCard } from "./NoteCard"
 import { NotesEmptyState } from "./NotesEmptyState"
@@ -40,13 +41,7 @@ export function NotesViews({ onEditNote }: NotesViewsProps) {
   } = useNotes()
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-48 rounded-lg bg-slate-800/50 animate-pulse" />
-        ))}
-      </div>
-    )
+    return <CardGridSkeleton count={6} className="md:grid-cols-2" />
   }
 
   if (filteredNotes.length === 0) {

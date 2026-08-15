@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
@@ -60,13 +60,7 @@ function CategoryList({
 }
 
 function CategorySkeleton({ count }: { count: number }) {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: count }).map((_, index) => (
-        <Skeleton key={index} className="h-14 w-full bg-slate-900/50" />
-      ))}
-    </div>
-  )
+  return <ListRowsSkeleton count={count} withAvatar />
 }
 
 export function CategoriesTab({

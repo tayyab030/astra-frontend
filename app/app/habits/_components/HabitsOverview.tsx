@@ -5,7 +5,7 @@ import { BarChart3, Flame, PieChart as PieChartIcon, Trophy } from "lucide-react
 import { Cell, Pie, PieChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
+import { HabitsOverviewSkeleton } from "@/components/skeletons"
 import {
   ChartContainer,
   ChartTooltip,
@@ -93,15 +93,7 @@ export function HabitsOverview({
   }, [habits])
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-72 w-full" />
-          <Skeleton className="h-72 w-full" />
-        </div>
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
+    return <HabitsOverviewSkeleton />
   }
 
   return (

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
+import { LifeScorePageSkeleton } from "@/components/skeletons"
 import {
   AlertTriangle,
   Award,
@@ -79,23 +79,7 @@ export function LifeScoreContent() {
   )
 
   if (isLoading || !view) {
-    return (
-      <div className="astra-page space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-80" />
-            <Skeleton className="h-5 w-96" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-16" />
-          </div>
-        </div>
-        <Skeleton className="h-56 w-full" />
-        <Skeleton className="h-40 w-full" />
-      </div>
-    )
+    return <LifeScorePageSkeleton />
   }
 
   if (isError) {

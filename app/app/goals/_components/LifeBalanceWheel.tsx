@@ -38,10 +38,10 @@ export function LifeBalanceWheel({ goals, isLoading }: LifeBalanceWheelProps) {
             {Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex justify-between">
-                  <Skeleton className="h-4 w-24 bg-slate-900/50" />
-                  <Skeleton className="h-4 w-10 bg-slate-900/50" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-10" />
                 </div>
-                <Skeleton className="h-2 w-full bg-slate-900/50" />
+                <Skeleton className="h-2 w-full" />
               </div>
             ))}
           </div>

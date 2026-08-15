@@ -46,7 +46,7 @@ export function OverviewTab({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <Skeleton className="h-64 w-full bg-slate-900/50" />
+              <Skeleton className="h-64 w-full" />
             ) : (
               <SpendingTrendChart transactions={transactions} filter={filter} />
             )}
@@ -62,7 +62,7 @@ export function OverviewTab({
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <Skeleton className="h-64 w-full bg-slate-900/50" />
+              <Skeleton className="h-64 w-full" />
             ) : (
               <ExpenseCategoriesChart categoryTotals={categoryTotals} />
             )}
@@ -78,7 +78,10 @@ export function OverviewTab({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full bg-slate-900/50" />
+                <div key={index} className="space-y-2 text-center">
+                  <Skeleton className="mx-auto h-8 w-20" />
+                  <Skeleton className="mx-auto h-3 w-24" />
+                </div>
               ))
             ) : (
               <>

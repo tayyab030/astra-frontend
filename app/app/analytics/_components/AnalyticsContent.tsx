@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
+import { AnalyticsPageSkeleton } from "@/components/skeletons"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   ChartContainer,
@@ -99,23 +99,7 @@ export function AnalyticsContent() {
     selectedPeriod === "day" ? "Today" : selectedPeriod === "week" ? "This week" : "This month"
 
   if (isLoading || !analytics) {
-    return (
-      <div className="astra-page space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-80" />
-            <Skeleton className="h-6 w-96" />
-          </div>
-          <Skeleton className="h-10 w-40" />
-        </div>
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-48 w-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </div>
-    )
+    return <AnalyticsPageSkeleton />
   }
 
   if (isError) {

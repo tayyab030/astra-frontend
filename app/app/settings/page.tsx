@@ -439,10 +439,10 @@ export default function SettingsPage() {
               <CardContent className="space-y-6">
                 {isProfileLoading ? (
                   <div className="space-y-4">
-                    <Skeleton className="h-20 w-20 rounded-full bg-muted" />
-                    <Skeleton className="h-10 w-full bg-muted" />
-                    <Skeleton className="h-10 w-full bg-muted" />
-                    <Skeleton className="h-10 w-full bg-muted" />
+                    <Skeleton className="h-20 w-20 rounded-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
                   </div>
                 ) : isProfileError ? (
                   <p className="font-mono text-sm text-red-400">

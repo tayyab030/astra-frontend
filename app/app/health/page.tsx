@@ -3,6 +3,11 @@
 import { useState } from "react"
 import { format } from "date-fns"
 import { Heart } from "lucide-react"
+import {
+  StatCardsSkeleton,
+  TabPanelSkeleton,
+  TabStripSkeleton,
+} from "@/components/skeletons"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HealthProvider, useHealthContext } from "./_context/HealthProvider"
@@ -16,14 +21,17 @@ function HealthPageInner() {
 
   if (isLoading) {
     return (
-      <div className="astra-page">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
+      <div className="astra-page space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-56" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-40 rounded-full" />
         </div>
-        <Skeleton className="h-64 w-full" />
+        <StatCardsSkeleton count={4} />
+        <TabStripSkeleton count={6} />
+        <TabPanelSkeleton />
       </div>
     )
   }

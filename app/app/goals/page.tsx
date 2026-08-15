@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardGridSkeleton } from "@/components/skeletons"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Plus, Target, Trophy, Star, Flame } from "lucide-react"
 import type { Goal, GoalsFilter } from "@/lib/api/goals"
@@ -156,11 +157,7 @@ export default function GoalsPage() {
             </div>
 
             {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-48 w-full" />
-                ))}
-              </div>
+              <CardGridSkeleton count={3} className="sm:grid-cols-1 lg:grid-cols-1" />
             ) : filteredGoals.length === 0 ? (
               <WealthEmptyState
                 icon={Target}

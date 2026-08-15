@@ -16,6 +16,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { MonthPicker } from "@/components/ui/month-picker"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { StatCardsSkeleton } from "@/components/skeletons"
 import { fetchTimeTrackDashboard } from "@/lib/api/timeTrack"
 import { getTodayString } from "../../_utils/dateRange"
 import { formatWorkedTotal } from "../../_utils/formatTime"
@@ -153,7 +154,10 @@ export function PatternsTab() {
       <p className="text-sm text-slate-400 font-mono">{chartMeta.description}</p>
 
       {patternsQuery.isLoading ? (
-        <Skeleton className="h-72 w-full bg-slate-800/50" />
+        <div className="space-y-4">
+          <StatCardsSkeleton count={2} className="sm:grid-cols-2 md:grid-cols-2" />
+          <Skeleton className="h-72 w-full" />
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

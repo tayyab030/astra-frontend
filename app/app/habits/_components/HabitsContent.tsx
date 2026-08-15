@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -1118,8 +1119,7 @@ export function HabitsContent() {
           {isDayLoading ? (
             <Card className="astra-card">
               <CardContent className="pt-6 space-y-3">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
+                <ListRowsSkeleton count={4} />
               </CardContent>
             </Card>
           ) : missedStats.total === 0 ? (
@@ -1192,9 +1192,8 @@ export function HabitsContent() {
 
           {isDayLoading ? (
             <Card className="astra-card">
-              <CardContent className="pt-6 space-y-3">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
+              <CardContent className="pt-6">
+                <ListRowsSkeleton count={5} />
               </CardContent>
             </Card>
           ) : dayHabits.length === 0 ? (

@@ -90,7 +90,7 @@ export default function GoalHeader({
               {goalsQuery.isLoading ? (
                 <div className="space-y-1 p-1">
                   {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-9 w-full bg-slate-900/50" />
+                    <Skeleton key={index} className="h-9 w-full" />
                   ))}
                 </div>
               ) : goals.length > 0 ? (

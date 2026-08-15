@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import {
   Dialog,
   DialogContent,
@@ -326,11 +326,7 @@ export function TransactionsTab({
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full bg-slate-900/50" />
-              ))}
-            </div>
+            <ListRowsSkeleton count={5} />
           ) : transactions.length === 0 ? (
             <WealthEmptyState
               icon={Receipt}

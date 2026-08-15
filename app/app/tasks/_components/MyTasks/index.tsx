@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Pencil, Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import type { TaskFilter, TaskItem, TasksListParams } from "@/lib/api/tasks"
 import { useTasks } from "../../_hooks/useTasks"
 import { TaskFormDialog } from "../TaskFormDialog"
@@ -274,10 +274,8 @@ const MyTasks = ({
                 ) : null}
 
                 {isLoading ? (
-                  <div className="space-y-2 px-3">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                      <Skeleton key={index} className="h-10 w-full bg-slate-900/50" />
-                    ))}
+                  <div className="px-3">
+                    <ListRowsSkeleton count={4} withAvatar={false} />
                   </div>
                 ) : tasks.length > 0 ? (
                   <div className={TASK_LIST_MAX_HEIGHT}>
