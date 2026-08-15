@@ -7,6 +7,7 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  gender?: "male" | "female" | "other" | "prefer_not_to_say" | null;
   currency?: string;
   country?: string | null;
   timezone?: string;

@@ -49,6 +49,7 @@ import {
   type AuthUser,
 } from "@/lib/api/user"
 import { getCountryByCode } from "@/lib/countries"
+import { USER_GENDER_OPTIONS, type UserGender } from "@/lib/gender"
 import { setCurrency as setCurrencyAction } from "@/store/slice/currencySlice"
 import { setUser } from "@/store/slice/userSlice"
 import { useAppDispatch } from "@/store/hooks"
@@ -112,6 +113,7 @@ export default function SettingsPage() {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
+  const [gender, setGender] = useState<UserGender | "">("")
   const [profileCurrency, setProfileCurrency] = useState(currency)
   const [timezone, setTimezone] = useState("UTC")
   const [themePreference, setThemePreference] = useState<UserTheme>(DEFAULT_THEME)
@@ -153,6 +155,7 @@ export default function SettingsPage() {
     setFirstName(profile.first_name ?? "")
     setLastName(profile.last_name ?? "")
     setEmail(profile.email ?? "")
+    setGender(profile.gender ?? "")
     const nextCurrency = profile.currency || "USD"
     setProfileCurrency(nextCurrency)
     setTimezone(profile.timezone || "UTC")
@@ -211,9 +214,15 @@ export default function SettingsPage() {
       return
     }
 
+    if (!gender) {
+      toast.error("Gender is required")
+      return
+    }
+
     saveProfile({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
+      gender,
       currency: profileCurrency,
       timezone,
     })
@@ -394,6 +403,26 @@ export default function SettingsPage() {
                           disabled
                           className="bg-secondary/40 border-border text-muted-foreground font-mono"
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="gender" className="font-mono text-muted-foreground">
+                          Gender
+                        </Label>
+                        <Select
+                          value={gender || undefined}
+                          onValueChange={(value) => setGender(value as UserGender)}
+                        >
+                          <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono w-full">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover border-border">
+                            {USER_GENDER_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value} className="font-mono">
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="country" className="font-mono text-muted-foreground">

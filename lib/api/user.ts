@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string
   first_name: string
   last_name: string
+  gender: "male" | "female" | "other" | "prefer_not_to_say" | null
   currency: string
   country: string | null
   timezone: string
@@ -18,6 +19,7 @@ export interface AuthUser {
 export interface UpdateProfilePayload {
   first_name?: string
   last_name?: string
+  gender?: "male" | "female" | "other" | "prefer_not_to_say"
   currency?: string
   timezone?: string
   theme?: "light" | "dark" | "neon"

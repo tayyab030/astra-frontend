@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { COUNTRY_CODES } from "@/lib/countries";
+import { USER_GENDERS } from "@/lib/gender";
 
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -23,6 +24,13 @@ const schema = z
       .string()
       .min(1, "Email is required")
       .regex(EMAIL_REGEX, "Invalid email address"),
+    gender: z
+      .string()
+      .min(1, "Gender is required")
+      .refine(
+        (value) => (USER_GENDERS as readonly string[]).includes(value),
+        "Please select a valid gender"
+      ),
     country: z
       .string()
       .min(1, "Country is required")
