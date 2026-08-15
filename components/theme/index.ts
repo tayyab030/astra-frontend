@@ -1,4 +1,5 @@
 export { ThemeAmbientFx } from "./ThemeAmbientFx"
+export { ThemeSwitcher } from "./ThemeSwitcher"
 export {
   ThemePage,
   ThemeCard,

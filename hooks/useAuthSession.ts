@@ -9,6 +9,8 @@ import { setCurrency } from "@/store/slice/currencySlice"
 import { setUser } from "@/store/slice/userSlice"
 import { useAppDispatch } from "@/store/hooks"
 import { isAppTheme } from "@/lib/theme"
+import { applyThemeClass } from "@/lib/apply-theme-class"
+import { canApplyServerTheme, captureThemeSyncToken } from "@/lib/theme-sync"
 
 /**
  * Validates the session when the protected app shell mounts.
@@ -37,14 +39,18 @@ export function useAuthSession() {
         return
       }
 
+      const themeSyncToken = captureThemeSyncToken()
+
       try {
         const user = await fetchCurrentUser()
         dispatch(setUser(user))
         if (user.currency) {
           dispatch(setCurrency(user.currency))
         }
-        if (isAppTheme(user.theme)) {
+        // Skip if the user already picked a theme while this request was in flight.
+        if (canApplyServerTheme(themeSyncToken) && isAppTheme(user.theme)) {
           setTheme(user.theme)
+          applyThemeClass(user.theme)
         }
       } catch {
         // Token may still be valid for other routes; profile can retry from Settings.

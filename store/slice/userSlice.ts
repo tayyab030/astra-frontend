@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { revertAll } from "./resetStore";
+import type { AppTheme } from "@/lib/theme";
 
 export interface User {
   id: string;
@@ -11,7 +12,7 @@ export interface User {
   currency?: string;
   country?: string | null;
   timezone?: string;
-  theme?: "light" | "dark" | "neon";
+  theme?: AppTheme;
   ai_voice?: "austin" | "daniel" | "troy" | "autumn" | "diana" | "hannah";
   ai_voice_mode?: boolean;
   ai_personality?: "professional" | "casual" | "motivational";

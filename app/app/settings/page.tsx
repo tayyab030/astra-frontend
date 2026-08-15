@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -61,6 +61,8 @@ import {
   isAppTheme,
   type AppTheme,
 } from "@/lib/theme"
+import { canApplyServerTheme, captureThemeSyncToken, noteThemeUserChange } from "@/lib/theme-sync"
+import { applyThemeClass } from "@/lib/apply-theme-class"
 import {
   AI_VOICE_OPTIONS,
   DEFAULT_AI_VOICE,
@@ -94,22 +96,40 @@ const ACCENT_OPTIONS = [
     glow: "0 0 16px rgba(59,130,246,0.55)",
   },
   {
+    id: "teal",
+    label: "Teal",
+    color: "#14b8a6",
+    glow: "0 0 16px rgba(20,184,166,0.55)",
+  },
+  {
     id: "slate",
     label: "Slate",
     color: "#94a3b8",
     glow: "0 0 16px rgba(148,163,184,0.55)",
   },
   {
-    id: "purple",
-    label: "Purple",
-    color: "#a855f7",
-    glow: "0 0 16px rgba(168,85,247,0.55)",
-  },
-  {
     id: "emerald",
     label: "Emerald",
     color: "#10b981",
     glow: "0 0 16px rgba(16,185,129,0.55)",
+  },
+  {
+    id: "mint",
+    label: "Mint",
+    color: "#34d399",
+    glow: "0 0 16px rgba(52,211,153,0.55)",
+  },
+  {
+    id: "amber",
+    label: "Amber",
+    color: "#f59e0b",
+    glow: "0 0 16px rgba(245,158,11,0.55)",
+  },
+  {
+    id: "purple",
+    label: "Purple",
+    color: "#a855f7",
+    glow: "0 0 16px rgba(168,85,247,0.55)",
   },
   {
     id: "pink",
@@ -155,6 +175,9 @@ export default function SettingsPage() {
     knowledge: 25,
   })
 
+  // Token from when this page mounted / started loading profile — ignores late overwrites.
+  const profileThemeSyncTokenRef = useRef(captureThemeSyncToken())
+
   const {
     data: profile,
     isLoading: isProfileLoading,
@@ -175,7 +198,11 @@ export default function SettingsPage() {
     setTimezone(profile.timezone || "UTC")
     const nextTheme = isAppTheme(profile.theme) ? profile.theme : DEFAULT_THEME
     setThemePreference(nextTheme)
-    setTheme(nextTheme)
+    // Don't clobber a theme the user just picked (e.g. navbar) while profile was loading.
+    if (canApplyServerTheme(profileThemeSyncTokenRef.current)) {
+      setTheme(nextTheme)
+      applyThemeClass(nextTheme)
+    }
     setAiVoice(isAiVoice(profile.ai_voice) ? profile.ai_voice : DEFAULT_AI_VOICE)
     setAiVoiceMode(
       typeof profile.ai_voice_mode === "boolean"
@@ -230,16 +257,20 @@ export default function SettingsPage() {
 
   const { mutate: saveTheme, isPending: isSavingTheme } = useMutation({
     mutationFn: updateCurrentUser,
-    onSuccess: (user) => {
+    onSuccess: (user, variables) => {
+      // Don't re-apply theme from the response — local UI already switched.
+      // Re-applying here races with a newer navbar/settings pick.
       dispatch(setUser(user))
-      const nextTheme = isAppTheme(user.theme) ? user.theme : DEFAULT_THEME
-      setThemePreference(nextTheme)
-      setTheme(nextTheme)
+      if (variables.theme && isAppTheme(variables.theme)) {
+        setThemePreference(variables.theme)
+      } else if (isAppTheme(user.theme)) {
+        setThemePreference(user.theme)
+      }
       queryClient.setQueryData(["auth", "me"], user)
       toast.success("Theme updated")
     },
     onError: (error) => {
-      toast.error(getUserErrorMessage(error, "Failed to update theme"))
+      toast.error(getUserErrorMessage(error, "Theme applied locally, but profile sync failed"))
     },
   })
 
@@ -302,9 +333,11 @@ export default function SettingsPage() {
   }
 
   const handleThemeChange = (nextTheme: UserTheme) => {
-    if (nextTheme === themePreference || isSavingTheme) return
+    if (nextTheme === themePreference) return
+    noteThemeUserChange()
     setThemePreference(nextTheme)
     setTheme(nextTheme)
+    applyThemeClass(nextTheme)
     saveTheme({ theme: nextTheme })
   }
 
@@ -613,15 +646,9 @@ export default function SettingsPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <Label className="font-mono text-muted-foreground">Theme Preference</Label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {THEME_OPTIONS.map((option) => {
                       const isActive = themePreference === option.value
-                      const activeStyles =
-                        option.value === "neon"
-                          ? "border-cyan-400 bg-cyan-500/10 text-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.35)]"
-                          : option.value === "dark"
-                            ? "border-slate-300 bg-slate-500/15 text-slate-200 shadow-[0_0_18px_rgba(148,163,184,0.25)]"
-                            : "border-blue-500 bg-blue-500/10 text-blue-600 shadow-[0_0_18px_rgba(59,130,246,0.25)]"
 
                       return (
                         <button
@@ -630,34 +657,26 @@ export default function SettingsPage() {
                           disabled={isSavingTheme}
                           onClick={() => handleThemeChange(option.value)}
                           aria-pressed={isActive}
+                          title={option.description}
                           className={cn(
                             "relative flex h-24 flex-col items-center justify-center gap-2 rounded-lg border-2 font-mono text-sm transition-all disabled:opacity-50",
                             isActive
-                              ? activeStyles
+                              ? option.activeClass
                               : "border-border bg-card/40 text-muted-foreground hover:border-muted-foreground/40 hover:bg-card/70"
                           )}
                         >
-                          {option.value === "light" && (
-                            <div className="h-9 w-9 rounded-md border border-slate-300 bg-gradient-to-br from-white to-slate-100 shadow-sm" />
-                          )}
-                          {option.value === "dark" && (
-                            <div className="h-9 w-9 rounded-md border border-slate-500 bg-gradient-to-br from-zinc-700 to-zinc-950 shadow-sm" />
-                          )}
-                          {option.value === "neon" && (
-                            <div className="h-9 w-9 rounded-md border border-cyan-400/60 bg-gradient-to-br from-cyan-500 to-blue-600 shadow-[0_0_12px_rgba(6,182,212,0.5)]" />
-                          )}
+                          <div
+                            className="h-9 w-9 rounded-md border shadow-sm"
+                            style={{
+                              backgroundImage: option.swatch,
+                              borderColor: option.swatchBorder,
+                            }}
+                          />
                           <span className={cn(isActive && "font-semibold")}>
                             {option.label}
                           </span>
                           {isActive && (
-                            <span
-                              className={cn(
-                                "absolute right-2 top-2 text-xs font-bold",
-                                option.value === "neon" && "text-cyan-400",
-                                option.value === "dark" && "text-slate-200",
-                                option.value === "light" && "text-blue-600"
-                              )}
-                            >
+                            <span className="absolute right-2 top-2 text-xs font-bold text-primary">
                               ✓
                             </span>
                           )}
@@ -666,7 +685,7 @@ export default function SettingsPage() {
                     })}
                   </div>
                   <p className="text-xs font-mono text-muted-foreground">
-                    Neon is the cyan ASTRA look used across the app. Light and Dark are clean themes without neon accents.
+                    Pick a look for ASTRA. Neon is the classic cyan glow; Ocean, Forest, Ember, and Aurora add richer dark moods.
                   </p>
                 </div>
 
@@ -703,7 +722,7 @@ export default function SettingsPage() {
                     })}
                   </div>
                   <p className="text-xs font-mono text-muted-foreground">
-                    Accent follows your theme: Neon → cyan, Light → blue, Dark → slate.
+                    Accent follows your theme automatically.
                   </p>
                 </div>
 

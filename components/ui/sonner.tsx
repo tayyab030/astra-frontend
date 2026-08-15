@@ -2,10 +2,11 @@
 
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, ToasterProps } from "sonner"
+import { isDarkSurfaceTheme } from "@/lib/theme"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
-  const toasterTheme = theme === "neon" ? "dark" : theme
+  const toasterTheme = isDarkSurfaceTheme(theme) ? "dark" : theme === "mist" ? "light" : theme
 
   return (
     <Sonner

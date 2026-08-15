@@ -9,8 +9,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       attribute="class"
       defaultTheme={DEFAULT_THEME}
       enableSystem={false}
+      storageKey="astra-theme"
+      disableTransitionOnChange
       themes={[...APP_THEMES]}
-      value={Object.fromEntries(APP_THEMES.map((theme) => [theme, theme]))}
     >
       {children}
     </NextThemesProvider>

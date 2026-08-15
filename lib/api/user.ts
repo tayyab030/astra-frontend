@@ -1,5 +1,6 @@
 import { authApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
+import type { AppTheme } from "@/lib/theme"
 import type { AiVoice } from "@/lib/ai-voice"
 import type { AiDataScope, AiPersonality } from "@/lib/ai-settings"
 import type { AiLanguage } from "@/lib/ai-language"
@@ -16,7 +17,7 @@ export interface AuthUser {
   currency: string
   country: string | null
   timezone: string
-  theme: "light" | "dark" | "neon"
+  theme: AppTheme
   ai_voice: AiVoice
   ai_voice_mode: boolean
   ai_personality: AiPersonality
@@ -31,7 +32,7 @@ export interface UpdateProfilePayload {
   gender?: "male" | "female" | "other" | "prefer_not_to_say"
   currency?: string
   timezone?: string
-  theme?: "light" | "dark" | "neon"
+  theme?: AppTheme
   ai_voice?: AiVoice
   ai_voice_mode?: boolean
   ai_personality?: AiPersonality

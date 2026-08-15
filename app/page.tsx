@@ -20,13 +20,11 @@ import {
   Shield,
   Users,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import { AstraLogo } from "@/components/astra-logo"
 import { PublicNavbar } from "@/components/PublicNavbar"
 import { ROUTES } from "@/constants/routes"
 
 export default function HomePage() {
-  const { theme, setTheme } = useTheme()
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null)
 
   const coreModules = [

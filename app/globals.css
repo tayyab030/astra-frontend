@@ -1,13 +1,67 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *, .neon *));
+@custom-variant dark (&:is(.dark *, .neon *, .ocean *, .forest *, .ember *, .aurora *));
 @custom-variant neon (&:is(.neon *));
-@custom-variant light (&:is(.light *));
+@custom-variant light (&:is(.light *, .mist *));
+@custom-variant mist (&:is(.mist *));
+@custom-variant ocean (&:is(.ocean *));
+@custom-variant forest (&:is(.forest *));
+@custom-variant ember (&:is(.ember *));
+@custom-variant aurora (&:is(.aurora *));
 
-/* Light — clean light UI, blue accent */
-:root,
-.light {
+/* Default FOUC tokens = neon (matches DEFAULT_THEME). Theme classes use html.* for higher specificity. */
+:root {
+  --background: oklch(0.17 0.025 255);
+  --foreground: oklch(0.93 0.02 210);
+  --card: oklch(0.2 0.03 255 / 0.72);
+  --card-foreground: oklch(0.93 0.02 210);
+  --popover: oklch(0.18 0.03 255);
+  --popover-foreground: oklch(0.93 0.02 210);
+  --primary: oklch(0.78 0.13 210);
+  --primary-foreground: oklch(0.18 0.04 255);
+  --secondary: oklch(0.28 0.03 255);
+  --secondary-foreground: oklch(0.93 0.02 210);
+  --muted: oklch(0.28 0.03 255);
+  --muted-foreground: oklch(0.75 0.03 220);
+  --accent: oklch(0.78 0.13 210 / 0.18);
+  --accent-foreground: oklch(0.82 0.13 210);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 30);
+  --border: oklch(0.78 0.13 210 / 0.3);
+  --input: oklch(0.78 0.13 210 / 0.28);
+  --ring: oklch(0.78 0.13 210);
+  --chart-1: oklch(0.78 0.13 210);
+  --chart-2: oklch(0.7 0.14 250);
+  --chart-3: oklch(0.72 0.16 160);
+  --chart-4: oklch(0.7 0.18 310);
+  --chart-5: oklch(0.75 0.15 40);
+  --sidebar: oklch(0.18 0.03 255 / 0.85);
+  --sidebar-foreground: oklch(0.93 0.02 210);
+  --sidebar-primary: oklch(0.78 0.13 210);
+  --sidebar-primary-foreground: oklch(0.18 0.04 255);
+  --sidebar-accent: oklch(0.28 0.04 255);
+  --sidebar-accent-foreground: oklch(0.82 0.13 210);
+  --sidebar-border: oklch(0.78 0.13 210 / 0.25);
+  --sidebar-ring: oklch(0.78 0.13 210);
+  --radius: 0.625rem;
+  --glow-card: 0 0 30px color-mix(in oklch, var(--primary) 22%, transparent);
+  --glow-title: 0 0 10px color-mix(in oklch, var(--primary) 50%, transparent);
+  --fx-opacity: 1;
+  --page-gradient: linear-gradient(
+    to bottom right,
+    oklch(0.17 0.03 255),
+    oklch(0.22 0.03 255),
+    oklch(0.17 0.03 255)
+  );
+  --accent-gradient-from: oklch(0.78 0.13 210);
+  --accent-gradient-to: oklch(0.62 0.17 255);
+  --scrollbar-track: oklch(0.17 0.03 255 / 0.4);
+  --scrollbar-thumb-from: oklch(0.78 0.13 210 / 0.65);
+  --scrollbar-thumb-to: oklch(0.62 0.17 255 / 0.65);
+}
+
+html.light {
   --background: oklch(0.985 0.005 240);
   --foreground: oklch(0.2 0.02 250);
   --card: oklch(1 0 0);
@@ -53,7 +107,7 @@
 }
 
 /* Dark — plain dark, slate accent */
-.dark {
+html.dark {
   --background: oklch(0.16 0.01 260);
   --foreground: oklch(0.97 0.005 240);
   --card: oklch(0.2 0.01 260);
@@ -98,7 +152,7 @@
 }
 
 /* Neon — current cyan / slate ASTRA look used across the app */
-.neon {
+html.neon {
   --background: oklch(0.17 0.025 255);
   --foreground: oklch(0.93 0.02 210);
   --card: oklch(0.2 0.03 255 / 0.72);
@@ -145,6 +199,314 @@
   --scrollbar-track: oklch(0.17 0.03 255 / 0.4);
   --scrollbar-thumb-from: oklch(0.78 0.13 210 / 0.65);
   --scrollbar-thumb-to: oklch(0.62 0.17 255 / 0.65);
+}
+
+/* Mist — soft daylight, teal accent */
+html.mist {
+  --background: oklch(0.97 0.01 180);
+  --foreground: oklch(0.22 0.03 200);
+  --card: oklch(0.995 0.005 180);
+  --card-foreground: oklch(0.22 0.03 200);
+  --popover: oklch(0.995 0.005 180);
+  --popover-foreground: oklch(0.22 0.03 200);
+  --primary: oklch(0.55 0.12 185);
+  --primary-foreground: oklch(0.98 0.01 180);
+  --secondary: oklch(0.94 0.02 180);
+  --secondary-foreground: oklch(0.28 0.03 200);
+  --muted: oklch(0.94 0.015 180);
+  --muted-foreground: oklch(0.48 0.03 200);
+  --accent: oklch(0.92 0.04 185);
+  --accent-foreground: oklch(0.38 0.1 185);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.88 0.02 185);
+  --input: oklch(0.88 0.02 185);
+  --ring: oklch(0.55 0.12 185);
+  --chart-1: oklch(0.55 0.12 185);
+  --chart-2: oklch(0.6 0.14 220);
+  --chart-3: oklch(0.65 0.12 155);
+  --chart-4: oklch(0.75 0.12 85);
+  --chart-5: oklch(0.6 0.16 30);
+  --sidebar: oklch(0.96 0.012 180);
+  --sidebar-foreground: oklch(0.22 0.03 200);
+  --sidebar-primary: oklch(0.55 0.12 185);
+  --sidebar-primary-foreground: oklch(0.98 0.01 180);
+  --sidebar-accent: oklch(0.92 0.04 185);
+  --sidebar-accent-foreground: oklch(0.38 0.1 185);
+  --sidebar-border: oklch(0.88 0.02 185);
+  --sidebar-ring: oklch(0.55 0.12 185);
+  --glow-card: none;
+  --glow-title: none;
+  --fx-opacity: 0;
+  --page-gradient: none;
+  --accent-gradient-from: oklch(0.55 0.12 185);
+  --accent-gradient-to: oklch(0.5 0.1 210);
+  --scrollbar-track: oklch(0.9 0.015 180 / 0.5);
+  --scrollbar-thumb-from: oklch(0.55 0.12 185 / 0.55);
+  --scrollbar-thumb-to: oklch(0.5 0.1 210 / 0.55);
+}
+
+/* Ocean — deep navy with teal */
+html.ocean {
+  --background: oklch(0.16 0.03 230);
+  --foreground: oklch(0.93 0.02 200);
+  --card: oklch(0.2 0.035 230 / 0.9);
+  --card-foreground: oklch(0.93 0.02 200);
+  --popover: oklch(0.18 0.035 230);
+  --popover-foreground: oklch(0.93 0.02 200);
+  --primary: oklch(0.75 0.12 195);
+  --primary-foreground: oklch(0.16 0.04 230);
+  --secondary: oklch(0.26 0.035 230);
+  --secondary-foreground: oklch(0.93 0.02 200);
+  --muted: oklch(0.26 0.03 230);
+  --muted-foreground: oklch(0.72 0.03 210);
+  --accent: oklch(0.75 0.12 195 / 0.16);
+  --accent-foreground: oklch(0.8 0.11 195);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 30);
+  --border: oklch(0.75 0.12 195 / 0.28);
+  --input: oklch(0.75 0.12 195 / 0.24);
+  --ring: oklch(0.75 0.12 195);
+  --chart-1: oklch(0.75 0.12 195);
+  --chart-2: oklch(0.7 0.12 240);
+  --chart-3: oklch(0.72 0.14 160);
+  --chart-4: oklch(0.78 0.12 85);
+  --chart-5: oklch(0.7 0.16 40);
+  --sidebar: oklch(0.17 0.035 230 / 0.92);
+  --sidebar-foreground: oklch(0.93 0.02 200);
+  --sidebar-primary: oklch(0.75 0.12 195);
+  --sidebar-primary-foreground: oklch(0.16 0.04 230);
+  --sidebar-accent: oklch(0.26 0.04 230);
+  --sidebar-accent-foreground: oklch(0.8 0.11 195);
+  --sidebar-border: oklch(0.75 0.12 195 / 0.22);
+  --sidebar-ring: oklch(0.75 0.12 195);
+  --glow-card: 0 0 28px color-mix(in oklch, var(--primary) 18%, transparent);
+  --glow-title: 0 0 10px color-mix(in oklch, var(--primary) 40%, transparent);
+  --fx-opacity: 0.45;
+  --page-gradient: linear-gradient(
+    to bottom right,
+    oklch(0.15 0.035 230),
+    oklch(0.2 0.04 210),
+    oklch(0.15 0.035 230)
+  );
+  --accent-gradient-from: oklch(0.75 0.12 195);
+  --accent-gradient-to: oklch(0.58 0.12 240);
+  --scrollbar-track: oklch(0.16 0.03 230 / 0.45);
+  --scrollbar-thumb-from: oklch(0.75 0.12 195 / 0.6);
+  --scrollbar-thumb-to: oklch(0.58 0.12 240 / 0.6);
+}
+
+/* Forest — deep green with emerald */
+html.forest {
+  --background: oklch(0.16 0.03 155);
+  --foreground: oklch(0.93 0.02 150);
+  --card: oklch(0.2 0.035 155 / 0.9);
+  --card-foreground: oklch(0.93 0.02 150);
+  --popover: oklch(0.18 0.035 155);
+  --popover-foreground: oklch(0.93 0.02 150);
+  --primary: oklch(0.74 0.15 155);
+  --primary-foreground: oklch(0.16 0.04 155);
+  --secondary: oklch(0.26 0.035 155);
+  --secondary-foreground: oklch(0.93 0.02 150);
+  --muted: oklch(0.26 0.03 155);
+  --muted-foreground: oklch(0.72 0.03 150);
+  --accent: oklch(0.74 0.15 155 / 0.16);
+  --accent-foreground: oklch(0.8 0.14 155);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 30);
+  --border: oklch(0.74 0.15 155 / 0.28);
+  --input: oklch(0.74 0.15 155 / 0.24);
+  --ring: oklch(0.74 0.15 155);
+  --chart-1: oklch(0.74 0.15 155);
+  --chart-2: oklch(0.7 0.12 190);
+  --chart-3: oklch(0.78 0.14 120);
+  --chart-4: oklch(0.75 0.12 85);
+  --chart-5: oklch(0.68 0.16 40);
+  --sidebar: oklch(0.17 0.035 155 / 0.92);
+  --sidebar-foreground: oklch(0.93 0.02 150);
+  --sidebar-primary: oklch(0.74 0.15 155);
+  --sidebar-primary-foreground: oklch(0.16 0.04 155);
+  --sidebar-accent: oklch(0.26 0.04 155);
+  --sidebar-accent-foreground: oklch(0.8 0.14 155);
+  --sidebar-border: oklch(0.74 0.15 155 / 0.22);
+  --sidebar-ring: oklch(0.74 0.15 155);
+  --glow-card: 0 0 28px color-mix(in oklch, var(--primary) 18%, transparent);
+  --glow-title: 0 0 10px color-mix(in oklch, var(--primary) 40%, transparent);
+  --fx-opacity: 0.4;
+  --page-gradient: linear-gradient(
+    to bottom right,
+    oklch(0.15 0.035 155),
+    oklch(0.2 0.04 145),
+    oklch(0.15 0.035 155)
+  );
+  --accent-gradient-from: oklch(0.74 0.15 155);
+  --accent-gradient-to: oklch(0.58 0.12 180);
+  --scrollbar-track: oklch(0.16 0.03 155 / 0.45);
+  --scrollbar-thumb-from: oklch(0.74 0.15 155 / 0.6);
+  --scrollbar-thumb-to: oklch(0.58 0.12 180 / 0.6);
+}
+
+/* Ember — warm charcoal with amber */
+html.ember {
+  --background: oklch(0.17 0.02 50);
+  --foreground: oklch(0.94 0.02 75);
+  --card: oklch(0.21 0.025 50 / 0.92);
+  --card-foreground: oklch(0.94 0.02 75);
+  --popover: oklch(0.19 0.025 50);
+  --popover-foreground: oklch(0.94 0.02 75);
+  --primary: oklch(0.78 0.15 70);
+  --primary-foreground: oklch(0.18 0.03 50);
+  --secondary: oklch(0.27 0.025 50);
+  --secondary-foreground: oklch(0.94 0.02 75);
+  --muted: oklch(0.27 0.02 50);
+  --muted-foreground: oklch(0.72 0.03 70);
+  --accent: oklch(0.78 0.15 70 / 0.16);
+  --accent-foreground: oklch(0.84 0.14 70);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 30);
+  --border: oklch(0.78 0.15 70 / 0.26);
+  --input: oklch(0.78 0.15 70 / 0.22);
+  --ring: oklch(0.78 0.15 70);
+  --chart-1: oklch(0.78 0.15 70);
+  --chart-2: oklch(0.7 0.16 40);
+  --chart-3: oklch(0.72 0.12 30);
+  --chart-4: oklch(0.75 0.1 100);
+  --chart-5: oklch(0.65 0.14 20);
+  --sidebar: oklch(0.18 0.025 50 / 0.94);
+  --sidebar-foreground: oklch(0.94 0.02 75);
+  --sidebar-primary: oklch(0.78 0.15 70);
+  --sidebar-primary-foreground: oklch(0.18 0.03 50);
+  --sidebar-accent: oklch(0.27 0.03 50);
+  --sidebar-accent-foreground: oklch(0.84 0.14 70);
+  --sidebar-border: oklch(0.78 0.15 70 / 0.2);
+  --sidebar-ring: oklch(0.78 0.15 70);
+  --glow-card: 0 0 26px color-mix(in oklch, var(--primary) 16%, transparent);
+  --glow-title: 0 0 10px color-mix(in oklch, var(--primary) 35%, transparent);
+  --fx-opacity: 0.35;
+  --page-gradient: linear-gradient(
+    to bottom right,
+    oklch(0.16 0.025 45),
+    oklch(0.21 0.03 55),
+    oklch(0.16 0.025 45)
+  );
+  --accent-gradient-from: oklch(0.78 0.15 70);
+  --accent-gradient-to: oklch(0.62 0.18 40);
+  --scrollbar-track: oklch(0.17 0.02 50 / 0.45);
+  --scrollbar-thumb-from: oklch(0.78 0.15 70 / 0.6);
+  --scrollbar-thumb-to: oklch(0.62 0.18 40 / 0.6);
+}
+
+/* Aurora — night sky with mint glow */
+html.aurora {
+  --background: oklch(0.15 0.035 270);
+  --foreground: oklch(0.93 0.02 180);
+  --card: oklch(0.19 0.04 270 / 0.88);
+  --card-foreground: oklch(0.93 0.02 180);
+  --popover: oklch(0.17 0.04 270);
+  --popover-foreground: oklch(0.93 0.02 180);
+  --primary: oklch(0.8 0.14 165);
+  --primary-foreground: oklch(0.16 0.04 270);
+  --secondary: oklch(0.26 0.04 270);
+  --secondary-foreground: oklch(0.93 0.02 180);
+  --muted: oklch(0.26 0.035 270);
+  --muted-foreground: oklch(0.74 0.03 200);
+  --accent: oklch(0.8 0.14 165 / 0.16);
+  --accent-foreground: oklch(0.84 0.12 165);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.02 30);
+  --border: oklch(0.8 0.14 165 / 0.28);
+  --input: oklch(0.8 0.14 165 / 0.24);
+  --ring: oklch(0.8 0.14 165);
+  --chart-1: oklch(0.8 0.14 165);
+  --chart-2: oklch(0.72 0.14 250);
+  --chart-3: oklch(0.75 0.12 200);
+  --chart-4: oklch(0.7 0.16 310);
+  --chart-5: oklch(0.78 0.12 90);
+  --sidebar: oklch(0.16 0.04 270 / 0.92);
+  --sidebar-foreground: oklch(0.93 0.02 180);
+  --sidebar-primary: oklch(0.8 0.14 165);
+  --sidebar-primary-foreground: oklch(0.16 0.04 270);
+  --sidebar-accent: oklch(0.26 0.045 270);
+  --sidebar-accent-foreground: oklch(0.84 0.12 165);
+  --sidebar-border: oklch(0.8 0.14 165 / 0.22);
+  --sidebar-ring: oklch(0.8 0.14 165);
+  --glow-card: 0 0 32px color-mix(in oklch, var(--primary) 22%, transparent);
+  --glow-title: 0 0 12px color-mix(in oklch, var(--primary) 45%, transparent);
+  --fx-opacity: 0.85;
+  --page-gradient: linear-gradient(
+    to bottom right,
+    oklch(0.14 0.04 275),
+    oklch(0.19 0.045 200),
+    oklch(0.15 0.04 265)
+  );
+  --accent-gradient-from: oklch(0.8 0.14 165);
+  --accent-gradient-to: oklch(0.65 0.16 280);
+  --scrollbar-track: oklch(0.15 0.035 270 / 0.45);
+  --scrollbar-thumb-from: oklch(0.8 0.14 165 / 0.65);
+  --scrollbar-thumb-to: oklch(0.65 0.16 280 / 0.65);
+}
+
+/* Light-surface remap of leftover neon/dark Tailwind palettes.
+ * Many pages still use hardcoded slate/cyan/*-300 classes.
+ */
+html.light,
+html.mist {
+  --color-slate-200: var(--foreground);
+  --color-slate-300: var(--foreground);
+  --color-slate-400: var(--muted-foreground);
+  --color-slate-500: var(--muted-foreground);
+  --color-slate-600: oklch(0.78 0.02 250);
+  --color-slate-700: oklch(0.91 0.012 250);
+  --color-slate-800: var(--card);
+  --color-slate-900: var(--card);
+  --color-slate-950: var(--muted);
+
+  --color-cyan-200: var(--primary);
+  --color-cyan-300: var(--primary);
+  --color-cyan-400: var(--primary);
+
+  --color-red-200: var(--color-red-700);
+  --color-red-300: var(--color-red-700);
+  --color-red-400: var(--color-red-700);
+  --color-red-950: var(--color-red-100);
+  --color-orange-200: var(--color-orange-700);
+  --color-orange-300: var(--color-orange-700);
+  --color-orange-400: var(--color-orange-700);
+  --color-amber-200: var(--color-amber-700);
+  --color-amber-300: var(--color-amber-700);
+  --color-amber-400: var(--color-amber-700);
+  --color-yellow-200: var(--color-yellow-700);
+  --color-yellow-300: var(--color-yellow-700);
+  --color-yellow-950: var(--color-yellow-100);
+  --color-green-200: var(--color-green-700);
+  --color-green-300: var(--color-green-700);
+  --color-green-400: var(--color-green-700);
+  --color-emerald-200: var(--color-emerald-700);
+  --color-emerald-300: var(--color-emerald-700);
+  --color-emerald-400: var(--color-emerald-700);
+  --color-emerald-950: var(--color-emerald-100);
+  --color-teal-200: var(--color-teal-700);
+  --color-teal-300: var(--color-teal-700);
+  --color-sky-200: var(--color-sky-700);
+  --color-sky-300: var(--color-sky-700);
+  --color-sky-400: var(--color-sky-700);
+  --color-blue-200: var(--color-blue-700);
+  --color-blue-300: var(--color-blue-700);
+  --color-blue-400: var(--color-blue-700);
+  --color-indigo-200: var(--color-indigo-700);
+  --color-indigo-300: var(--color-indigo-700);
+  --color-indigo-400: var(--color-indigo-700);
+  --color-violet-200: var(--color-violet-700);
+  --color-violet-300: var(--color-violet-700);
+  --color-purple-200: var(--color-purple-700);
+  --color-purple-300: var(--color-purple-700);
+  --color-purple-400: var(--color-purple-700);
+  --color-fuchsia-200: var(--color-fuchsia-700);
+  --color-fuchsia-300: var(--color-fuchsia-700);
+  --color-pink-200: var(--color-pink-700);
+  --color-pink-300: var(--color-pink-700);
+  --color-rose-200: var(--color-rose-700);
+  --color-rose-300: var(--color-rose-700);
 }
 
 @theme inline {
@@ -224,6 +586,13 @@ button {
     box-shadow: var(--glow-card);
   }
 
+  .light .astra-card,
+  .light .astra-tabs,
+  .mist .astra-card,
+  .mist .astra-tabs {
+    background-color: var(--card);
+  }
+
   .astra-panel {
     @apply rounded-lg border border-border bg-secondary/50 backdrop-blur-sm;
   }
@@ -282,7 +651,8 @@ button {
     @apply inline-flex items-center border border-border bg-accent font-mono text-accent-foreground backdrop-blur-sm;
   }
 
-  .light .astra-score-badge {
+  .light .astra-score-badge,
+  .mist .astra-score-badge {
     border-width: 0;
     color: white;
     background-image: linear-gradient(
@@ -466,6 +836,76 @@ button {
     background: color-mix(in oklch, var(--primary) 45%, transparent);
     animation: astra-float 15s ease-in-out infinite;
   }
+}
+
+/* Light surfaces: hardcoded white/pale text was designed for dark cards */
+:is(.light, .mist) :is(.text-slate-50, .text-slate-100) {
+  color: var(--foreground);
+}
+
+:is(.light, .mist) :is(.text-cyan-500, .text-blue-500) {
+  color: var(--primary);
+}
+
+:is(.light, .mist) .text-white {
+  color: var(--foreground);
+}
+
+:is(.light, .mist) [class*="hover:text-white"]:hover {
+  color: var(--foreground);
+}
+
+:is(.light, .mist) :is(
+  .astra-btn-primary,
+  .astra-nav-active,
+  .astra-score-badge,
+  [class*="from-cyan-500"],
+  [class*="from-cyan-600"],
+  [class*="from-blue-500"],
+  [class*="from-blue-600"],
+  [class*="from-indigo-"],
+  [class*="from-amber-"],
+  [class*="from-orange-500"],
+  [class*="from-orange-600"],
+  [class*="from-red-500"],
+  [class*="from-red-600"],
+  [class*="from-green-500"],
+  [class*="from-green-600"],
+  [class*="from-emerald-500"],
+  [class*="from-emerald-600"],
+  [class*="bg-red-500"],
+  [class*="bg-red-600"],
+  [class*="bg-primary"]
+).text-white,
+:is(.light, .mist) :is(
+  .astra-btn-primary,
+  .astra-nav-active,
+  .astra-score-badge,
+  [class*="from-cyan-500"],
+  [class*="from-cyan-600"],
+  [class*="from-blue-500"],
+  [class*="from-blue-600"],
+  [class*="from-indigo-"],
+  [class*="from-amber-"],
+  [class*="from-orange-500"],
+  [class*="from-orange-600"],
+  [class*="from-red-500"],
+  [class*="from-red-600"],
+  [class*="from-green-500"],
+  [class*="from-green-600"],
+  [class*="from-emerald-500"],
+  [class*="from-emerald-600"],
+  [class*="bg-red-500"],
+  [class*="bg-red-600"],
+  [class*="bg-primary"]
+) .text-white,
+:is(.light, .mist) [data-state="active"]:is(
+  [class*="from-red-500"],
+  [class*="from-green-500"],
+  [class*="from-orange-600"],
+  [class*="from-emerald-600"]
+) {
+  color: white;
 }
 
 @keyframes astra-grid-move {
