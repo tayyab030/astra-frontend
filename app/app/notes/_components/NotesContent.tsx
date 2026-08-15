@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { PanelLeft } from "lucide-react"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { useNotes } from "../_hooks/useNotes"
 import { NotesSidebar } from "./NotesSidebar"
@@ -44,6 +45,11 @@ export function NotesContent() {
     setEditingNote(null)
     setFormOpen(true)
   }
+
+  useOpenActionParam("create", formOpen, (next) => {
+    if (next) openCreate()
+    else setFormOpen(false)
+  })
 
   const openEdit = (noteId: string) => {
     const note = notes.find((n) => n.id === noteId)

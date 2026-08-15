@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import dynamic from "next/dynamic"
+import { useSearchParams } from "next/navigation"
 import { format } from "date-fns"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import {
@@ -13,7 +14,7 @@ import { useTimeTrackContext } from "../_context/TimeTrackProvider"
 import { useTimeTrackPageData } from "../_hooks/useTimeTrackPageData"
 import type { UseTimeTrackReturn } from "../_hooks/useTimeTrack"
 import NavigationTabs from "./NavigationTabs"
-import type { TimeTrackTabId } from "./constants"
+import { TIME_TRACK_TABS, type TimeTrackTabId } from "./constants"
 
 const TimerTab = dynamic(
   () => import("./TimerTab").then((m) => ({ default: m.TimerTab })),
@@ -40,10 +41,23 @@ const SettingsTab = dynamic(
   { loading: () => <TabPanelSkeleton /> }
 )
 
+function isTimeTrackTab(value: string | null): value is TimeTrackTabId {
+  return TIME_TRACK_TABS.some((tab) => tab.id === value)
+}
+
 export default function TimeTrackContent() {
-  const [currentView, setCurrentView] = useState<TimeTrackTabId>("timer")
+  const searchParams = useSearchParams()
+  const [currentView, setCurrentView] = useState<TimeTrackTabId>(() => {
+    const tab = searchParams.get("tab")
+    return isTimeTrackTab(tab) ? tab : "timer"
+  })
   const core = useTimeTrackContext()
   const page = useTimeTrackPageData(core)
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isTimeTrackTab(tab)) setCurrentView(tab)
+  }, [searchParams])
 
   const timeTrack = useMemo<UseTimeTrackReturn>(
     () => ({

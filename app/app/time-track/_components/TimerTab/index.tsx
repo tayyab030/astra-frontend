@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import type { UseTimeTrackReturn } from "../../_hooks/useTimeTrack"
 import { ActiveTimer } from "./ActiveTimer"
 import { TodaySummary } from "./TodaySummary"
@@ -22,6 +23,8 @@ export function TimerTab({ timeTrack }: TimerTabProps) {
     setDialogOpen(open)
     setTaskPickerOpen(open)
   }
+
+  useOpenActionParam("add-task", dialogOpen, handleDialogOpenChange)
 
   return (
     <div className="space-y-4 pb-6">

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -123,6 +124,8 @@ export function BudgetTab({
   const [editingBudget, setEditingBudget] = useState<WealthCategoryBudget | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+
+  useOpenActionParam("set-limit", showAddDialog, setShowAddDialog)
 
   const addForm = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),

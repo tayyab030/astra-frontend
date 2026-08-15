@@ -331,33 +331,54 @@ export function DashboardPageSkeleton() {
           <Skeleton className="h-9 w-64" />
           <Skeleton className="h-4 w-80 max-w-full" />
         </div>
-        <Skeleton className="h-10 w-28 rounded-full" />
+        <Skeleton className="h-10 w-36 rounded-full" />
       </div>
       <StatCardsSkeleton count={4} />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="astra-card">
           <CardHeader>
             <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-56" />
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
+          <CardContent>
+            <Skeleton className="h-48 w-full rounded-lg" />
           </CardContent>
         </Card>
         <Card className="astra-card">
           <CardHeader>
             <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-48" />
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-20 w-full rounded-lg" />
-              ))}
-            </div>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
           </CardContent>
         </Card>
       </div>
+      <Card className="astra-card">
+        <CardHeader>
+          <Skeleton className="h-5 w-40" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+        </CardContent>
+      </Card>
+      <Card className="astra-card">
+        <CardHeader>
+          <Skeleton className="h-5 w-36" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="h-20 w-full rounded-lg" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

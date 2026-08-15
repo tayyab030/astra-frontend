@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { format } from "date-fns"
 import { Heart } from "lucide-react"
 import {
@@ -13,11 +14,25 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { HealthProvider, useHealthContext } from "./_context/HealthProvider"
 import { HealthContent } from "./_components/HealthContent"
 import { TodaySummaryRow } from "./_components/TodaySummaryRow"
+import { HEALTH_TABS } from "./_components/constants"
 import type { HealthTabId } from "./_types/health.types"
+
+function isHealthTab(value: string | null): value is HealthTabId {
+  return HEALTH_TABS.some((tab) => tab.id === value)
+}
 
 function HealthPageInner() {
   const { healthScore, isLoading } = useHealthContext()
-  const [currentView, setCurrentView] = useState<HealthTabId>("overview")
+  const searchParams = useSearchParams()
+  const [currentView, setCurrentView] = useState<HealthTabId>(() => {
+    const tab = searchParams.get("tab")
+    return isHealthTab(tab) ? tab : "overview"
+  })
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isHealthTab(tab)) setCurrentView(tab)
+  }, [searchParams])
 
   if (isLoading) {
     return (

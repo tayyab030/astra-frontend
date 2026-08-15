@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,6 +16,8 @@ import { WealthFilters } from "./_components/WealthFilters"
 import { useWealth } from "./_hooks/useWealth"
 import type { WealthFilter } from "@/lib/api/wealth"
 
+type WealthTabValue = (typeof WEALTH_TABS)[number]["value"]
+
 function getInitialFilter(): WealthFilter {
   const now = new Date()
   return {
@@ -24,9 +27,18 @@ function getInitialFilter(): WealthFilter {
   }
 }
 
+function isWealthTab(value: string | null): value is WealthTabValue {
+  return WEALTH_TABS.some((tab) => tab.value === value)
+}
+
 export default function WealthPage() {
   const { formatCurrency } = useCurrency()
+  const searchParams = useSearchParams()
   const [filter, setFilter] = useState<WealthFilter>(getInitialFilter)
+  const [activeTab, setActiveTab] = useState<WealthTabValue>(() => {
+    const tab = searchParams.get("tab")
+    return isWealthTab(tab) ? tab : "overview"
+  })
   const {
     dashboard,
     isLoading,
@@ -43,6 +55,11 @@ export default function WealthPage() {
     isUpdatingBudget,
     isDeletingBudget,
   } = useWealth(filter)
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isWealthTab(tab)) setActiveTab(tab)
+  }, [searchParams])
 
   const resolvedFilter =
     dashboard?.filter ??
@@ -143,7 +160,7 @@ export default function WealthPage() {
           })}
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WealthTabValue)} className="space-y-6">
           <TabsList className="astra-tabs grid w-fit mx-auto grid-cols-4">
             {WEALTH_TABS.map((tab) => (
               <TabsTrigger

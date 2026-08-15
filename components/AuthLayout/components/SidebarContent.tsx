@@ -27,7 +27,8 @@ import {
     Target,
     Flame,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const sidebarItems = [
@@ -53,7 +54,6 @@ const navButtonClass = (isActive: boolean, isSidebarOpen: boolean) =>
 
 const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const pathname = usePathname();
-    const router = useRouter();
     const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
     return (
@@ -67,10 +67,12 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                         key={item.id}
                         variant="ghost"
                         className={navButtonClass(isActive, isSidebarOpen)}
-                        onClick={() => router.push(item.href)}
+                        asChild
                     >
-                        <Icon className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
-                        {isSidebarOpen && item.label}
+                        <Link href={item.href}>
+                            <Icon className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`} />
+                            {isSidebarOpen && item.label}
+                        </Link>
                     </Button>
                 );
             })}
@@ -79,12 +81,14 @@ const SidebarContent = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 <Button
                     variant="ghost"
                     className={navButtonClass(pathname.includes(ROUTES.APP.SETTINGS), isSidebarOpen)}
-                    onClick={() => router.push(ROUTES.APP.SETTINGS)}
+                    asChild
                 >
-                    <Settings
-                        className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`}
-                    />
-                    {isSidebarOpen && "Settings"}
+                    <Link href={ROUTES.APP.SETTINGS}>
+                        <Settings
+                            className={`${isSidebarOpen ? "mr-3" : ""} h-4 w-4`}
+                        />
+                        {isSidebarOpen && "Settings"}
+                    </Link>
                 </Button>
                 <Button
                     variant="ghost"

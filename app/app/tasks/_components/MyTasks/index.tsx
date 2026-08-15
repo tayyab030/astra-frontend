@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   AlertDialog,
@@ -199,10 +200,15 @@ const MyTasks = ({
     isDeletingTask,
   } = useTasks(activeTab, listParams)
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setEditingTask(null)
     setIsFormOpen(true)
-  }
+  }, [])
+
+  useOpenActionParam("create", isFormOpen, (next) => {
+    if (next) openCreate()
+    else setIsFormOpen(false)
+  })
 
   const openEdit = (task: TaskItem) => {
     setEditingTask(task)

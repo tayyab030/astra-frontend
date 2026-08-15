@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CardGridSkeleton } from "@/components/skeletons"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -31,6 +32,8 @@ export default function GoalsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
+
+  useOpenActionParam("add", isAddGoalOpen, setIsAddGoalOpen)
 
   const {
     dashboard,

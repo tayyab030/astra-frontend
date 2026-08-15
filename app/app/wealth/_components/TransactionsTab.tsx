@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -143,6 +144,11 @@ export function TransactionsTab({
     setDialogMode("add")
     setShowDialog(true)
   }
+
+  useOpenActionParam("add", showDialog, (next) => {
+    if (next) openAddDialog()
+    else setShowDialog(false)
+  })
 
   const openEditDialog = (transaction: WealthTransaction) => {
     setOpenMenuId(null)
