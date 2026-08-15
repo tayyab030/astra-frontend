@@ -43,6 +43,14 @@ export interface TrackedTaskApi {
   task_id: string
   title: string
   project_title: string | null
+  project_color: string | null
+  goal_title: string | null
+  goal_category_label: string | null
+  link_type: "none" | "project" | "goal"
+  due_date: string | null
+  due_date_label: string | null
+  priority: string
+  status: string
   total_seconds_today: number
   is_active: boolean
 }
@@ -83,6 +91,14 @@ function mapTrackedTask(task: TrackedTaskApi) {
     taskId: task.task_id,
     title: task.title,
     projectTitle: task.project_title,
+    projectColor: task.project_color ?? null,
+    goalTitle: task.goal_title ?? null,
+    goalCategoryLabel: task.goal_category_label ?? null,
+    linkType: task.link_type ?? "none",
+    dueDate: task.due_date ?? null,
+    dueDateLabel: task.due_date_label ?? null,
+    priority: task.priority ?? "medium",
+    status: task.status ?? "todo",
     totalSecondsToday: task.total_seconds_today,
     isActive: task.is_active,
   }
@@ -122,13 +138,27 @@ export function mapTaskItemToAvailableTask(task: {
   id: string
   title: string
   project_title: string | null
+  project_color?: string | null
+  goal_title?: string | null
+  goal_category_label?: string | null
+  link_type?: "none" | "project" | "goal"
+  due_date?: string | null
+  due_date_label?: string | null
   priority: string
+  status?: string
 }) {
   return {
     id: task.id,
     title: task.title,
     project_title: task.project_title,
+    project_color: task.project_color ?? null,
+    goal_title: task.goal_title ?? null,
+    goal_category_label: task.goal_category_label ?? null,
+    link_type: task.link_type ?? "none",
+    due_date: task.due_date ?? null,
+    due_date_label: task.due_date_label ?? null,
     priority: task.priority,
+    status: task.status ?? "todo",
   }
 }
 

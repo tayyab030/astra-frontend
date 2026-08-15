@@ -19,6 +19,7 @@ import {
 import { ChevronDown, ChevronRight, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import type { TaskItem, TasksListParams } from "@/lib/api/tasks"
 import { useTasks } from "../../_hooks/useTasks"
 import { TaskFormDialog } from "../TaskFormDialog"
@@ -316,11 +317,7 @@ export default function TaskDetailLayout({
               </div>
 
               {isLoading ? (
-                <div className="space-y-2">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Skeleton key={index} className="h-16 w-full bg-slate-900/50" />
-                  ))}
-                </div>
+                <ListRowsSkeleton count={5} />
               ) : hasTasks ? (
                 <div className="space-y-4">
                   {taskSections.map(renderListSection)}
@@ -336,7 +333,13 @@ export default function TaskDetailLayout({
               {isLoading ? (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-[70vh] max-h-[720px] min-h-[320px] w-full bg-slate-900/50" />
+                    <div
+                      key={index}
+                      className="space-y-3 rounded-xl border border-border bg-card/60 p-3"
+                    >
+                      <Skeleton className="h-5 w-24" />
+                      <ListRowsSkeleton count={3} withAvatar={false} />
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -348,7 +351,18 @@ export default function TaskDetailLayout({
 
             <TabsContent value="calendar" className="mt-0 p-6 pb-10">
               {isLoading ? (
-                <Skeleton className="h-[640px] w-full bg-slate-900/50" />
+                <div className="space-y-3 rounded-xl border border-border bg-card/60 p-4">
+                  <div className="mb-4 grid grid-cols-7 gap-2">
+                    {Array.from({ length: 7 }).map((_, index) => (
+                      <Skeleton key={index} className="h-4 w-full" />
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {Array.from({ length: 35 }).map((_, index) => (
+                      <Skeleton key={index} className="aspect-square w-full rounded-md" />
+                    ))}
+                  </div>
+                </div>
               ) : (
                 <TaskCalendarView tasks={tasks} onEditTask={openEdit} />
               )}

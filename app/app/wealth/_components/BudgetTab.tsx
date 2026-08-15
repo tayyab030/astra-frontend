@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -124,6 +125,8 @@ export function BudgetTab({
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
+  useOpenActionParam("set-limit", () => setShowAddDialog(true))
+
   const addForm = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: getDefaultBudgetValues(filter),
@@ -206,7 +209,23 @@ export function BudgetTab({
       {isLoading ? (
         <div className="grid gap-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-28 w-full bg-slate-900/50" />
+            <Card key={index} className="astra-card">
+              <CardContent className="space-y-3 p-6">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-2 w-full" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : categoryBudgets.length === 0 ? (

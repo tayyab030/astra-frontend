@@ -1,15 +1,19 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+  PageHeaderSkeleton,
+  TabPanelSkeleton,
+  TabStripSkeleton,
+} from "@/components/skeletons"
 
 const TimeTrackContent = dynamic(() => import("./_components/TimeTrackContent"), {
   ssr: false,
   loading: () => (
-    <div className="flex flex-col space-y-4">
-      <Skeleton className="h-10 w-48 bg-slate-800/50" />
-      <Skeleton className="h-64 w-full bg-slate-800/50" />
-      <Skeleton className="h-32 w-full bg-slate-800/50" />
+    <div className="astra-page space-y-6">
+      <PageHeaderSkeleton />
+      <TabStripSkeleton count={6} />
+      <TabPanelSkeleton tall />
     </div>
   ),
 })

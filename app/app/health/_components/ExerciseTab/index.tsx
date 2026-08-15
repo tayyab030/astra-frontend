@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Activity, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -106,6 +107,8 @@ function LogWorkoutDialog({
 export function ExerciseTab() {
   const { workouts } = useHealthContext()
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  useOpenActionParam("log-workout", () => setDialogOpen(true))
 
   if (workouts.length === 0) {
     return (

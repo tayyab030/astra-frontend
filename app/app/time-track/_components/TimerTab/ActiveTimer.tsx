@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Pause, Play, Square } from "lucide-react"
 import type { UseTimeTrackReturn } from "../../_hooks/useTimeTrack"
 import { formatTimerClock, formatWorkedTotal } from "../../_utils/formatTime"
+import { TaskMetaBadges } from "./TaskMetaBadges"
 
 interface ActiveTimerProps {
   timeTrack: UseTimeTrackReturn
@@ -30,12 +31,12 @@ export function ActiveTimer({ timeTrack }: ActiveTimerProps) {
         <div className="text-6xl font-mono font-bold tracking-wider text-cyan-300 tabular-nums">
           {formatTimerClock(displayClockSeconds)}
         </div>
-        <p className="mt-4 text-lg text-slate-300 font-mono">
+        <p className="mt-4 text-lg text-slate-300 font-mono text-center px-4">
           {activeTask?.title ?? "No task selected"}
         </p>
-        {activeTask?.projectTitle && (
-          <p className="text-sm text-slate-500 font-mono">{activeTask.projectTitle}</p>
-        )}
+        {activeTask ? (
+          <TaskMetaBadges task={activeTask} className="mt-3 justify-center" />
+        ) : null}
         <p className="mt-3 text-sm font-mono text-slate-400">
           Today:{" "}
           <span className="font-semibold text-cyan-300/90">

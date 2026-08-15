@@ -52,6 +52,14 @@ export function resolveTrackedTask(
     taskId: task.id,
     title: task.title,
     projectTitle: task.project_title,
+    projectColor: task.project_color,
+    goalTitle: task.goal_title,
+    goalCategoryLabel: task.goal_category_label,
+    linkType: task.link_type,
+    dueDate: task.due_date,
+    dueDateLabel: task.due_date_label,
+    priority: task.priority,
+    status: task.status,
     totalSecondsToday: 0,
     isActive: false,
   }
@@ -294,15 +302,17 @@ export function useTimeTrackCore() {
   }, [activeTimer.taskId, trackedTasks])
 
   const displayClockSeconds = useMemo(() => {
-    if (!activeTask || !activeTimer.taskId) return 0
+    if (!activeTimer.taskId) return 0
+
     if (activeTimer.status === "running") {
       return getRunningTaskDisplaySeconds(
         activeTimer.taskId,
-        activeTask.totalSecondsToday,
+        activeTask?.totalSecondsToday ?? 0,
         activeTimer.elapsedSeconds
       )
     }
-    return activeTask.totalSecondsToday
+
+    return activeTask?.totalSecondsToday ?? 0
   }, [activeTask, activeTimer, getRunningTaskDisplaySeconds])
 
   const todayTotalSeconds = useMemo(() => {
@@ -310,13 +320,14 @@ export function useTimeTrackCore() {
     if (activeTimer.status !== "running" || !activeTimer.taskId) return fromTracked
 
     const runningTask = trackedTasks.find((t) => t.taskId === activeTimer.taskId)
-    if (!runningTask) return fromTracked
-
+    const serverTotal = runningTask?.totalSecondsToday ?? 0
     const runningLive = getRunningTaskDisplaySeconds(
       activeTimer.taskId,
-      runningTask.totalSecondsToday,
+      serverTotal,
       activeTimer.elapsedSeconds
     )
+
+    if (!runningTask) return fromTracked + runningLive
 
     return fromTracked - runningTask.totalSecondsToday + runningLive
   }, [trackedTasks, activeTimer, getRunningTaskDisplaySeconds])
@@ -330,6 +341,14 @@ export function useTimeTrackCore() {
               taskId: taskHint.id,
               title: taskHint.title,
               projectTitle: taskHint.project_title,
+              projectColor: taskHint.project_color,
+              goalTitle: taskHint.goal_title,
+              goalCategoryLabel: taskHint.goal_category_label,
+              linkType: taskHint.link_type,
+              dueDate: taskHint.due_date,
+              dueDateLabel: taskHint.due_date_label,
+              priority: taskHint.priority,
+              status: taskHint.status,
               totalSecondsToday: 0,
               isActive: false,
             }

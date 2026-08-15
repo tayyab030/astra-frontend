@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
     REGISTER: "/auth/users/",
     REFRESH_ACCESS_TOKEN: "/auth/jwt/refresh/",
     VERIFY_TOKEN: "/auth/jwt/verify/",
+    ME: "/auth/me/",
     OTP_STATUS: (token: string) => `/otp/${token}/status/`,
     RESEND_OTP: "/otp/create/",
     RESEND_OTP_LOGIN: "/otp/resend-login/",
@@ -14,14 +15,16 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: "/auth/password/reset/",
     PASSWORD_RESET_STATUS: (token: string) =>
       `/auth/password/${token}/status/`,
+    REQUEST_DELETE_ACCOUNT: "/auth/me/delete-account/",
+    ACCOUNT_DELETE_STATUS: (token: string) =>
+      `/auth/account-delete/${token}/status/`,
+    CONFIRM_DELETE_ACCOUNT: "/auth/account-delete/confirm/",
   },
 
   // User endpoints
   USER: {
-    // PROFILE: "/user/profile",
-    // UPDATE_PROFILE: "/user/profile",
-    // CHANGE_PASSWORD: "/user/change-password",
-    // UPLOAD_AVATAR: "/user/avatar",
+    PROFILE: "/auth/me/",
+    UPDATE_PROFILE: "/auth/me/",
   },
 
   // Dashboard endpoints
@@ -32,7 +35,6 @@ export const API_ENDPOINTS = {
     // TASKS: "/dashboard/tasks",
     // NOTES: "/dashboard/notes",
     // WEALTH: "/dashboard/wealth",
-    // COMMUNICATION: "/dashboard/communication",
   },
 
   // Tasks endpoints
@@ -74,24 +76,56 @@ export const API_ENDPOINTS = {
     SETTINGS: "/time-track/settings/",
   },
 
+  // Habits endpoints
+  HABITS: {
+    LIST: "/habits/",
+    DAY: "/habits/day/",
+    PACK: "/habits/pack/",
+    HABIT: (id: string) => `/habits/${id}/`,
+    TOGGLE: (id: string) => `/habits/${id}/toggle/`,
+    ADJUST: (id: string) => `/habits/${id}/adjust/`,
+    LOG: (id: string) => `/habits/${id}/log/`,
+  },
+
   // Health endpoints
   HEALTH: {
     DASHBOARD: "/health/",
     PROFILE: "/health/profile/",
     TARGETS: "/health/targets/",
+    TODAY: "/health/today/",
     METRICS_ADJUST: "/health/metrics/adjust/",
     WEIGHT: "/health/weight/",
-    HABITS: "/health/habits/",
-    HABIT_TOGGLE: (id: string) => `/health/habits/${id}/toggle/`,
+    SLEEP_SESSIONS: "/health/sleep-sessions/",
+    SLEEP_SESSION: (id: string) => `/health/sleep-sessions/${id}/`,
+    SLEEP_TOGGLE: "/health/sleep-sessions/toggle/",
     WORKOUTS: "/health/workouts/",
     MOOD: "/health/mood/",
   },
 
+  // Notes endpoints
+  NOTES: {
+    DASHBOARD: "/notes/",
+    NOTES: "/notes/",
+    NOTE: (id: string) => `/notes/${id}/`,
+    PERMANENT: (id: string) => `/notes/${id}/permanent/`,
+    RESTORE: (id: string) => `/notes/${id}/restore/`,
+    ARCHIVE: (id: string) => `/notes/${id}/archive/`,
+    DUPLICATE: (id: string) => `/notes/${id}/duplicate/`,
+    BULK: "/notes/bulk/",
+    RESTORE_VERSION: (id: string) => `/notes/${id}/versions/restore/`,
+  },
+
   // Assistant endpoints
   ASSISTANT: {
-    // CHAT: "/assistant/chat",
-    // HISTORY: "/assistant/history",
-    // CLEAR_HISTORY: "/assistant/clear-history",
+    CHAT: "/assistant/chat/",
+    SPEECH: "/assistant/speech/",
+    TRANSCRIBE: "/assistant/transcribe/",
+    TRANSCRIBE_BASE64: "/assistant/transcribe/base64/",
+    CONVERSATIONS: "/assistant/conversations/",
+    CONVERSATION: (id: string) => `/assistant/conversations/${id}/`,
+    DAILY_QUOTE: "/assistant/daily-quote/",
+    GOALS_QUOTE: "/assistant/goals-quote/",
+    INSIGHTS: "/assistant/insights/",
   },
 
   // Settings endpoints

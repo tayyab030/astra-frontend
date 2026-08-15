@@ -135,7 +135,6 @@ export default function PricingPage() {
           starter: "Smart",
           pro: "Neural Search",
         },
-        { name: "Communication", free: "❌", starter: "❌", pro: "✅" },
       ],
     },
     {

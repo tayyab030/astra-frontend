@@ -3,11 +3,26 @@
 import type { MouseEvent } from "react"
 import { Play, Square } from "lucide-react"
 import { useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider"
+import { mapTaskItemToAvailableTask } from "@/lib/api/timeTrack"
 import { cn } from "@/lib/utils"
 import type { TaskItem } from "@/lib/api/tasks"
 
 interface TaskTimeTrackControlsProps {
-  task: Pick<TaskItem, "id" | "title" | "project_title" | "priority" | "completed">
+  task: Pick<
+    TaskItem,
+    | "id"
+    | "title"
+    | "project_title"
+    | "project_color"
+    | "goal_title"
+    | "goal_category_label"
+    | "link_type"
+    | "due_date"
+    | "due_date_label"
+    | "priority"
+    | "status"
+    | "completed"
+  >
   className?: string
   iconClassName?: string
 }
@@ -30,12 +45,7 @@ export function TaskTimeTrackControls({
       return
     }
 
-    void playTask({
-      id: task.id,
-      title: task.title,
-      project_title: task.project_title,
-      priority: task.priority,
-    })
+    void playTask(mapTaskItemToAvailableTask(task))
   }
 
   return (

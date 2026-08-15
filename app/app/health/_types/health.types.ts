@@ -2,7 +2,6 @@ export type HealthTabId =
   | "overview"
   | "weight"
   | "tracking"
-  | "habits"
   | "exercise"
   | "wellness"
   | "insights"
@@ -14,6 +13,7 @@ export type HeightUnit = "cm" | "ftin"
 export type BmiTone = "green" | "yellow" | "red" | "neutral"
 
 export type TrackableMetric = "water" | "sleep" | "exercise"
+export type AdjustableMetric = "water" | "exercise"
 
 export interface HealthProfile {
   heightCm: number | null
@@ -45,6 +45,17 @@ export interface DailyMetricEntry {
   exerciseMinutes: number
 }
 
+export interface SleepSession {
+  id: string
+  date: string
+  startedAt: string
+  endedAt: string | null
+  startTime: string
+  endTime: string | null
+  hours: number | null
+  isActive: boolean
+}
+
 export interface Habit {
   id: string
   name: string
@@ -53,6 +64,13 @@ export interface Habit {
   target: number
   current: number
   frequency?: string
+  domain?: string
+  metricType?: string
+  unit?: string | null
+  groupKey?: string | null
+  groupName?: string | null
+  isRequired?: boolean
+  repeatDays?: number[]
 }
 
 export interface Workout {

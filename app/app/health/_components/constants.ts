@@ -3,7 +3,6 @@ import {
   BarChart3,
   Brain,
   Droplets,
-  Flame,
   LayoutDashboard,
   Scale,
   type LucideIcon,
@@ -14,7 +13,6 @@ export const HEALTH_TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "weight", label: "Weight", icon: Scale },
   { id: "tracking", label: "Tracking", icon: Droplets },
-  { id: "habits", label: "Habits", icon: Flame },
   { id: "exercise", label: "Exercise", icon: Activity },
   { id: "wellness", label: "Wellness", icon: Brain },
   { id: "insights", label: "Insights", icon: BarChart3 },
@@ -30,12 +28,6 @@ export const MOOD_OPTIONS = [
   { value: "bad", label: "Bad", color: "text-orange-400" },
   { value: "terrible", label: "Terrible", color: "text-red-400" },
 ] as const
-
-export const AI_HEALTH_INSIGHTS = [
-  "You're doing great with water intake! Keep it up.",
-  "You've been sleeping below your target lately. Consider adjusting your bedtime.",
-  "Your cardio workouts are consistent — try adding a short strength session this week.",
-]
 
 export const METRIC_STEP = {
   water: 1,

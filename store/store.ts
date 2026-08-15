@@ -9,7 +9,7 @@ import authReducer from "./slice/authSlice";
 import currencyReducer from "./slice/currencySlice";
 import userReducer from "./slice/userSlice";
 // Inject store into API layer
-import { injectStore } from "@/lib/api/simpleApi";
+import { injectTokenStore } from "@/lib/auth/tokenManager";
 
 const rootReducer = combineReducers({
   // add reducers here
@@ -53,7 +53,7 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-injectStore(store);
+injectTokenStore(store);
 // Types for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

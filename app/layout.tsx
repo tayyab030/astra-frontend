@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import { ReduxProvider } from "@/store/Providers"
 import QueryProviders from "@/ReatQuery/provider"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 
 import "./globals.css"
 
@@ -25,7 +26,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "ASTRA - Life OS | Your Personal Digital Assistant",
   description:
-    "Assistant for Scheduling, Tasks, Routines & Analytics - Manage wealth, health, work, knowledge & communication with ASTRA, the modular Life OS.",
+    "Assistant for Scheduling, Tasks, Routines & Analytics - Manage wealth, health, work & knowledge with ASTRA, the modular Life OS.",
   generator: "v0.app",
 }
 
@@ -38,12 +39,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} ${poppins.variable}`}>
         <Suspense fallback={null}>
-          <ReduxProvider>
-            <QueryProviders>
-              {children}
-              <Toaster richColors position="top-right" />
-            </QueryProviders>
-          </ReduxProvider>
+          <ThemeProvider>
+            <ReduxProvider>
+              <QueryProviders>
+                {children}
+                <Toaster richColors position="top-right" />
+              </QueryProviders>
+            </ReduxProvider>
+          </ThemeProvider>
         </Suspense>
         <Analytics />
       </body>

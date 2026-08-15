@@ -12,7 +12,7 @@ export function ReportsTab({ timeTrack }: ReportsTabProps) {
   const { filteredEntries } = timeTrack
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-6 pb-6">
       <ReportsFilters timeTrack={timeTrack} />
       <TaskReportTable entries={filteredEntries} />
     </div>

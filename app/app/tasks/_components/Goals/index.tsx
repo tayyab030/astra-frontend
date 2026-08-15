@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Target } from "lucide-react"
 import Link from "next/link"
 import SelectField from "@/components/common/SelectField"
-import { Skeleton } from "@/components/ui/skeleton"
+import { CardGridSkeleton } from "@/components/skeletons"
 import { Button } from "@/components/ui/button"
 import { fetchGoalsDashboard } from "@/lib/api/goals"
 import type { GoalCategoryValue } from "@/lib/api/goals"
@@ -76,11 +76,7 @@ const Goals = () => {
 
       {goalsQuery.isLoading ? (
         <div className={CARD_GRID_MAX_HEIGHT}>
-          <div className={GOALS_GRID_CLASSES}>
-            {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="w-full h-32" />
-            ))}
-          </div>
+          <CardGridSkeleton count={4} className="grid-cols-2 md:grid-cols-4" />
         </div>
       ) : goals.length > 0 ? (
         <div className={CARD_GRID_MAX_HEIGHT}>

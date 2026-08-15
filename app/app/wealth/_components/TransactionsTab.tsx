@@ -4,11 +4,12 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
+import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ListRowsSkeleton } from "@/components/skeletons"
 import {
   Dialog,
   DialogContent,
@@ -144,6 +145,8 @@ export function TransactionsTab({
     setShowDialog(true)
   }
 
+  useOpenActionParam("add", openAddDialog)
+
   const openEditDialog = (transaction: WealthTransaction) => {
     setOpenMenuId(null)
     setDialogMode("edit")
@@ -271,7 +274,7 @@ export function TransactionsTab({
                     </SelectTrigger>
                     <SelectContent
                       position="popper"
-                      className="bg-slate-800 border-slate-600/50 max-h-48 overflow-y-auto [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:max-h-44"
+                      className="bg-slate-800 border-slate-600/50 max-h-72 overflow-y-auto [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:max-h-64"
                     >
                       <SelectGroup>
                         <SelectLabel className="font-mono text-slate-400">Expenses</SelectLabel>
@@ -303,6 +306,12 @@ export function TransactionsTab({
                     placeholder="Pick a date"
                     className="space-y-0"
                     buttonClassName={cn(inputClassName, errors.date && "border-red-500/70")}
+                    toYear={new Date().getFullYear()}
+                    disabled={(day) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+                      return day > today
+                    }}
                   />
                   <FormFieldError message={errors.date?.message} />
                 </div>
@@ -326,11 +335,7 @@ export function TransactionsTab({
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full bg-slate-900/50" />
-              ))}
-            </div>
+            <ListRowsSkeleton count={5} />
           ) : transactions.length === 0 ? (
             <WealthEmptyState
               icon={Receipt}

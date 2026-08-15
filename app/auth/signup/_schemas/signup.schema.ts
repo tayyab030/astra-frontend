@@ -1,4 +1,8 @@
 import * as z from "zod";
+import { COUNTRY_CODES } from "@/lib/countries";
+import { USER_GENDERS } from "@/lib/gender";
+
+const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
 // Validation schema
 const schema = z
@@ -10,15 +14,29 @@ const schema = z
       .min(3, "Username must be at least 3 characters")
       .max(20, "Username must be no more than 20 characters")
       .regex(
-        /^[a-zA-Z0-9@.+_-]+$/,
-        "Username can only contain letters, numbers, and @ . + - _ characters"
-      ),
+        /^[a-zA-Z0-9._+-]+$/,
+        "Username can only contain letters, numbers, and . + - _ characters"
+      )
+      .refine((value) => !value.includes("@") && !EMAIL_REGEX.test(value), {
+        message: "Username cannot be an email address",
+      }),
     email: z
       .string()
       .min(1, "Email is required")
-      .regex(
-        /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        "Invalid email address"
+      .regex(EMAIL_REGEX, "Invalid email address"),
+    gender: z
+      .string()
+      .min(1, "Gender is required")
+      .refine(
+        (value) => (USER_GENDERS as readonly string[]).includes(value),
+        "Please select a valid gender"
+      ),
+    country: z
+      .string()
+      .min(1, "Country is required")
+      .refine(
+        (value) => (COUNTRY_CODES as readonly string[]).includes(value),
+        "Please select a valid country"
       ),
     password: z
       .string()
@@ -53,7 +71,14 @@ const schema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => data.username.trim().toLowerCase() !== data.email.trim().toLowerCase(),
+    {
+      message: "Username and email cannot be the same",
+      path: ["username"],
+    }
+  );
 
 type SignUpType = z.infer<typeof schema>;
 

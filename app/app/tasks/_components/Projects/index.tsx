@@ -10,7 +10,7 @@ import SelectField from "@/components/common/SelectField";
 import CreateProjectDialog from "./CreateProjectDialog";
 import dynamic from "next/dynamic";
 import { getIconComponent, IconName } from "./iconHelper";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CardGridSkeleton } from "@/components/skeletons";
 import { useProjects } from "../../_hooks/useProjects";
 import { ROUTES } from "@/constants/routes";
 import { CardTaskSummary } from "../CardTaskSummary";
@@ -62,11 +62,7 @@ const Projects = () => {
 
             {loadingProjects ? (
                 <div className={CARD_GRID_MAX_HEIGHT}>
-                    <div className={PROJECTS_GRID_CLASSES}>
-                        {Array.from({ length: 4 }, (_, index) => (
-                            <Skeleton key={index} className="w-full h-32" />
-                        ))}
-                    </div>
+                    <CardGridSkeleton count={4} className="grid-cols-2 md:grid-cols-4" />
                 </div>
             ) : projects.length > 0 ? (
                 <div className={CARD_GRID_MAX_HEIGHT}>

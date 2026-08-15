@@ -8,10 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Search } from "lucide-react"
 import type { AvailableTask } from "../../_types/timeTrack.types"
-import { TASK_PRIORITY_COLORS } from "../constants"
+import { TaskMetaBadges } from "./TaskMetaBadges"
 
 interface AddTaskDialogProps {
   open: boolean
@@ -19,6 +18,19 @@ interface AddTaskDialogProps {
   availableTasks: AvailableTask[]
   onAddTask: (task: AvailableTask) => void | Promise<void>
   isAdding?: boolean
+}
+
+function toTrackedMeta(task: AvailableTask) {
+  return {
+    linkType: task.link_type,
+    projectTitle: task.project_title,
+    projectColor: task.project_color,
+    goalTitle: task.goal_title,
+    goalCategoryLabel: task.goal_category_label,
+    dueDateLabel: task.due_date_label,
+    priority: task.priority,
+    status: task.status,
+  }
 }
 
 export function AddTaskDialog({
@@ -34,7 +46,9 @@ export function AddTaskDialog({
     const query = search.toLowerCase()
     return (
       task.title.toLowerCase().includes(query) ||
-      (task.project_title?.toLowerCase().includes(query) ?? false)
+      (task.project_title?.toLowerCase().includes(query) ?? false) ||
+      (task.goal_title?.toLowerCase().includes(query) ?? false) ||
+      (task.due_date_label?.toLowerCase().includes(query) ?? false)
     )
   })
 
@@ -53,13 +67,13 @@ export function AddTaskDialog({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            placeholder="Search tasks..."
+            placeholder="Search by title, project, goal..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-slate-800/50 border-slate-600 text-white font-mono"
           />
         </div>
-        <div className="max-h-64 overflow-y-auto space-y-2 mt-2">
+        <div className="max-h-72 overflow-y-auto space-y-2 mt-2">
           {filtered.length === 0 ? (
             <p className="text-center text-slate-400 text-sm font-mono py-4">
               No tasks available
@@ -71,20 +85,10 @@ export function AddTaskDialog({
                 type="button"
                 disabled={isAdding}
                 onClick={() => void handleAdd(task)}
-                className="w-full flex items-center justify-between rounded-lg border border-slate-700/50 bg-slate-800/30 p-3 text-left hover:bg-slate-700/50 transition-colors"
+                className="w-full rounded-lg border border-slate-700/50 bg-slate-800/30 p-3 text-left hover:bg-slate-700/50 transition-colors disabled:opacity-50"
               >
-                <div>
-                  <p className="text-sm font-medium text-white font-mono">{task.title}</p>
-                  {task.project_title && (
-                    <p className="text-xs text-slate-400 font-mono mt-0.5">{task.project_title}</p>
-                  )}
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`font-mono text-xs ${TASK_PRIORITY_COLORS[task.priority] ?? TASK_PRIORITY_COLORS.low}`}
-                >
-                  {task.priority}
-                </Badge>
+                <p className="text-sm font-medium text-white font-mono">{task.title}</p>
+                <TaskMetaBadges task={toTrackedMeta(task)} compact className="mt-2" />
               </button>
             ))
           )}

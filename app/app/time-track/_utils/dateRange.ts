@@ -10,6 +10,7 @@ import {
 import type { DateRangeFilter, DateRangePreset } from "../_types/timeTrack.types"
 
 export function getTodayString(): string {
+  // Use the browser's local calendar date — never UTC via toISOString().
   return format(new Date(), "yyyy-MM-dd")
 }
 

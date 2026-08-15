@@ -15,10 +15,12 @@ interface MetricStepperCardProps {
   target: number
   unit: string
   step: number
-  onIncrement: () => void
-  onDecrement: () => void
+  onIncrement?: () => void
+  onDecrement?: () => void
   onTargetChange: (value: number) => void
   compact?: boolean
+  hideSteppers?: boolean
+  helperText?: string
 }
 
 export function MetricStepperCard({
@@ -32,6 +34,8 @@ export function MetricStepperCard({
   onDecrement,
   onTargetChange,
   compact = false,
+  hideSteppers = false,
+  helperText,
 }: MetricStepperCardProps) {
   const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0
   const displayCurrent = Number.isInteger(current) ? current : current.toFixed(1)
@@ -47,30 +51,36 @@ export function MetricStepperCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-center gap-3">
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-8 w-8 border-slate-600 text-slate-300 hover:bg-slate-700/50"
-            onClick={onDecrement}
-            disabled={current <= 0}
-          >
-            <Minus className="h-4 w-4" />
-          </Button>
+          {!hideSteppers && onDecrement ? (
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 border-slate-600 text-slate-300 hover:bg-slate-700/50"
+              onClick={onDecrement}
+              disabled={current <= 0}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+          ) : null}
           <div className="text-center min-w-[80px]">
             <span className="text-2xl font-bold font-mono text-white">{displayCurrent}</span>
             <span className="text-slate-400 font-mono text-sm"> / {displayTarget}</span>
           </div>
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-8 w-8 border-slate-600 text-slate-300 hover:bg-slate-700/50"
-            onClick={onIncrement}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+          {!hideSteppers && onIncrement ? (
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 border-slate-600 text-slate-300 hover:bg-slate-700/50"
+              onClick={onIncrement}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
         <Progress value={progress} className="h-2" />
-        <p className="text-xs text-slate-400 font-mono text-center">{unit} today · step {step}</p>
+        <p className="text-xs text-slate-400 font-mono text-center">
+          {helperText ?? (hideSteppers ? `${unit} today` : `${unit} today · step ${step}`)}
+        </p>
         {!compact && (
           <div className="flex items-end gap-2 pt-1">
             <div className="flex-1">

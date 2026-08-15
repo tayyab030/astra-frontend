@@ -21,6 +21,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AUTH, publicApi } from "@/lib/api";
 import { toast } from "sonner";
 import { ROUTES } from "@/constants/routes";
+import CountrySelect from "@/components/common/CountrySelect";
+import { getCountryByCode } from "@/lib/countries";
+import { USER_GENDER_OPTIONS } from "@/lib/gender";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function SignupForm() {
     const {
@@ -31,6 +41,11 @@ export default function SignupForm() {
         formState: { errors, isSubmitting },
     } = useForm<SignUpType>({
         resolver: zodResolver(schema),
+        defaultValues: {
+            country: "",
+            gender: "",
+            terms: false,
+        },
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -39,6 +54,9 @@ export default function SignupForm() {
 
     const password = watch("password", "");
     const confirmPassword = watch("confirmPassword", "");
+    const country = watch("country", "");
+    const gender = watch("gender", "");
+    const selectedCountry = country ? getCountryByCode(country) : undefined;
 
     const passwordRules = [
         { rule: "At least 1 uppercase letter", test: /[A-Z]/.test(password) },
@@ -121,7 +139,7 @@ export default function SignupForm() {
                 ))}
             </div>
 
-            <Card className="w-full max-w-md bg-slate-800/50 backdrop-blur-xl border-cyan-500/30 shadow-2xl shadow-cyan-500/10 relative z-10">
+            <Card className="w-full max-w-2xl bg-slate-800/50 backdrop-blur-xl border-cyan-500/30 shadow-2xl shadow-cyan-500/10 relative z-10">
                 <CardHeader className="text-center space-y-2">
                     <CardTitle className="text-3xl text-cyan-100 font-mono">
                         Join ASTRA
@@ -132,7 +150,7 @@ export default function SignupForm() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="first_name" className="text-cyan-200 font-mono">
                                     First Name
@@ -141,7 +159,7 @@ export default function SignupForm() {
                                     id="first_name"
                                     type="text"
                                     {...register("first_name")}
-                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
                                     placeholder="Enter your first name..."
                                     onChange={(e) => setValue("first_name", e.target.value)}
                                 />
@@ -159,7 +177,7 @@ export default function SignupForm() {
                                     id="last_name"
                                     type="text"
                                     {...register("last_name")}
-                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
                                     placeholder="Enter your last name..."
                                     onChange={(e) => setValue("last_name", e.target.value)}
                                 />
@@ -169,133 +187,189 @@ export default function SignupForm() {
                                     </p>
                                 )}
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="username" className="text-cyan-200 font-mono">
-                                Username
-                            </Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                {...register("username")}
-                                className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
-                                placeholder="Enter your username..."
-                                onChange={(e) => setValue("username", e.target.value)}
-                            />
-                            {errors.username && (
-                                <p className="text-red-400 text-xs font-mono">
-                                    {errors.username.message}
-                                </p>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-cyan-200 font-mono">
-                                Email
-                            </Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                {...register("email")}
-                                className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
-                                placeholder="Enter your email..."
-                                onChange={(e) => setValue("email", e.target.value)}
-                            />
-                            {errors.email && (
-                                <p className="text-red-400 text-xs font-mono">
-                                    {errors.email.message}
-                                </p>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="text-cyan-200 font-mono">
-                                Password
-                            </Label>
-                            <div className="relative">
+                            <div className="space-y-2">
+                                <Label htmlFor="username" className="text-cyan-200 font-mono">
+                                    Username
+                                </Label>
                                 <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    {...register("password")}
-                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
-                                    placeholder="Enter your password..."
-                                    onChange={(e) => setValue("password", e.target.value)}
+                                    id="username"
+                                    type="text"
+                                    {...register("username")}
+                                    className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    placeholder="Enter your username..."
+                                    onChange={(e) => setValue("username", e.target.value)}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
-                                >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
+                                {errors.username && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.username.message}
+                                    </p>
+                                )}
                             </div>
-                            {password && (
-                                <div className="mt-3 space-y-2">
-                                    {passwordRules.map((rule, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center space-x-2 text-xs font-mono"
-                                        >
-                                            {rule.test ? (
-                                                <Check size={14} className="text-green-400" />
-                                            ) : (
-                                                <X size={14} className="text-red-400" />
-                                            )}
-                                            <span
-                                                className={
-                                                    rule.test ? "text-green-400" : "text-red-400"
-                                                }
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-cyan-200 font-mono">
+                                    Email
+                                </Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    {...register("email")}
+                                    className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono"
+                                    placeholder="Enter your email..."
+                                    onChange={(e) => setValue("email", e.target.value)}
+                                />
+                                {errors.email && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.email.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="gender" className="text-cyan-200 font-mono">
+                                    Gender
+                                </Label>
+                                <Select
+                                    value={gender}
+                                    onValueChange={(value) =>
+                                        setValue("gender", value, { shouldValidate: true })
+                                    }
+                                >
+                                    <SelectTrigger className="bg-slate-700/50 border-cyan-500/30 text-white focus:border-cyan-400 focus:ring-cyan-400/20 font-mono w-full">
+                                        <SelectValue placeholder="Select gender..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-cyan-500/30">
+                                        {USER_GENDER_OPTIONS.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                                className="font-mono"
                                             >
-                                                {rule.rule}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="confirmPassword"
-                                className="text-cyan-200 font-mono"
-                            >
-                                Confirm Password
-                            </Label>
-                            <div className="relative">
-                                <Input
-                                    id="confirmPassword"
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    {...register("confirmPassword")}
-                                    className="bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
-                                    placeholder="Enter your confirm password..."
-                                    onChange={(e) => setValue("confirmPassword", e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
-                                >
-                                    {showConfirmPassword ? (
-                                        <EyeOff size={18} />
-                                    ) : (
-                                        <Eye size={18} />
-                                    )}
-                                </button>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.gender && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.gender.message}
+                                    </p>
+                                )}
                             </div>
-                            {confirmPassword && (
-                                <div className="flex items-center space-x-2 text-xs font-mono mt-2">
-                                    {passwordsMatch ? (
-                                        <>
-                                            <Check size={14} className="text-green-400" />
-                                            <span className="text-green-400">Passwords match</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <X size={14} className="text-red-400" />
-                                            <span className="text-red-400">
-                                                Passwords do not match
-                                            </span>
-                                        </>
-                                    )}
+                            <div className="space-y-2">
+                                <Label htmlFor="country" className="text-cyan-200 font-mono">
+                                    Where are you from?
+                                </Label>
+                                <CountrySelect
+                                    value={country}
+                                    onValueChange={(value) =>
+                                        setValue("country", value, { shouldValidate: true })
+                                    }
+                                />
+                                {selectedCountry && (
+                                    <p className="text-xs text-slate-400 font-mono">
+                                        Default currency:{" "}
+                                        <span className="text-cyan-300">{selectedCountry.currency}</span>
+                                        {" · "}
+                                        Default timezone:{" "}
+                                        <span className="text-cyan-300">{selectedCountry.timezone}</span>
+                                    </p>
+                                )}
+                                {errors.country && (
+                                    <p className="text-red-400 text-xs font-mono">
+                                        {errors.country.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-cyan-200 font-mono">
+                                    Password
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("password")}
+                                        className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
+                                        placeholder="Enter your password..."
+                                        onChange={(e) => setValue("password", e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
-                            )}
+                                {password && (
+                                    <div className="mt-3 space-y-2">
+                                        {passwordRules.map((rule, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex items-center space-x-2 text-xs font-mono"
+                                            >
+                                                {rule.test ? (
+                                                    <Check size={14} className="text-green-400" />
+                                                ) : (
+                                                    <X size={14} className="text-red-400" />
+                                                )}
+                                                <span
+                                                    className={
+                                                        rule.test ? "text-green-400" : "text-red-400"
+                                                    }
+                                                >
+                                                    {rule.rule}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="confirmPassword"
+                                    className="text-cyan-200 font-mono"
+                                >
+                                    Confirm Password
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        id="confirmPassword"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        {...register("confirmPassword")}
+                                        className="w-full bg-slate-700/50 border-cyan-500/30 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-cyan-400/20 font-mono pr-10"
+                                        placeholder="Enter your confirm password..."
+                                        onChange={(e) => setValue("confirmPassword", e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <EyeOff size={18} />
+                                        ) : (
+                                            <Eye size={18} />
+                                        )}
+                                    </button>
+                                </div>
+                                {confirmPassword && (
+                                    <div className="flex items-center space-x-2 text-xs font-mono mt-2">
+                                        {passwordsMatch ? (
+                                            <>
+                                                <Check size={14} className="text-green-400" />
+                                                <span className="text-green-400">Passwords match</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <X size={14} className="text-red-400" />
+                                                <span className="text-red-400">
+                                                    Passwords do not match
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-center space-x-2">

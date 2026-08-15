@@ -1,49 +1,63 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import dynamic from "next/dynamic"
+import { useSearchParams } from "next/navigation"
 import { format } from "date-fns"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+  PageHeaderSkeleton,
+  TabPanelSkeleton,
+  TabStripSkeleton,
+} from "@/components/skeletons"
 import { useTimeTrackContext } from "../_context/TimeTrackProvider"
 import { useTimeTrackPageData } from "../_hooks/useTimeTrackPageData"
 import type { UseTimeTrackReturn } from "../_hooks/useTimeTrack"
 import NavigationTabs from "./NavigationTabs"
-import type { TimeTrackTabId } from "./constants"
+import { TIME_TRACK_TABS, type TimeTrackTabId } from "./constants"
 
 const TimerTab = dynamic(
   () => import("./TimerTab").then((m) => ({ default: m.TimerTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 const DashboardTab = dynamic(
   () => import("./DashboardTab").then((m) => ({ default: m.DashboardTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
 const ReportsTab = dynamic(
   () => import("./ReportsTab").then((m) => ({ default: m.ReportsTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 const WeeklyTab = dynamic(
   () => import("./WeeklyTab").then((m) => ({ default: m.WeeklyTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
 const PatternsTab = dynamic(
   () => import("./PatternsTab").then((m) => ({ default: m.PatternsTab })),
-  { loading: () => <TabSkeleton tall /> }
+  { loading: () => <TabPanelSkeleton tall /> }
 )
 const SettingsTab = dynamic(
   () => import("./SettingsTab").then((m) => ({ default: m.SettingsTab })),
-  { loading: () => <TabSkeleton /> }
+  { loading: () => <TabPanelSkeleton /> }
 )
 
-function TabSkeleton({ tall }: { tall?: boolean }) {
-  return <Skeleton className={`w-full bg-slate-800/50 ${tall ? "h-72" : "h-48"}`} />
+function isTimeTrackTab(value: string | null): value is TimeTrackTabId {
+  return TIME_TRACK_TABS.some((tab) => tab.id === value)
 }
 
 export default function TimeTrackContent() {
-  const [currentView, setCurrentView] = useState<TimeTrackTabId>("timer")
+  const searchParams = useSearchParams()
+  const [currentView, setCurrentView] = useState<TimeTrackTabId>(() => {
+    const tab = searchParams.get("tab")
+    return isTimeTrackTab(tab) ? tab : "timer"
+  })
   const core = useTimeTrackContext()
   const page = useTimeTrackPageData(core)
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isTimeTrackTab(tab)) setCurrentView(tab)
+  }, [searchParams])
 
   const timeTrack = useMemo<UseTimeTrackReturn>(
     () => ({
@@ -57,10 +71,10 @@ export default function TimeTrackContent() {
 
   if (timeTrack.isLoading) {
     return (
-      <div className="flex flex-col space-y-4">
-        <Skeleton className="h-10 w-48 bg-slate-800/50" />
-        <Skeleton className="h-64 w-full bg-slate-800/50" />
-        <Skeleton className="h-32 w-full bg-slate-800/50" />
+      <div className="astra-page space-y-6">
+        <PageHeaderSkeleton />
+        <TabStripSkeleton count={6} />
+        <TabPanelSkeleton tall />
       </div>
     )
   }

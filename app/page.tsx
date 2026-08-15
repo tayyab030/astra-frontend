@@ -11,7 +11,6 @@ import {
   Heart,
   Calendar,
   BookOpen,
-  Mail,
   BarChart3,
   Zap,
   Star,
@@ -21,13 +20,11 @@ import {
   Shield,
   Users,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import { AstraLogo } from "@/components/astra-logo"
 import { PublicNavbar } from "@/components/PublicNavbar"
 import { ROUTES } from "@/constants/routes"
 
 export default function HomePage() {
-  const { theme, setTheme } = useTheme()
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null)
 
   const coreModules = [
@@ -62,15 +59,6 @@ export default function HomePage() {
       description: "Organize notes, summaries & build your knowledge base",
       gradient: "from-purple-500 to-indigo-600",
       features: ["Smart Notes", "Book Summaries", "Knowledge Base", "AI Search"],
-    },
-    {
-      id: "communication",
-      icon: Mail,
-      title: "Communication",
-      description: "Smart email management with AI-powered insights",
-      gradient: "from-orange-500 to-amber-600",
-      features: ["Email Rules", "Smart Alerts", "Inbox Summaries", "Priority Detection"],
-      isPro: true,
     },
   ]
 
@@ -225,7 +213,7 @@ export default function HomePage() {
                     >
                       <module.icon className="w-7 h-7 text-white" />
                     </div>
-                    {module.isPro && (
+                    {"isPro" in module && module.isPro && (
                       <Badge
                         variant="secondary"
                         className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border-amber-500/30"

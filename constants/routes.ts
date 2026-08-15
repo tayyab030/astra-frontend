@@ -5,6 +5,7 @@ export const ROUTES = {
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
     VERIFY_OTP: "/auth/verify-otp",
+    DELETE_ACCOUNT: "/auth/delete-account",
   },
   APP: {
     DASHBOARD: "/app/dashboard",
@@ -13,9 +14,9 @@ export const ROUTES = {
     GOALS: "/app/goals",
     WEALTH: "/app/wealth",
     HEALTH: "/app/health",
+    HABITS: "/app/habits",
     NOTES: "/app/notes",
     ASSISTANT: "/app/assistant",
-    COMMUNICATION: "/app/communication",
     ANALYTICS: "/app/analytics",
     LIFE_SCORE: "/app/life-score",
     SETTINGS: "/app/settings",

@@ -27,11 +27,3 @@ export const CATEGORY_ICONS: Record<GoalCategoryValue, LucideIcon> = {
   knowledge: BookOpen,
   relationships: Users,
 }
-
-export function getAiGoalInsights(formatCurrency: (amount: number) => string) {
-  return [
-    "🎯 You're on track to complete your portfolio website 5 days early!",
-    '💡 Consider breaking down "Run Half Marathon" into weekly distance milestones.',
-    `⚡ Your savings goal needs ${formatCurrency(400)}/month to stay on track. Current pace: ${formatCurrency(350)}/month.`,
-  ]
-}

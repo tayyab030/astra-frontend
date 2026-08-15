@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,6 +16,8 @@ import { WealthFilters } from "./_components/WealthFilters"
 import { useWealth } from "./_hooks/useWealth"
 import type { WealthFilter } from "@/lib/api/wealth"
 
+type WealthTabValue = (typeof WEALTH_TABS)[number]["value"]
+
 function getInitialFilter(): WealthFilter {
   const now = new Date()
   return {
@@ -24,9 +27,18 @@ function getInitialFilter(): WealthFilter {
   }
 }
 
+function isWealthTab(value: string | null): value is WealthTabValue {
+  return WEALTH_TABS.some((tab) => tab.value === value)
+}
+
 export default function WealthPage() {
   const { formatCurrency } = useCurrency()
+  const searchParams = useSearchParams()
   const [filter, setFilter] = useState<WealthFilter>(getInitialFilter)
+  const [activeTab, setActiveTab] = useState<WealthTabValue>(() => {
+    const tab = searchParams.get("tab")
+    return isWealthTab(tab) ? tab : "overview"
+  })
   const {
     dashboard,
     isLoading,
@@ -43,6 +55,11 @@ export default function WealthPage() {
     isUpdatingBudget,
     isDeletingBudget,
   } = useWealth(filter)
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isWealthTab(tab)) setActiveTab(tab)
+  }, [searchParams])
 
   const resolvedFilter =
     dashboard?.filter ??
@@ -66,12 +83,9 @@ export default function WealthPage() {
       titleClass: isNegativeNetWorth ? "text-red-300" : "text-green-300",
       valueClass: isNegativeNetWorth ? "text-red-200" : "text-green-200",
       subtitleClass: isNegativeNetWorth ? "text-red-400" : "text-green-400",
-      borderClass: isNegativeNetWorth
-        ? "border-red-500/20 shadow-red-500/10"
-        : "border-green-500/20 shadow-green-500/10",
       cardClass: isNegativeNetWorth
-        ? "from-red-950/50 to-slate-800/50"
-        : "from-slate-800/50 to-slate-700/50",
+        ? "astra-card border-red-500/20"
+        : "astra-card border-green-500/20",
     },
     {
       title: "Monthly Income",
@@ -81,8 +95,7 @@ export default function WealthPage() {
       titleClass: "text-blue-300",
       valueClass: "text-blue-200",
       subtitleClass: "text-blue-400",
-      borderClass: "border-blue-500/20 shadow-blue-500/10",
-      cardClass: "from-slate-800/50 to-slate-700/50",
+      cardClass: "astra-card",
     },
     {
       title: "Monthly Expenses",
@@ -92,8 +105,7 @@ export default function WealthPage() {
       titleClass: "text-purple-300",
       valueClass: "text-purple-200",
       subtitleClass: "text-purple-400",
-      borderClass: "border-purple-500/20 shadow-purple-500/10",
-      cardClass: "from-slate-800/50 to-slate-700/50",
+      cardClass: "astra-card",
     },
     {
       title: "Waste Spending",
@@ -103,54 +115,16 @@ export default function WealthPage() {
       titleClass: "text-orange-300",
       valueClass: "text-orange-200",
       subtitleClass: "text-orange-400",
-      borderClass: "border-orange-500/20 shadow-orange-500/10",
-      cardClass: "from-slate-800/50 to-slate-700/50",
+      cardClass: "astra-card",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse pointer-events-none"></div>
-
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-xl animate-pulse pointer-events-none"></div>
-      <div
-        className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-xl animate-pulse pointer-events-none"
-        style={{ animationDelay: "2s" }}
-      ></div>
-      <div
-        className="absolute top-1/2 left-1/6 w-24 h-24 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-xl animate-pulse pointer-events-none"
-        style={{ animationDelay: "1s" }}
-      ></div>
-
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 border border-cyan-500/10 rounded-full animate-spin pointer-events-none"
-        style={{ animationDuration: "20s" }}
-      ></div>
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 border border-blue-500/10 rounded-full animate-spin pointer-events-none"
-        style={{ animationDuration: "15s", animationDirection: "reverse" }}
-      ></div>
-
-      {[...Array(15)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse opacity-40 pointer-events-none"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${2 + Math.random() * 2}s`,
-          }}
-        ></div>
-      ))}
-
-      <div className="relative z-10 p-6 space-y-6">
+    <div className="astra-page">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="text-3xl font-bold font-mono bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              💰 Wealth Dashboard
-            </h1>
-            <p className="text-slate-300 font-mono mt-1">Your complete financial command center</p>
+            <h1 className="astra-title">💰 Wealth Dashboard</h1>
+            <p className="astra-subtitle mt-1">Your complete financial command center</p>
           </div>
           <WealthFilters onChange={setFilter} />
         </div>
@@ -159,10 +133,7 @@ export default function WealthPage() {
           {summaryCards.map((card) => {
             const Icon = card.icon
             return (
-              <Card
-                key={card.title}
-                className={`bg-gradient-to-br ${card.cardClass} ${card.borderClass} shadow-2xl backdrop-blur-sm`}
-              >
+              <Card key={card.title} className={card.cardClass}>
                 <CardHeader className="pb-2">
                   <CardTitle className={`text-sm font-mono ${card.titleClass} flex items-center`}>
                     <Icon className="mr-2 h-4 w-4" />
@@ -172,8 +143,8 @@ export default function WealthPage() {
                 <CardContent>
                   {isLoading ? (
                     <>
-                      <Skeleton className="h-8 w-28 mb-2 bg-slate-900/50" />
-                      <Skeleton className="h-3 w-36 bg-slate-900/50" />
+                      <Skeleton className="h-8 w-28 mb-2" />
+                      <Skeleton className="h-3 w-36" />
                     </>
                   ) : (
                     <>
@@ -189,13 +160,13 @@ export default function WealthPage() {
           })}
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-fit mx-auto grid-cols-4 bg-slate-800/50 border-slate-600/50 backdrop-blur-sm">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as WealthTabValue)} className="space-y-6">
+          <TabsList className="astra-tabs grid w-fit mx-auto grid-cols-4">
             {WEALTH_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="font-mono data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+                className="astra-tab"
               >
                 {tab.label}
               </TabsTrigger>
@@ -223,7 +194,11 @@ export default function WealthPage() {
             isUpdatingBudget={isUpdatingBudget}
             isDeletingBudget={isDeletingBudget}
           />
-          <CategoriesTab categoryTotals={dashboard?.category_totals ?? []} isLoading={isLoading} />
+          <CategoriesTab
+            categoryTotals={dashboard?.category_totals ?? []}
+            incomeCategoryTotals={dashboard?.income_category_totals ?? []}
+            isLoading={isLoading}
+          />
           <TransactionsTab
             transactions={dashboard?.transactions ?? []}
             isLoading={isLoading}
@@ -235,7 +210,6 @@ export default function WealthPage() {
             isDeletingTransaction={isDeletingTransaction}
           />
         </Tabs>
-      </div>
     </div>
   )
 }
