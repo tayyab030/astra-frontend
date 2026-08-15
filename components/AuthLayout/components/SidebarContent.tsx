@@ -20,7 +20,6 @@ import {
     Heart,
     FileText,
     Bot,
-    Mail,
     BarChart3,
     Star,
     Settings,
@@ -41,7 +40,6 @@ const sidebarItems = [
     { id: "habits", label: "Habits", icon: Flame, href: ROUTES.APP.HABITS },
     { id: "notes", label: "Notes", icon: FileText, href: ROUTES.APP.NOTES },
     { id: "assistant", label: "Assistant", icon: Bot, href: ROUTES.APP.ASSISTANT },
-    { id: "communication", label: "Communication", icon: Mail, href: ROUTES.APP.COMMUNICATION },
     { id: "analytics", label: "Analytics", icon: BarChart3, href: ROUTES.APP.ANALYTICS },
     { id: "life-score", label: "Life Score", icon: Star, href: ROUTES.APP.LIFE_SCORE },
 ];

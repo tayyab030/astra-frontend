@@ -31,7 +31,6 @@ export const API_ENDPOINTS = {
     // TASKS: "/dashboard/tasks",
     // NOTES: "/dashboard/notes",
     // WEALTH: "/dashboard/wealth",
-    // COMMUNICATION: "/dashboard/communication",
   },
 
   // Tasks endpoints

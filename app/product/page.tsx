@@ -118,7 +118,6 @@ export default function ProductPage() {
                             { icon: "🏃", title: "Health & Wellness", desc: "Fitness tracking, nutrition, sleep optimization" },
                             { icon: "⚡", title: "Productivity Suite", desc: "Tasks, calendar, focus timer, goal tracking" },
                             { icon: "🧠", title: "Knowledge Base", desc: "Notes, journaling, book summaries, insights" },
-                            { icon: "📧", title: "Smart Communication", desc: "Email automation, smart alerts, summaries" },
                             { icon: "📊", title: "Life Analytics", desc: "Daily insights, weekly reports, life score" },
                             { icon: "🤖", title: "AI Assistant", desc: "Voice commands, smart suggestions, automation" },
                             { icon: "🔒", title: "Privacy First", desc: "End-to-end encryption, local data processing" },

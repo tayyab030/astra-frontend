@@ -4,8 +4,7 @@ export const LIFE_SCORE_WEIGHTS = [
   { name: "Productivity", maxScore: 25, weightLabel: "25%", color: "blue" },
   { name: "Health", maxScore: 25, weightLabel: "25%", color: "green" },
   { name: "Wealth", maxScore: 25, weightLabel: "25%", color: "yellow" },
-  { name: "Knowledge", maxScore: 15, weightLabel: "15%", color: "purple" },
-  { name: "Communication", maxScore: 10, weightLabel: "10%", color: "pink" },
+  { name: "Knowledge", maxScore: 25, weightLabel: "25%", color: "purple" },
 ] as const
 
 export interface WeightedCategory {

@@ -152,8 +152,7 @@ export default function SettingsPage() {
     productivity: 25,
     health: 25,
     wealth: 25,
-    knowledge: 15,
-    communication: 10,
+    knowledge: 25,
   })
 
   const {
@@ -772,7 +771,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <Label className="font-mono text-muted-foreground">Enable/Disable Modules</Label>
                   <div className="space-y-3">
-                    {["Tasks", "Wealth", "Health", "Notes", "Communication", "Analytics"].map((module) => (
+                    {["Tasks", "Wealth", "Health", "Notes", "Analytics"].map((module) => (
                       <div key={module} className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -802,11 +801,6 @@ export default function SettingsPage() {
                     {
                       name: "Google Calendar",
                       icon: Calendar,
-                      connected: true,
-                    },
-                    {
-                      name: "Gmail",
-                      icon: Mail,
                       connected: true,
                     },
                     {

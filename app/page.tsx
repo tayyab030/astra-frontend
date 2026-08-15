@@ -11,7 +11,6 @@ import {
   Heart,
   Calendar,
   BookOpen,
-  Mail,
   BarChart3,
   Zap,
   Star,
@@ -62,15 +61,6 @@ export default function HomePage() {
       description: "Organize notes, summaries & build your knowledge base",
       gradient: "from-purple-500 to-indigo-600",
       features: ["Smart Notes", "Book Summaries", "Knowledge Base", "AI Search"],
-    },
-    {
-      id: "communication",
-      icon: Mail,
-      title: "Communication",
-      description: "Smart email management with AI-powered insights",
-      gradient: "from-orange-500 to-amber-600",
-      features: ["Email Rules", "Smart Alerts", "Inbox Summaries", "Priority Detection"],
-      isPro: true,
     },
   ]
 

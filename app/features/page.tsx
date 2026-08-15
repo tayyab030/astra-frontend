@@ -10,7 +10,6 @@ import {
     Heart,
     CheckSquare,
     BookOpen,
-    Mail,
     BarChart3,
     Bot,
     Zap,
@@ -24,7 +23,6 @@ import {
     Sparkles,
     Activity,
     TrendingUp,
-    MessageSquare,
     Clock,
     Database,
     Mic,
@@ -166,27 +164,6 @@ export default function FeaturesPage() {
             title: "Smart Search",
             description: "AI-powered search across all your data",
             status: "beta",
-        },
-    ]
-
-    const communicationFeatures = [
-        {
-            icon: Mail,
-            title: "Email Rules",
-            description: "Auto-delete, mute, and smart notification management",
-            status: "pro",
-        },
-        {
-            icon: Zap,
-            title: "Smart Alerts",
-            description: "Priority-based alerts for important communications",
-            status: "pro",
-        },
-        {
-            icon: MessageSquare,
-            title: "Inbox Summaries",
-            description: "AI-generated email summaries and insights",
-            status: "pro",
         },
     ]
 
@@ -362,14 +339,13 @@ export default function FeaturesPage() {
                         Life OS Features
                     </h1>
                     <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-                        Your personal digital assistant that manages every aspect of life — Wealth, Health, Work, Knowledge,
-                        Communication & More.
+                        Your personal digital assistant that manages every aspect of life — Wealth, Health, Work, Knowledge & More.
                     </p>
                 </div>
 
                 {/* Feature Categories */}
                 <Tabs value={activeModule} onValueChange={setActiveModule} className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 mb-12">
+                    <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-slate-800/50 backdrop-blur-sm border border-cyan-500/20 mb-12">
                         <TabsTrigger
                             value="core"
                             className="font-mono text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
@@ -399,12 +375,6 @@ export default function FeaturesPage() {
                             className="font-mono text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
                         >
                             Knowledge
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="communication"
-                            className="font-mono text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300"
-                        >
-                            Comm
                         </TabsTrigger>
                         <TabsTrigger
                             value="analytics"
@@ -475,18 +445,6 @@ export default function FeaturesPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {knowledgeFeatures.map((feature, index) => (
-                                <FeatureCard key={index} feature={feature} />
-                            ))}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="communication" className="space-y-6">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-cyan-400 mb-2">Communication (Pro)</h2>
-                            <p className="text-slate-300">Smart email management and communication tools</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {communicationFeatures.map((feature, index) => (
                                 <FeatureCard key={index} feature={feature} />
                             ))}
                         </div>

@@ -53,11 +53,6 @@ const colorMap = {
     bg: "astra-panel",
     border: "border-violet-500/30",
   },
-  pink: {
-    icon: "text-pink-500",
-    bg: "astra-panel",
-    border: "border-pink-500/30",
-  },
 } as const
 
 const categoryIcons = {
@@ -65,7 +60,6 @@ const categoryIcons = {
   Health: CheckCircle,
   Wealth: Trophy,
   Knowledge: Star,
-  Communication: Brain,
 } as const
 
 function levelIcon(key: string) {
@@ -126,7 +120,7 @@ export function LifeScoreContent() {
         <div>
           <h1 className="astra-title text-4xl">Life Score Dashboard</h1>
           <p className="astra-subtitle mt-2">
-            Holistic balance across productivity, health, wealth, knowledge, and communication
+            Holistic balance across productivity, health, wealth, and knowledge
           </p>
         </div>
         <div className="flex gap-2">

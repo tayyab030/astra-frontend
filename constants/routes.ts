@@ -16,7 +16,6 @@ export const ROUTES = {
     HABITS: "/app/habits",
     NOTES: "/app/notes",
     ASSISTANT: "/app/assistant",
-    COMMUNICATION: "/app/communication",
     ANALYTICS: "/app/analytics",
     LIFE_SCORE: "/app/life-score",
     SETTINGS: "/app/settings",

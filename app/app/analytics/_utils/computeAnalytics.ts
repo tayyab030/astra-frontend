@@ -321,17 +321,6 @@ export function computeAnalytics(input: {
       Math.min(100, notesInPrev * notesFactor) * 0.4
   )
 
-  const relationshipsScore = clampScore(
-    categoryGoalProgress(goals.goals, "relationships") ||
-      (habitsToday
-        ? habitsToday.summary.requiredTotal
-          ? (habitsToday.summary.requiredDone / habitsToday.summary.requiredTotal) * 100
-          : habitsToday.summary.total
-            ? (habitsToday.summary.done / habitsToday.summary.total) * 100
-            : 50
-        : 50)
-  )
-
   const categories: LifeScoreCategory[] = [
     {
       name: "Productivity",
@@ -353,16 +342,11 @@ export function computeAnalytics(input: {
       score: knowledgeScore,
       trend: trendFrom(knowledgeScore, prevKnowledgeScore),
     },
-    {
-      name: "Communication",
-      score: relationshipsScore,
-      trend: "flat",
-    },
   ]
 
   const lifeScoreOverall = clampScore(avg(categories.map((category) => category.score)))
   const previousLifeScoreOverall = clampScore(
-    avg([prevProdScore, prevHealthScore, prevWealthScore, prevKnowledgeScore, relationshipsScore])
+    avg([prevProdScore, prevHealthScore, prevWealthScore, prevKnowledgeScore])
   )
 
   const periodTasks = allTasks.filter((task) => inRange(task.due_date, window.start, window.end))
