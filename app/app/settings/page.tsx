@@ -46,7 +46,6 @@ import {
   fetchCurrentUser,
   getUserErrorMessage,
   updateCurrentUser,
-  type AuthUser,
 } from "@/lib/api/user"
 import { getCountryByCode } from "@/lib/countries"
 import { USER_GENDER_OPTIONS, type UserGender } from "@/lib/gender"
@@ -62,6 +61,24 @@ import {
   isAppTheme,
   type AppTheme,
 } from "@/lib/theme"
+import {
+  AI_VOICE_OPTIONS,
+  DEFAULT_AI_VOICE,
+  isAiVoice,
+  type AiVoice,
+} from "@/lib/ai-voice"
+import {
+  AI_DATA_SCOPE_OPTIONS,
+  AI_PERSONALITY_OPTIONS,
+  DEFAULT_AI_DATA_SCOPE,
+  DEFAULT_AI_INSIGHTS,
+  DEFAULT_AI_PERSONALITY,
+  DEFAULT_AI_VOICE_MODE,
+  isAiDataScope,
+  isAiPersonality,
+  type AiDataScope,
+  type AiPersonality,
+} from "@/lib/ai-settings"
 
 const ACCENT_OPTIONS = [
   {
@@ -117,6 +134,11 @@ export default function SettingsPage() {
   const [profileCurrency, setProfileCurrency] = useState(currency)
   const [timezone, setTimezone] = useState("UTC")
   const [themePreference, setThemePreference] = useState<UserTheme>(DEFAULT_THEME)
+  const [aiVoice, setAiVoice] = useState<AiVoice>(DEFAULT_AI_VOICE)
+  const [aiVoiceMode, setAiVoiceMode] = useState(DEFAULT_AI_VOICE_MODE)
+  const [aiPersonality, setAiPersonality] = useState<AiPersonality>(DEFAULT_AI_PERSONALITY)
+  const [aiInsights, setAiInsights] = useState(DEFAULT_AI_INSIGHTS)
+  const [aiDataScope, setAiDataScope] = useState<AiDataScope>(DEFAULT_AI_DATA_SCOPE)
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -132,13 +154,6 @@ export default function SettingsPage() {
     wealth: 25,
     knowledge: 15,
     communication: 10,
-  })
-
-  const [aiSettings, setAiSettings] = useState({
-    voiceMode: false,
-    personality: "professional",
-    insights: true,
-    dataScope: "all",
   })
 
   const {
@@ -162,6 +177,27 @@ export default function SettingsPage() {
     const nextTheme = isAppTheme(profile.theme) ? profile.theme : DEFAULT_THEME
     setThemePreference(nextTheme)
     setTheme(nextTheme)
+    setAiVoice(isAiVoice(profile.ai_voice) ? profile.ai_voice : DEFAULT_AI_VOICE)
+    setAiVoiceMode(
+      typeof profile.ai_voice_mode === "boolean"
+        ? profile.ai_voice_mode
+        : DEFAULT_AI_VOICE_MODE
+    )
+    setAiPersonality(
+      isAiPersonality(profile.ai_personality)
+        ? profile.ai_personality
+        : DEFAULT_AI_PERSONALITY
+    )
+    setAiInsights(
+      typeof profile.ai_insights === "boolean"
+        ? profile.ai_insights
+        : DEFAULT_AI_INSIGHTS
+    )
+    setAiDataScope(
+      isAiDataScope(profile.ai_data_scope)
+        ? profile.ai_data_scope
+        : DEFAULT_AI_DATA_SCOPE
+    )
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
   }, [profile, dispatch, setTheme])
@@ -208,6 +244,39 @@ export default function SettingsPage() {
     },
   })
 
+  const { mutate: saveAiSettings, isPending: isSavingAiSettings } = useMutation({
+    mutationFn: updateCurrentUser,
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+      setAiVoice(isAiVoice(user.ai_voice) ? user.ai_voice : DEFAULT_AI_VOICE)
+      setAiVoiceMode(
+        typeof user.ai_voice_mode === "boolean"
+          ? user.ai_voice_mode
+          : DEFAULT_AI_VOICE_MODE
+      )
+      setAiPersonality(
+        isAiPersonality(user.ai_personality)
+          ? user.ai_personality
+          : DEFAULT_AI_PERSONALITY
+      )
+      setAiInsights(
+        typeof user.ai_insights === "boolean"
+          ? user.ai_insights
+          : DEFAULT_AI_INSIGHTS
+      )
+      setAiDataScope(
+        isAiDataScope(user.ai_data_scope)
+          ? user.ai_data_scope
+          : DEFAULT_AI_DATA_SCOPE
+      )
+      queryClient.setQueryData(["auth", "me"], user)
+      toast.success("AI settings updated")
+    },
+    onError: (error) => {
+      toast.error(getUserErrorMessage(error, "Failed to update AI settings"))
+    },
+  })
+
   const handleSaveProfile = () => {
     if (!firstName.trim() || !lastName.trim()) {
       toast.error("First name and last name are required")
@@ -238,6 +307,36 @@ export default function SettingsPage() {
     setThemePreference(nextTheme)
     setTheme(nextTheme)
     saveTheme({ theme: nextTheme })
+  }
+
+  const handleAiVoiceChange = (nextVoice: string) => {
+    if (!isAiVoice(nextVoice) || nextVoice === aiVoice || isSavingAiSettings) return
+    setAiVoice(nextVoice)
+    saveAiSettings({ ai_voice: nextVoice })
+  }
+
+  const handleAiVoiceModeChange = (checked: boolean) => {
+    if (checked === aiVoiceMode || isSavingAiSettings) return
+    setAiVoiceMode(checked)
+    saveAiSettings({ ai_voice_mode: checked })
+  }
+
+  const handleAiPersonalityChange = (value: string) => {
+    if (!isAiPersonality(value) || value === aiPersonality || isSavingAiSettings) return
+    setAiPersonality(value)
+    saveAiSettings({ ai_personality: value })
+  }
+
+  const handleAiInsightsChange = (checked: boolean) => {
+    if (checked === aiInsights || isSavingAiSettings) return
+    setAiInsights(checked)
+    saveAiSettings({ ai_insights: checked })
+  }
+
+  const handleAiDataScopeChange = (value: string) => {
+    if (!isAiDataScope(value) || value === aiDataScope || isSavingAiSettings) return
+    setAiDataScope(value)
+    saveAiSettings({ ai_data_scope: value })
   }
 
   return (
@@ -469,7 +568,7 @@ export default function SettingsPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                         <Label htmlFor="currency" className="font-mono text-muted-foreground">
                           Currency Format
                         </Label>
@@ -989,14 +1088,42 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="font-mono text-muted-foreground">AI speaker</Label>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      Choose who speaks when Astra replies with voice
+                    </p>
+                    <Select
+                      value={aiVoice}
+                      onValueChange={handleAiVoiceChange}
+                      disabled={isProfileLoading || isSavingAiSettings}
+                    >
+                      <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
+                        <SelectValue placeholder="Select a speaker" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border">
+                        {AI_VOICE_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="font-mono"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="font-mono text-muted-foreground">Voice Mode</Label>
                       <p className="text-sm text-muted-foreground font-mono">Enable voice input and output</p>
                     </div>
                     <Switch
-                      checked={aiSettings.voiceMode}
-                      onCheckedChange={(checked) => setAiSettings((prev) => ({ ...prev, voiceMode: checked }))}
+                      checked={aiVoiceMode}
+                      onCheckedChange={handleAiVoiceModeChange}
+                      disabled={isProfileLoading || isSavingAiSettings}
                       className="font-mono"
                     />
                   </div>
@@ -1004,22 +1131,23 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">AI Personality</Label>
                     <Select
-                      value={aiSettings.personality}
-                      onValueChange={(value) => setAiSettings((prev) => ({ ...prev, personality: value }))}
+                      value={aiPersonality}
+                      onValueChange={handleAiPersonalityChange}
+                      disabled={isProfileLoading || isSavingAiSettings}
                     >
                       <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-popover border-border">
-                        <SelectItem value="professional" className="font-mono">
-                          Professional
-                        </SelectItem>
-                        <SelectItem value="casual" className="font-mono">
-                          Casual & Friendly
-                        </SelectItem>
-                        <SelectItem value="motivational" className="font-mono">
-                          Motivational Coach
-                        </SelectItem>
+                        {AI_PERSONALITY_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="font-mono"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1030,8 +1158,9 @@ export default function SettingsPage() {
                       <p className="text-sm text-muted-foreground font-mono">AI-powered suggestions and analysis</p>
                     </div>
                     <Switch
-                      checked={aiSettings.insights}
-                      onCheckedChange={(checked) => setAiSettings((prev) => ({ ...prev, insights: checked }))}
+                      checked={aiInsights}
+                      onCheckedChange={handleAiInsightsChange}
+                      disabled={isProfileLoading || isSavingAiSettings}
                       className="font-mono"
                     />
                   </div>
@@ -1039,22 +1168,23 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">Data Analysis Scope</Label>
                     <Select
-                      value={aiSettings.dataScope}
-                      onValueChange={(value) => setAiSettings((prev) => ({ ...prev, dataScope: value }))}
+                      value={aiDataScope}
+                      onValueChange={handleAiDataScopeChange}
+                      disabled={isProfileLoading || isSavingAiSettings}
                     >
                       <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-popover border-border">
-                        <SelectItem value="tasks" className="font-mono">
-                          Tasks Only
-                        </SelectItem>
-                        <SelectItem value="productivity" className="font-mono">
-                          Productivity Modules
-                        </SelectItem>
-                        <SelectItem value="all" className="font-mono">
-                          All Modules
-                        </SelectItem>
+                        {AI_DATA_SCOPE_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                            className="font-mono"
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

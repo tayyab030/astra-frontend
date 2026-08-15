@@ -10,6 +10,7 @@ import { ThemeAmbientFx } from "@/components/theme/ThemeAmbientFx";
 import { Menu } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { TimeTrackProvider, useTimeTrackContext } from "@/app/app/time-track/_context/TimeTrackProvider";
@@ -57,7 +58,9 @@ const AuthLayoutShell = ({
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <AstraLogo className="h-8 w-auto" />
+            <Link href={ROUTES.APP.DASHBOARD} aria-label="Go to home" className="inline-flex">
+              <AstraLogo className="h-8 w-auto" />
+            </Link>
           </div>
 
           <Avatar className="h-8 w-8 ring-2 ring-ring/50">

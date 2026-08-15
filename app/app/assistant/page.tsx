@@ -23,6 +23,9 @@ import {
   type AssistantConversation,
 } from "@/lib/api/assistant"
 import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
+import { fetchCurrentUser } from "@/lib/api/user"
+import { DEFAULT_AI_VOICE_MODE } from "@/lib/ai-settings"
+import { useQuery } from "@tanstack/react-query"
 
 type Message = {
   id: string
@@ -70,7 +73,7 @@ export default function AssistantPage() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
-  const [speakReplies, setSpeakReplies] = useState(true)
+  const [speakReplies, setSpeakReplies] = useState(DEFAULT_AI_VOICE_MODE)
   const [error, setError] = useState<string | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
   const [conversations, setConversations] = useState<AssistantConversation[]>([])
@@ -78,6 +81,18 @@ export default function AssistantPage() {
   const [activeTitle, setActiveTitle] = useState("New chat")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [historyBusy, setHistoryBusy] = useState(false)
+
+  const { data: me } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: fetchCurrentUser,
+  })
+
+  useEffect(() => {
+    if (!me) return
+    setSpeakReplies(
+      typeof me.ai_voice_mode === "boolean" ? me.ai_voice_mode : DEFAULT_AI_VOICE_MODE
+    )
+  }, [me])
 
   const conversationIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)

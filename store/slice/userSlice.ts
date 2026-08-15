@@ -12,6 +12,11 @@ export interface User {
   country?: string | null;
   timezone?: string;
   theme?: "light" | "dark" | "neon";
+  ai_voice?: "austin" | "daniel" | "troy" | "autumn" | "diana" | "hannah";
+  ai_voice_mode?: boolean;
+  ai_personality?: "professional" | "casual" | "motivational";
+  ai_insights?: boolean;
+  ai_data_scope?: "tasks" | "productivity" | "all";
 }
 
 interface UserState {

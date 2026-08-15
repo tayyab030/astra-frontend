@@ -1,5 +1,7 @@
 import { authApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
+import type { AiVoice } from "@/lib/ai-voice"
+import type { AiDataScope, AiPersonality } from "@/lib/ai-settings"
 
 const { AUTH } = API_ENDPOINTS
 
@@ -14,6 +16,11 @@ export interface AuthUser {
   country: string | null
   timezone: string
   theme: "light" | "dark" | "neon"
+  ai_voice: AiVoice
+  ai_voice_mode: boolean
+  ai_personality: AiPersonality
+  ai_insights: boolean
+  ai_data_scope: AiDataScope
 }
 
 export interface UpdateProfilePayload {
@@ -23,6 +30,11 @@ export interface UpdateProfilePayload {
   currency?: string
   timezone?: string
   theme?: "light" | "dark" | "neon"
+  ai_voice?: AiVoice
+  ai_voice_mode?: boolean
+  ai_personality?: AiPersonality
+  ai_insights?: boolean
+  ai_data_scope?: AiDataScope
 }
 
 export function getUserErrorMessage(error: unknown, fallback: string) {
