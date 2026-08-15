@@ -1,11 +1,21 @@
 "use client"
 
 import { useEffect } from "react"
+import dynamic from "next/dynamic"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useNotes } from "../_hooks/useNotes"
-import { RichTextEditor } from "./RichTextEditor"
 import type { Note } from "../_types/notes.types"
+
+const RichTextEditor = dynamic(
+  () => import("./RichTextEditor").then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[200px] rounded-md border border-border bg-muted/20 animate-pulse" />
+    ),
+  }
+)
 
 interface NoteEditorFullscreenProps {
   note: Note | null

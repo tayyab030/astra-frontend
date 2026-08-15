@@ -35,9 +35,18 @@ import {
   NOTE_TYPE_OPTIONS,
   TYPE_SPECIFIC_FIELDS,
 } from "./constants"
-import { RichTextEditor } from "./RichTextEditor"
+import dynamic from "next/dynamic"
 import { Textarea } from "@/components/ui/textarea"
 
+const RichTextEditor = dynamic(
+  () => import("./RichTextEditor").then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[12rem] rounded-md border border-border bg-muted/20 animate-pulse" />
+    ),
+  }
+)
 function noteToFormValues(note: Note): NoteFormValues {
   return {
     title: note.title,
