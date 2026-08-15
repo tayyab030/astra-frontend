@@ -1,4 +1,4 @@
-import { authApi } from "./simpleApi"
+import { authApi, publicApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
 import type { AppTheme } from "@/lib/theme"
 import type { AiVoice } from "@/lib/ai-voice"
@@ -70,5 +70,30 @@ export async function fetchCurrentUser() {
 
 export async function updateCurrentUser(payload: UpdateProfilePayload) {
   const response = await authApi.patch<AuthUser>(AUTH.ME, payload)
+  return response.data
+}
+
+export async function requestAccountDeletion() {
+  const response = await authApi.post<{
+    message: string
+    sent: boolean
+    remaining_time_seconds?: number
+  }>(AUTH.REQUEST_DELETE_ACCOUNT)
+  return response.data
+}
+
+export async function fetchAccountDeleteStatus(token: string) {
+  const response = await publicApi.get<{
+    email: string
+    remaining_time_seconds: number
+  }>(AUTH.ACCOUNT_DELETE_STATUS(token))
+  return response.data
+}
+
+export async function confirmAccountDeletion(token: string) {
+  const response = await publicApi.post<{
+    message: string
+    email: string
+  }>(AUTH.CONFIRM_DELETE_ACCOUNT, { token })
   return response.data
 }

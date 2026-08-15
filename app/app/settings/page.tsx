@@ -38,6 +38,16 @@ import {
   Settings2,
   Plus,
 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import CurrencySelect from "@/components/common/CurrencySelect"
 import TimezoneSelect from "@/components/common/TimezoneSelect"
 import { TimePicker } from "@/components/ui/time-picker"
@@ -45,6 +55,7 @@ import { useCurrency } from "@/hooks/useCurrency"
 import {
   fetchCurrentUser,
   getUserErrorMessage,
+  requestAccountDeletion,
   updateCurrentUser,
 } from "@/lib/api/user"
 import { getCountryByCode } from "@/lib/countries"
@@ -180,6 +191,7 @@ export default function SettingsPage() {
     digest: "daily",
   })
   const [quietHours, setQuietHours] = useState({ start: "22:00", end: "08:00" })
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false)
 
   const [moduleWeights, setModuleWeights] = useState<ModuleWeights>({
     ...DEFAULT_MODULE_WEIGHTS,
@@ -344,6 +356,33 @@ export default function SettingsPage() {
         setModuleEnabled(modules.enabled)
       }
       toast.error(getUserErrorMessage(error, "Failed to update module settings"))
+    },
+  })
+
+  const { mutate: requestDeleteAccount, isPending: isRequestingDelete } = useMutation({
+    mutationFn: requestAccountDeletion,
+    onSuccess: (data) => {
+      setShowDeleteAccountDialog(false)
+      toast.success(data.message)
+    },
+    onError: (error) => {
+      const responseData = (error as { response?: { data?: Record<string, unknown> } })
+        ?.response?.data
+      const remaining =
+        typeof responseData?.remaining_time_seconds === "number"
+          ? responseData.remaining_time_seconds
+          : null
+      const mins =
+        remaining !== null ? Math.max(1, Math.ceil(remaining / 60)) : null
+      const base = getUserErrorMessage(
+        error,
+        "Failed to send delete confirmation email"
+      )
+      toast.error(
+        mins
+          ? `${base} Try again in about ${mins} min.`
+          : base
+      )
     },
   })
 
@@ -1007,7 +1046,11 @@ export default function SettingsPage() {
                         Permanently delete your account and all data
                       </p>
                     </div>
-                    <Button variant="destructive" className="font-mono">
+                    <Button
+                      variant="destructive"
+                      className="font-mono"
+                      onClick={() => setShowDeleteAccountDialog(true)}
+                    >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </Button>
@@ -1015,6 +1058,33 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    To confirm it&apos;s you, we&apos;ll send a confirmation link to{" "}
+                    <span className="font-medium text-foreground">{email || "your inbox"}</span>.
+                    The link expires in 20 minutes. Use it to permanently delete your account and
+                    all related data. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isRequestingDelete}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isRequestingDelete}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      requestDeleteAccount()
+                    }}
+                  >
+                    {isRequestingDelete ? "Sending…" : "Send confirmation email"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </TabsContent>
 
           {/* Billing */}
