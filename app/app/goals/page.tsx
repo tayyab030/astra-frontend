@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,7 +33,11 @@ export default function GoalsPage() {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
 
-  useOpenActionParam("add", isAddGoalOpen, setIsAddGoalOpen)
+  const openAddGoal = useCallback(() => {
+    setIsAddGoalOpen(true)
+  }, [])
+
+  useOpenActionParam("add", openAddGoal)
 
   const {
     dashboard,

@@ -24,7 +24,7 @@ export function TimerTab({ timeTrack }: TimerTabProps) {
     setTaskPickerOpen(open)
   }
 
-  useOpenActionParam("add-task", dialogOpen, handleDialogOpenChange)
+  useOpenActionParam("add-task", () => handleDialogOpenChange(true))
 
   return (
     <div className="space-y-4 pb-6">

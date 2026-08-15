@@ -145,10 +145,7 @@ export function TransactionsTab({
     setShowDialog(true)
   }
 
-  useOpenActionParam("add", showDialog, (next) => {
-    if (next) openAddDialog()
-    else setShowDialog(false)
-  })
+  useOpenActionParam("add", openAddDialog)
 
   const openEditDialog = (transaction: WealthTransaction) => {
     setOpenMenuId(null)

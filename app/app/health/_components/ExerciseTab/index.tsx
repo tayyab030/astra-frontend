@@ -108,7 +108,7 @@ export function ExerciseTab() {
   const { workouts } = useHealthContext()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  useOpenActionParam("log-workout", dialogOpen, setDialogOpen)
+  useOpenActionParam("log-workout", () => setDialogOpen(true))
 
   if (workouts.length === 0) {
     return (

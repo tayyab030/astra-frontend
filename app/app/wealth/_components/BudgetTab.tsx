@@ -125,7 +125,7 @@ export function BudgetTab({
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
-  useOpenActionParam("set-limit", showAddDialog, setShowAddDialog)
+  useOpenActionParam("set-limit", () => setShowAddDialog(true))
 
   const addForm = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),

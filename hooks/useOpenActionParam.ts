@@ -4,44 +4,32 @@ import { useEffect, useRef } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 /**
- * Opens a dialog when `?action=` matches. Clears the action query when the
- * dialog closes (keeps other params like `tab`).
+ * Opens a feature flow when `?action=` matches, then clears the action param
+ * so a refresh does not re-trigger it. Other params (e.g. tab) are preserved.
  */
 export function useOpenActionParam(
   expectedAction: string,
-  open: boolean,
-  onOpenChange: (open: boolean) => void,
+  onOpen: () => void,
   enabled = true
 ) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const onOpenChangeRef = useRef(onOpenChange)
-  onOpenChangeRef.current = onOpenChange
-  const wasOpenRef = useRef(false)
+  const handledRef = useRef(false)
+  const onOpenRef = useRef(onOpen)
+  onOpenRef.current = onOpen
 
   useEffect(() => {
-    if (!enabled) return
-    if (searchParams.get("action") !== expectedAction) return
-    if (open) return
-    onOpenChangeRef.current(true)
-  }, [enabled, expectedAction, open, searchParams])
+    if (!enabled || handledRef.current) return
+    const action = searchParams.get("action")
+    if (action !== expectedAction) return
 
-  useEffect(() => {
-    if (open) {
-      wasOpenRef.current = true
-      return
-    }
-
-    if (!wasOpenRef.current) return
-    wasOpenRef.current = false
-
-    if (!enabled) return
-    if (searchParams.get("action") !== expectedAction) return
+    handledRef.current = true
+    onOpenRef.current()
 
     const params = new URLSearchParams(searchParams.toString())
     params.delete("action")
     const query = params.toString()
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
-  }, [open, enabled, expectedAction, pathname, router, searchParams])
+  }, [enabled, expectedAction, pathname, router, searchParams])
 }

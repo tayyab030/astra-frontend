@@ -46,10 +46,7 @@ export function NotesContent() {
     setFormOpen(true)
   }
 
-  useOpenActionParam("create", formOpen, (next) => {
-    if (next) openCreate()
-    else setFormOpen(false)
-  })
+  useOpenActionParam("create", openCreate)
 
   const openEdit = (noteId: string) => {
     const note = notes.find((n) => n.id === noteId)

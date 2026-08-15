@@ -205,10 +205,7 @@ const MyTasks = ({
     setIsFormOpen(true)
   }, [])
 
-  useOpenActionParam("create", isFormOpen, (next) => {
-    if (next) openCreate()
-    else setIsFormOpen(false)
-  })
+  useOpenActionParam("create", openCreate)
 
   const openEdit = (task: TaskItem) => {
     setEditingTask(task)

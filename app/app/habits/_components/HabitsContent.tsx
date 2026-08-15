@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useOpenActionParam } from "@/hooks/useOpenActionParam"
 import {
   AlertCircle,
@@ -627,7 +627,11 @@ export function HabitsContent() {
   const [activeTab, setActiveTab] = useState<HabitsTab>("habits")
   const [createMode, setCreateMode] = useState<HabitCreateMode>("single")
 
-  useOpenActionParam("add", dialogOpen, setDialogOpen)
+  const openAddHabit = useCallback(() => {
+    setDialogOpen(true)
+  }, [])
+
+  useOpenActionParam("add", openAddHabit)
   const [habitName, setHabitName] = useState("")
   const [packName, setPackName] = useState("")
   const [packItems, setPackItems] = useState<HabitPackItemDraft[]>([
