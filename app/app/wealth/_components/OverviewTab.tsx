@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TabsContent } from "@/components/ui/tabs"
 import { BarChart3, Brain, PieChart } from "lucide-react"
+import { InsightHorizonBadge } from "@/components/insights/InsightHorizonBadge"
 import { useCurrency } from "@/hooks/useCurrency"
+import { useAiInsight } from "@/hooks/useAiInsight"
 import type { WealthCategoryTotal, WealthDashboard, WealthTransaction } from "@/lib/api/wealth"
 import { ExpenseCategoriesChart } from "./ExpenseCategoriesChart"
 import { SpendingTrendChart } from "./SpendingTrendChart"
-import { getAiInsights } from "./constants"
 
 interface OverviewTabProps {
   monthlyIncome: number
@@ -32,7 +33,29 @@ export function OverviewTab({
   isLoading,
 }: OverviewTabProps) {
   const { formatCurrency } = useCurrency()
-  const aiInsights = getAiInsights(formatCurrency)
+
+  const insightContext = {
+    monthlyIncome,
+    monthlyExpenses,
+    periodNet,
+    wasteSpending,
+    transactionCount: transactions.length,
+    categoryTotals: categoryTotals.slice(0, 8).map((c) => ({
+      category: c.value,
+      label: c.label,
+      total: c.total,
+    })),
+    filter,
+  }
+
+  const {
+    data: insightData,
+    hasInsight,
+    isLoading: insightLoading,
+    enabled: insightsEnabled,
+  } = useAiInsight("wealth", insightContext, { enabled: !isLoading })
+
+  const showInsights = insightsEnabled && (hasInsight || insightLoading)
 
   return (
     <TabsContent value="overview" className="space-y-6">
@@ -86,19 +109,27 @@ export function OverviewTab({
             ) : (
               <>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-400 font-mono">{formatCurrency(monthlyIncome)}</p>
+                  <p className="text-2xl font-bold text-green-400 font-mono">
+                    {formatCurrency(monthlyIncome)}
+                  </p>
                   <p className="text-sm text-slate-400 font-mono">Total Income</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-red-400 font-mono">{formatCurrency(monthlyExpenses)}</p>
+                  <p className="text-2xl font-bold text-red-400 font-mono">
+                    {formatCurrency(monthlyExpenses)}
+                  </p>
                   <p className="text-sm text-slate-400 font-mono">Total Expenses</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-400 font-mono">{formatCurrency(periodNet)}</p>
+                  <p className="text-2xl font-bold text-blue-400 font-mono">
+                    {formatCurrency(periodNet)}
+                  </p>
                   <p className="text-sm text-slate-400 font-mono">Period Net</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-400 font-mono">{formatCurrency(wasteSpending)}</p>
+                  <p className="text-2xl font-bold text-orange-400 font-mono">
+                    {formatCurrency(wasteSpending)}
+                  </p>
                   <p className="text-sm text-slate-400 font-mono">Waste Spending</p>
                 </div>
               </>
@@ -107,36 +138,46 @@ export function OverviewTab({
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border-cyan-500/20 shadow-2xl shadow-cyan-500/10 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="font-mono flex items-center">
-            <Brain className="mr-2 h-5 w-5 text-cyan-400" />
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              AI Financial Insights
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {aiInsights.map((insight, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg border backdrop-blur-sm ${
-                  insight.type === "success"
-                    ? "bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30"
-                    : insight.type === "warning"
-                      ? "bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30"
-                      : insight.type === "tip"
-                        ? "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/30"
-                        : "bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30"
-                }`}
-              >
-                <p className="text-sm font-mono text-slate-300">{insight.message}</p>
+      {showInsights ? (
+        <Card className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border-cyan-500/20 shadow-2xl shadow-cyan-500/10 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="font-mono flex items-center">
+              <Brain className="mr-2 h-5 w-5 text-cyan-400" />
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                AI Financial Insights
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {insightLoading && !hasInsight ? (
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            ) : (
+              <div className="space-y-3">
+                {(insightData?.items ?? []).map((insight, index) => (
+                  <div
+                    key={`${insight.message}-${index}`}
+                    className={`p-3 rounded-lg border backdrop-blur-sm space-y-1.5 ${
+                      insight.type === "success"
+                        ? "bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30"
+                        : insight.type === "warning"
+                          ? "bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30"
+                          : insight.type === "tip"
+                            ? "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/30"
+                            : "bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30"
+                    }`}
+                  >
+                    <InsightHorizonBadge horizon={insight.horizon} />
+                    <p className="text-sm font-mono text-slate-300">{insight.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
     </TabsContent>
   )
 }

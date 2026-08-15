@@ -21,6 +21,8 @@ import {
 import { DashboardPageSkeleton } from "@/components/skeletons"
 import { ROUTES } from "@/constants/routes"
 import { useCurrency } from "@/hooks/useCurrency"
+import { useAiInsight } from "@/hooks/useAiInsight"
+import { InsightHorizonBadge } from "@/components/insights/InsightHorizonBadge"
 import { useAppSelector } from "@/store/hooks"
 import {
   CheckSquare,
@@ -34,6 +36,7 @@ import {
 import { useDailyQuote } from "../_hooks/useDailyQuote"
 import { useDashboard } from "../_hooks/useDashboard"
 import { QuickActions } from "./QuickActions"
+import type { DashboardView } from "../_utils/computeDashboard"
 
 const expenseChartConfig = {
   value: { label: "Spent", color: "hsl(var(--primary))" },
@@ -54,11 +57,43 @@ function formatFocusHours(hours: number) {
   return `${Math.round(hours)}h`
 }
 
+function buildDashboardInsightContext(dashboard: DashboardView) {
+  return {
+    lifeScoreOverall: dashboard.lifeScoreOverall,
+    tasksDueToday: dashboard.tasksDueToday,
+    tasksCompletedToday: dashboard.tasksCompletedToday,
+    spendingToday: dashboard.spendingToday,
+    budgetToday: dashboard.budgetToday,
+    waterGlasses: dashboard.waterGlasses,
+    waterGoal: dashboard.waterGoal,
+    waterProgress: dashboard.waterProgress,
+    focusHours: dashboard.focusHours,
+    sessionCount: dashboard.sessionCount,
+    topHabitStreaks: dashboard.habitStreaks.slice(0, 5).map((h) => ({
+      name: h.name,
+      streak: h.streak,
+      completed: h.completed,
+    })),
+    expenseCategories: dashboard.expenseDistribution.slice(0, 5).map((s) => ({
+      category: s.category,
+      value: s.value,
+    })),
+  }
+}
+
 export function DashboardContent() {
   const { formatCurrency } = useCurrency()
   const user = useAppSelector((state) => state.user.user)
   const { dashboard, isLoading, isError, refetch } = useDashboard()
   const { quote } = useDailyQuote()
+
+  const insightContext = dashboard ? buildDashboardInsightContext(dashboard) : undefined
+  const {
+    data: insightData,
+    hasInsight,
+    isLoading: insightLoading,
+    enabled: insightsEnabled,
+  } = useAiInsight("dashboard", insightContext, { enabled: Boolean(dashboard) })
 
   const firstName = user?.first_name?.trim() || user?.username || "there"
   const greeting = getGreeting(new Date().getHours())
@@ -81,6 +116,7 @@ export function DashboardContent() {
   }
 
   const maxHabitStreak = Math.max(...dashboard.habitStreaks.map((h) => h.streak), 1)
+  const showInsights = insightsEnabled && (hasInsight || insightLoading)
 
   return (
     <div className="astra-page">
@@ -272,33 +308,38 @@ export function DashboardContent() {
         </Card>
       </div>
 
-      <Card className="astra-card">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Zap className="mr-2 h-5 w-5 text-primary" />
-            <span className="text-primary">Smart Insights</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="p-3 astra-panel">
-              <p className="text-sm">
-                🎉 You spent 20% less this week than last week!
-              </p>
-            </div>
-            <div className="p-3 astra-panel">
-              <p className="text-sm">
-                🔥 You&apos;ve kept a 10-day streak on workouts—keep going!
-              </p>
-            </div>
-            <div className="p-3 astra-panel">
-              <p className="text-sm">
-                ⚠️ 3 tasks are overdue. Suggest rescheduling?
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {showInsights ? (
+        <Card className="astra-card">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Zap className="mr-2 h-5 w-5 text-primary" />
+              <span className="text-primary">Smart Insights</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {insightLoading && !hasInsight ? (
+              <div className="space-y-3">
+                <div className="h-12 rounded-lg astra-panel animate-pulse" />
+                <div className="h-12 rounded-lg astra-panel animate-pulse" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(insightData?.items ?? []).map((item, index) => (
+                  <div key={`${item.message}-${index}`} className="p-3 astra-panel space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <InsightHorizonBadge horizon={item.horizon} />
+                      {item.title ? (
+                        <span className="text-xs font-medium text-primary">{item.title}</span>
+                      ) : null}
+                    </div>
+                    <p className="text-sm">{item.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <QuickActions />
     </div>

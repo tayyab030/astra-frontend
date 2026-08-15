@@ -1,11 +1,5 @@
 import type { ChartConfig } from "@/components/ui/chart"
 
-export const AI_HABIT_INSIGHTS = [
-  "🔥 Your morning checklist is your strongest streak — protect the first 30 minutes of the day.",
-  "💡 Low-priority habits are slipping. Pair them right after a high-priority item.",
-  "📈 At your current pace, a 21-day streak on your top habit is within reach this month.",
-]
-
 export const WEEKLY_CONSISTENCY_DATA = [
   { day: "Mon", completed: 72 },
   { day: "Tue", completed: 80 },

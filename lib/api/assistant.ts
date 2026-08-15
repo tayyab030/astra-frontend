@@ -53,6 +53,11 @@ export async function fetchDailyQuote() {
   return response.data
 }
 
+export async function fetchGoalsQuote() {
+  const response = await authApi.get<DailyQuoteResponse>(ASSISTANT.GOALS_QUOTE)
+  return response.data
+}
+
 export async function getAssistantConversation(id: string) {
   const response = await authApi.get<{
     conversation: AssistantConversation

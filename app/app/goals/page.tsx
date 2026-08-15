@@ -15,6 +15,7 @@ import { GoalFormDialog } from "./_components/GoalFormDialog"
 import { GoalCard } from "./_components/GoalCard"
 import { LifeBalanceWheel } from "./_components/LifeBalanceWheel"
 import { WealthEmptyState } from "../wealth/_components/WealthEmptyState"
+import { useGoalsQuote } from "./_hooks/useGoalsQuote"
 
 type StatusFilter = "all" | "in_progress" | "completed"
 
@@ -54,6 +55,8 @@ export default function GoalsPage() {
     isUpdatingMilestone,
   } = useGoals(filter)
 
+  const { quote } = useGoalsQuote()
+
   const filteredGoals = useMemo(() => {
     const goals = dashboard?.goals ?? []
     if (statusFilter === "in_progress") {
@@ -72,9 +75,7 @@ export default function GoalsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="astra-title">Goals Dashboard 🎯</h1>
-            <p className="astra-subtitle mt-1">
-              &quot;A goal is a dream with a deadline.&quot; - Track your journey to success.
-            </p>
+            <p className="astra-subtitle mt-1">&quot;{quote}&quot;</p>
           </div>
           <div className="flex flex-col gap-3 sm:items-end">
             <WealthFilters onChange={setFilter} />
@@ -132,7 +133,11 @@ export default function GoalsPage() {
           ))}
         </div>
 
-        <AiGoalInsights />
+        <AiGoalInsights
+          goals={dashboard?.goals ?? []}
+          activeCount={summary?.active_goals}
+          avgProgress={summary?.avg_progress}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">

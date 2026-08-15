@@ -1080,7 +1080,24 @@ export function HabitsContent() {
 
       {activeTab === "overview" ? (
         <div className="space-y-6">
-          <AiHabitInsights />
+          <AiHabitInsights
+            summary={{
+              total: habits.length,
+              completed: habits.filter((habit) => habit.completed).length,
+              highCompleted: habits.filter(
+                (habit) => habit.priority === "high" && habit.completed
+              ).length,
+              highTotal: habits.filter((habit) => habit.priority === "high").length,
+              longestStreak,
+              longestStreakHabitName,
+              habits: habits.map((habit) => ({
+                name: habit.name,
+                streak: habit.streak,
+                completed: habit.completed,
+                priority: habit.priority,
+              })),
+            }}
+          />
           <HabitsOverview
             habits={habits}
             completedCount={habits.filter((habit) => habit.completed).length}

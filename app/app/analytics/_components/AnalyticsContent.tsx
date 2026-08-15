@@ -39,6 +39,7 @@ import {
   Download,
   FileText,
   Heart,
+  Moon,
   PieChart as PieChartIcon,
   Star,
   Target,
@@ -47,17 +48,10 @@ import {
   Zap,
 } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
+import { useAiInsight } from "@/hooks/useAiInsight"
 import { useAnalytics } from "../_hooks/useAnalytics"
 import type { AnalyticsPeriod } from "../_utils/dateRanges"
-import {
-  STATIC_AI_COACH,
-  STATIC_AI_PREDICTIONS,
-  STATIC_AI_STORY_OF_WEEK,
-  STATIC_CROSS_DOMAIN_INSIGHTS,
-  STATIC_DAILY_AI_INSIGHT,
-  STATIC_GOAL_AI_PREDICTION,
-  STATIC_MONTHLY_AI_INSIGHT,
-} from "./staticInsights"
+import type { AnalyticsComputed } from "../_utils/computeAnalytics"
 
 const taskChartConfig = {
   completed: { label: "Completed", color: "hsl(var(--primary))" },
@@ -84,10 +78,50 @@ function achievementIcon(kind: string) {
   return FileText
 }
 
+function buildAnalyticsInsightContext(analytics: AnalyticsComputed) {
+  return {
+    period: analytics.period,
+    lifeScoreOverall: analytics.lifeScoreOverall,
+    previousLifeScoreOverall: analytics.previousLifeScoreOverall,
+    categories: analytics.categories.map((c) => ({
+      name: c.name,
+      score: c.score,
+      trend: c.trend,
+    })),
+    dailySnapshot: analytics.dailySnapshot,
+    summary: analytics.summary,
+    goalProgress: analytics.goalProgress.slice(0, 5).map((g) => ({
+      title: g.title,
+      progress: g.progress,
+    })),
+    highlights: analytics.weeklyHighlights.slice(0, 5).map((h) => ({
+      title: h.title,
+      value: h.value,
+    })),
+    expenseTop: analytics.expenseDistribution.slice(0, 5).map((s) => ({
+      category: s.category,
+      value: s.value,
+    })),
+    achievementsEarned: analytics.achievements.filter((a) => a.earned).map((a) => a.name),
+  }
+}
+
+const CROSS_DOMAIN_ICONS = [Moon, CheckSquare, FileText] as const
+
 export function AnalyticsContent() {
   const { formatCurrency } = useCurrency()
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>("week")
   const { analytics, isLoading, isError, refetch } = useAnalytics(selectedPeriod)
+
+  const insightContext = analytics ? buildAnalyticsInsightContext(analytics) : undefined
+  const {
+    data: insightData,
+    hasInsight,
+    isLoading: insightLoading,
+    enabled: insightsEnabled,
+  } = useAiInsight("analytics", insightContext, {
+    enabled: Boolean(analytics),
+  })
 
   const handleExport = () => {
     toast.message("Export Report", {
@@ -117,6 +151,7 @@ export function AnalyticsContent() {
 
   const snapshot = analytics.dailySnapshot
   const taskTotal = snapshot.tasksCompleted + snapshot.tasksPending
+  const showAiSections = insightsEnabled && (hasInsight || insightLoading)
 
   return (
     <div className="astra-page space-y-8">
@@ -214,14 +249,19 @@ export function AnalyticsContent() {
               <p className="text-sm font-inter text-muted-foreground">Focus time</p>
             </div>
           </div>
-          <div className="mt-6 p-4 astra-panel">
-            <div className="flex items-center">
-              <Brain className="h-5 w-5 text-primary mr-2 shrink-0" />
-              <p className="font-inter text-sm text-muted-foreground">
-                <strong>AI Insight:</strong> {STATIC_DAILY_AI_INSIGHT}
-              </p>
+          {showAiSections && (insightData?.daily || insightLoading) ? (
+            <div className="mt-6 p-4 astra-panel">
+              <div className="flex items-center">
+                <Brain className="h-5 w-5 text-primary mr-2 shrink-0" />
+                <p className="font-inter text-sm text-muted-foreground">
+                  <strong>AI Insight:</strong>{" "}
+                  {insightLoading && !insightData?.daily
+                    ? "Generating…"
+                    : insightData?.daily}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -486,55 +526,76 @@ export function AnalyticsContent() {
                   </LineChart>
                 </ChartContainer>
               )}
-              <div className="mt-4 p-4 astra-panel">
-                <p className="font-inter text-sm text-muted-foreground">
-                  <strong>Monthly Insight:</strong> {STATIC_MONTHLY_AI_INSIGHT}
-                </p>
-              </div>
+              {showAiSections && (insightData?.monthly || insightLoading) ? (
+                <div className="mt-4 p-4 astra-panel">
+                  <p className="font-inter text-sm text-muted-foreground">
+                    <strong>Monthly Insight:</strong>{" "}
+                    {insightLoading && !insightData?.monthly
+                      ? "Generating…"
+                      : insightData?.monthly}
+                  </p>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      <Card className="astra-card">
-        <CardHeader>
-          <CardTitle className="font-poppins flex items-center text-primary">
-            <Zap className="mr-2 h-5 w-5 text-yellow-400" />
-            Cross-Domain Insights (ASTRA Magic)
-          </CardTitle>
-          <CardDescription className="font-inter text-muted-foreground">
-            Discover hidden patterns across your life domains
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {STATIC_CROSS_DOMAIN_INSIGHTS.map((insight) => {
-              const Icon = insight.icon
-              return (
-                <div key={insight.title} className="p-4 astra-panel">
-                  <div className="flex items-start space-x-3">
-                    <Icon className="h-5 w-5 mt-0.5 text-primary" />
-                    <div>
-                      <h3 className="font-semibold font-inter text-sm mb-1 text-foreground">
-                        {insight.title}
-                      </h3>
-                      <p className="text-sm font-inter text-muted-foreground">{insight.insight}</p>
+      {showAiSections &&
+      ((insightData?.cross_domain && insightData.cross_domain.length > 0) ||
+        insightData?.story ||
+        insightLoading) ? (
+        <Card className="astra-card">
+          <CardHeader>
+            <CardTitle className="font-poppins flex items-center text-primary">
+              <Zap className="mr-2 h-5 w-5 text-yellow-400" />
+              Cross-Domain Insights (ASTRA Magic)
+            </CardTitle>
+            <CardDescription className="font-inter text-muted-foreground">
+              Discover hidden patterns across your life domains
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {insightLoading && !insightData?.cross_domain?.length ? (
+              <div className="space-y-3">
+                <div className="h-16 rounded-lg astra-panel animate-pulse" />
+                <div className="h-16 rounded-lg astra-panel animate-pulse" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {(insightData?.cross_domain ?? []).map((insight, index) => {
+                  const Icon = CROSS_DOMAIN_ICONS[index % CROSS_DOMAIN_ICONS.length]
+                  return (
+                    <div key={`${insight.title}-${index}`} className="p-4 astra-panel">
+                      <div className="flex items-start space-x-3">
+                        <Icon className="h-5 w-5 mt-0.5 text-primary" />
+                        <div>
+                          <h3 className="font-semibold font-inter text-sm mb-1 text-foreground">
+                            {insight.title}
+                          </h3>
+                          <p className="text-sm font-inter text-muted-foreground">
+                            {insight.insight}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )
+                })}
+              </div>
+            )}
+            {insightData?.story ? (
+              <div className="mt-6 p-4 astra-panel">
+                <div className="flex items-center">
+                  <Coffee className="h-5 w-5 text-primary mr-2 shrink-0" />
+                  <p className="font-inter text-sm text-muted-foreground">
+                    <strong>AI Story of the Week:</strong> {insightData.story}
+                  </p>
                 </div>
-              )
-            })}
-          </div>
-          <div className="mt-6 p-4 astra-panel">
-            <div className="flex items-center">
-              <Coffee className="h-5 w-5 text-primary mr-2 shrink-0" />
-              <p className="font-inter text-sm text-muted-foreground">
-                <strong>AI Story of the Week:</strong> {STATIC_AI_STORY_OF_WEEK}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="astra-card">
@@ -602,45 +663,67 @@ export function AnalyticsContent() {
                 ))}
               </div>
             )}
-            <div className="mt-4 p-3 astra-panel">
-              <p className="font-inter text-sm text-muted-foreground">
-                <strong>AI Prediction:</strong> {STATIC_GOAL_AI_PREDICTION}
-              </p>
-            </div>
+            {showAiSections && insightData?.goal_prediction ? (
+              <div className="mt-4 p-3 astra-panel">
+                <p className="font-inter text-sm text-muted-foreground">
+                  <strong>AI Prediction:</strong> {insightData.goal_prediction}
+                </p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </div>
 
-      <Card className="astra-card">
-        <CardHeader>
-          <CardTitle className="font-poppins flex items-center text-foreground">
-            <Brain className="mr-2 h-5 w-5" />
-            AI Predictions & Coaching
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold font-inter text-foreground">Predictive Forecasts</h3>
-              {STATIC_AI_PREDICTIONS.map((text) => (
-                <div key={text} className="p-4 astra-panel">
-                  <p className="font-inter text-sm text-muted-foreground">{text}</p>
-                </div>
-              ))}
-            </div>
-            <div className="space-y-4">
-              <h3 className="font-semibold font-inter text-foreground">AI Coach Recommendations</h3>
-              {STATIC_AI_COACH.map((item) => (
-                <div key={item.label} className="p-4 astra-panel">
-                  <p className="font-inter text-sm text-muted-foreground">
-                    <strong>{item.label}:</strong> {item.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {showAiSections &&
+      ((insightData?.predictions && insightData.predictions.length > 0) ||
+        (insightData?.coach && insightData.coach.length > 0) ||
+        insightLoading) ? (
+        <Card className="astra-card">
+          <CardHeader>
+            <CardTitle className="font-poppins flex items-center text-foreground">
+              <Brain className="mr-2 h-5 w-5" />
+              AI Predictions & Coaching
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {insightLoading && !insightData?.predictions?.length ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="h-24 rounded-lg astra-panel animate-pulse" />
+                <div className="h-24 rounded-lg astra-panel animate-pulse" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(insightData?.predictions?.length ?? 0) > 0 ? (
+                  <div className="space-y-4">
+                    <h3 className="font-semibold font-inter text-foreground">
+                      Predictive Forecasts
+                    </h3>
+                    {insightData!.predictions!.map((text) => (
+                      <div key={text} className="p-4 astra-panel">
+                        <p className="font-inter text-sm text-muted-foreground">{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {(insightData?.coach?.length ?? 0) > 0 ? (
+                  <div className="space-y-4">
+                    <h3 className="font-semibold font-inter text-foreground">
+                      AI Coach Recommendations
+                    </h3>
+                    {insightData!.coach!.map((item) => (
+                      <div key={item.label} className="p-4 astra-panel">
+                        <p className="font-inter text-sm text-muted-foreground">
+                          <strong>{item.label}:</strong> {item.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   )
 }

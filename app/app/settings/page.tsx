@@ -329,6 +329,9 @@ export default function SettingsPage() {
   const handleAiInsightsChange = (checked: boolean) => {
     if (checked === aiInsights || isSavingAiSettings) return
     setAiInsights(checked)
+    if (profile) {
+      dispatch(setUser({ ...profile, ai_insights: checked }))
+    }
     saveAiSettings({ ai_insights: checked })
   }
 

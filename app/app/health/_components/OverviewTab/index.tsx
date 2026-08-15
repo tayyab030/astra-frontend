@@ -4,8 +4,9 @@ import { Dumbbell, Droplets, Moon, Target, Zap } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { InsightHorizonBadge } from "@/components/insights/InsightHorizonBadge"
 import { ROUTES } from "@/constants/routes"
-import { AI_HEALTH_INSIGHTS } from "../constants"
+import { useAiInsight } from "@/hooks/useAiInsight"
 import { useHealthContext } from "../../_context/HealthProvider"
 import { METRIC_STEP } from "../constants"
 import { MetricStepperCard } from "../shared/MetricStepperCard"
@@ -16,6 +17,27 @@ export function OverviewTab() {
 
   const habitsComplete = habits.filter((h) => h.completed).length
   const habitsProgress = habits.length ? (habitsComplete / habits.length) * 100 : 0
+
+  const insightContext = {
+    waterGlasses: today.waterGlasses,
+    waterGoal: targets.waterGlasses,
+    sleepHours: today.sleepHours,
+    sleepGoal: targets.sleepHours,
+    exerciseMinutes: today.exerciseMinutes,
+    exerciseGoal: targets.exerciseMinutes,
+    habitsComplete,
+    habitsTotal: habits.length,
+    habitsProgress: Math.round(habitsProgress),
+  }
+
+  const {
+    data: insightData,
+    hasInsight,
+    isLoading: insightLoading,
+    enabled: insightsEnabled,
+  } = useAiInsight("health", insightContext)
+
+  const showInsights = insightsEnabled && (hasInsight || insightLoading)
 
   return (
     <div className="space-y-6 pb-6">
@@ -60,7 +82,7 @@ export function OverviewTab() {
 
       <SleepScheduleCard />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 ${showInsights ? "lg:grid-cols-2" : ""} gap-6`}>
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="font-mono flex items-center text-cyan-300">
@@ -105,24 +127,34 @@ export function OverviewTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="font-mono flex items-center text-cyan-300">
-              <Zap className="mr-2 h-5 w-5 text-yellow-400" />
-              AI Health Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {AI_HEALTH_INSIGHTS.map((insight, i) => (
-              <div
-                key={i}
-                className="p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/30 backdrop-blur-sm"
-              >
-                <p className="text-sm font-mono text-slate-200">{insight}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        {showInsights ? (
+          <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="font-mono flex items-center text-cyan-300">
+                <Zap className="mr-2 h-5 w-5 text-yellow-400" />
+                AI Health Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {insightLoading && !hasInsight ? (
+                <>
+                  <div className="h-12 rounded-lg border border-cyan-500/20 animate-pulse bg-slate-700/40" />
+                  <div className="h-12 rounded-lg border border-cyan-500/20 animate-pulse bg-slate-700/40" />
+                </>
+              ) : (
+                (insightData?.items ?? []).map((insight, i) => (
+                  <div
+                    key={`${insight.message}-${i}`}
+                    className="p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-lg border border-cyan-500/30 backdrop-blur-sm space-y-1.5"
+                  >
+                    <InsightHorizonBadge horizon={insight.horizon} />
+                    <p className="text-sm font-mono text-slate-200">{insight.message}</p>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </div>
   )

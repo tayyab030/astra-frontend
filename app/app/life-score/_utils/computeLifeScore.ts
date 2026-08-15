@@ -212,11 +212,3 @@ export function computeLifeScoreView(analytics: AnalyticsComputed) {
     periodLabel,
   }
 }
-
-export const STATIC_LIFE_SCORE_AI_INSIGHT =
-  "Your Health is strong, but Productivity needs attention. Clear overdue tasks and protect focus blocks to lift your score."
-
-export const STATIC_LIFE_SCORE_FORECAST = {
-  score: 80,
-  label: "At current pace, ~2 months",
-}

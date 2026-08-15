@@ -306,6 +306,12 @@ export function TransactionsTab({
                     placeholder="Pick a date"
                     className="space-y-0"
                     buttonClassName={cn(inputClassName, errors.date && "border-red-500/70")}
+                    toYear={new Date().getFullYear()}
+                    disabled={(day) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+                      return day > today
+                    }}
                   />
                   <FormFieldError message={errors.date?.message} />
                 </div>

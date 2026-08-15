@@ -120,6 +120,8 @@ export const API_ENDPOINTS = {
     CONVERSATIONS: "/assistant/conversations/",
     CONVERSATION: (id: string) => `/assistant/conversations/${id}/`,
     DAILY_QUOTE: "/assistant/daily-quote/",
+    GOALS_QUOTE: "/assistant/goals-quote/",
+    INSIGHTS: "/assistant/insights/",
   },
 
   // Settings endpoints

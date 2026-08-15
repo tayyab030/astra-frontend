@@ -26,11 +26,8 @@ import {
   Zap,
 } from "lucide-react"
 import { useAnalytics } from "../../analytics/_hooks/useAnalytics"
-import {
-  STATIC_LIFE_SCORE_AI_INSIGHT,
-  STATIC_LIFE_SCORE_FORECAST,
-  computeLifeScoreView,
-} from "../_utils/computeLifeScore"
+import { useAiInsight } from "@/hooks/useAiInsight"
+import { computeLifeScoreView } from "../_utils/computeLifeScore"
 
 const colorMap = {
   blue: {
@@ -77,6 +74,37 @@ export function LifeScoreContent() {
     () => (analytics ? computeLifeScoreView(analytics) : null),
     [analytics]
   )
+
+  const insightContext = view
+    ? {
+        lifeScore: view.lifeScore,
+        level: view.level.level,
+        trend: view.trend,
+        trendDelta: view.trendDelta,
+        habitStreak: view.habitStreak,
+        badgesEarned: view.badgesEarned,
+        categories: view.weightedCategories.map((c) => ({
+          name: c.name,
+          score: c.score,
+          maxScore: c.maxScore,
+          percent: c.percent,
+        })),
+        periodLabel: view.periodLabel,
+      }
+    : undefined
+
+  const {
+    data: insightData,
+    isLoading: insightLoading,
+    enabled: insightsEnabled,
+  } = useAiInsight("life_score", insightContext, {
+    enabled: Boolean(view),
+  })
+
+  const showLifeInsight =
+    insightsEnabled && (Boolean(insightData?.text) || insightLoading)
+  const showForecast =
+    insightsEnabled && (Boolean(insightData?.forecast) || insightLoading)
 
   if (isLoading || !view) {
     return <LifeScorePageSkeleton />
@@ -157,13 +185,19 @@ export function LifeScoreContent() {
                   : `${view.trendDelta > 0 ? "+" : ""}${view.trendDelta} vs last ${periodLabel}`}
               </span>
             </div>
-            <div className="text-center space-y-2 astra-panel p-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Brain className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">AI Insight</span>
+            {showLifeInsight ? (
+              <div className="text-center space-y-2 astra-panel p-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Brain className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary">AI Insight</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {insightLoading && !insightData?.text
+                    ? "Generating…"
+                    : insightData?.text}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">{STATIC_LIFE_SCORE_AI_INSIGHT}</p>
-            </div>
+            ) : null}
           </CardContent>
         </Card>
 
@@ -196,20 +230,30 @@ export function LifeScoreContent() {
             </CardContent>
           </Card>
 
-          <Card className="astra-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center text-primary">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                AI Forecast
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold text-foreground">
-                Score {STATIC_LIFE_SCORE_FORECAST.score}
-              </div>
-              <p className="text-xs text-muted-foreground">{STATIC_LIFE_SCORE_FORECAST.label}</p>
-            </CardContent>
-          </Card>
+          {showForecast ? (
+            <Card className="astra-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center text-primary">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  AI Forecast
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {insightLoading && !insightData?.forecast ? (
+                  <div className="h-10 rounded astra-panel animate-pulse" />
+                ) : (
+                  <>
+                    <div className="text-lg font-bold text-foreground">
+                      Score {insightData?.forecast?.score}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {insightData?.forecast?.label}
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card className="astra-card">
             <CardHeader className="pb-2">
