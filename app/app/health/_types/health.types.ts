@@ -14,6 +14,7 @@ export type HeightUnit = "cm" | "ftin"
 export type BmiTone = "green" | "yellow" | "red" | "neutral"
 
 export type TrackableMetric = "water" | "sleep" | "exercise"
+export type AdjustableMetric = "water" | "exercise"
 
 export interface HealthProfile {
   heightCm: number | null
@@ -43,6 +44,17 @@ export interface DailyMetricEntry {
   waterGlasses: number
   sleepHours: number
   exerciseMinutes: number
+}
+
+export interface SleepSession {
+  id: string
+  date: string
+  startedAt: string
+  endedAt: string | null
+  startTime: string
+  endTime: string | null
+  hours: number | null
+  isActive: boolean
 }
 
 export interface Habit {

@@ -79,7 +79,11 @@ export function TodaySummaryRow() {
         <CardContent>
           <div className="text-2xl font-bold font-mono text-blue-400">{today.sleepHours}h</div>
           <Progress value={(today.sleepHours / targets.sleepHours) * 100} className="h-2 mt-2" />
-          <p className="text-xs text-blue-500 font-mono mt-1">of {targets.sleepHours}h target</p>
+          <p className="text-xs text-blue-500 font-mono mt-1">
+            {today.sleepHours > 0
+              ? `of ${targets.sleepHours}h target · from sessions`
+              : `of ${targets.sleepHours}h target`}
+          </p>
         </CardContent>
       </Card>
     </div>

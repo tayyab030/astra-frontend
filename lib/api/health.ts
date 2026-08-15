@@ -23,6 +23,7 @@ export interface HealthDashboardApi {
     sleep_hours: number
     exercise_minutes: number
   }
+  sleep_sessions: HealthSleepSessionApi[]
   weight_log: HealthWeightEntryApi[]
   daily_history: HealthDailyMetricApi[]
   habits: HealthHabitApi[]
@@ -48,6 +49,17 @@ export interface HealthDailyMetricApi {
   water_glasses: number
   sleep_hours: number
   exercise_minutes: number
+}
+
+export interface HealthSleepSessionApi {
+  id: string
+  date: string
+  started_at: string
+  ended_at: string | null
+  start_time: string
+  end_time: string | null
+  hours: number | null
+  is_active: boolean
 }
 
 export interface HealthHabitApi {
@@ -85,6 +97,28 @@ export interface UpdateHealthTargetsPayload {
   exercise_minutes?: number
 }
 
+export interface UpdateTodayMetricsPayload {
+  water_glasses?: number
+  exercise_minutes?: number
+}
+
+export interface ToggleSleepPayload {
+  timestamp?: string
+  local_date?: string
+}
+
+export interface CreateSleepSessionPayload {
+  start_time: string
+  end_time: string
+  date?: string
+}
+
+export interface UpdateSleepSessionPayload {
+  start_time?: string
+  end_time?: string
+  date?: string
+}
+
 export interface LogWeightPayload {
   weight_kg: number
   date?: string
@@ -92,6 +126,12 @@ export interface LogWeightPayload {
 
 export interface CreateHabitPayload {
   name: string
+  frequency?: string
+  target?: number
+}
+
+export interface UpdateHabitPayload {
+  name?: string
   frequency?: string
   target?: number
 }
@@ -110,7 +150,7 @@ export interface SaveMoodPayload {
 }
 
 export interface AdjustMetricPayload {
-  metric: "water" | "sleep" | "exercise"
+  metric: "water" | "exercise"
   direction: -1 | 1
   date?: string
 }
@@ -136,6 +176,27 @@ function mapDailyMetric(entry: HealthDailyMetricApi) {
     waterGlasses: entry.water_glasses,
     sleepHours: entry.sleep_hours,
     exerciseMinutes: entry.exercise_minutes,
+  }
+}
+
+function mapTodayMetrics(today: HealthDashboardApi["today"]) {
+  return {
+    waterGlasses: today.water_glasses,
+    sleepHours: today.sleep_hours,
+    exerciseMinutes: today.exercise_minutes,
+  }
+}
+
+function mapSleepSession(session: HealthSleepSessionApi) {
+  return {
+    id: session.id,
+    date: session.date,
+    startedAt: session.started_at,
+    endedAt: session.ended_at,
+    startTime: session.start_time,
+    endTime: session.end_time,
+    hours: session.hours,
+    isActive: session.is_active,
   }
 }
 
@@ -186,11 +247,8 @@ export function mapHealthDashboard(data: HealthDashboardApi) {
       sleepHours: data.targets.sleep_hours,
       exerciseMinutes: data.targets.exercise_minutes,
     },
-    today: {
-      waterGlasses: data.today.water_glasses,
-      sleepHours: data.today.sleep_hours,
-      exerciseMinutes: data.today.exercise_minutes,
-    },
+    today: mapTodayMetrics(data.today),
+    sleepSessions: (data.sleep_sessions ?? []).map(mapSleepSession),
     weightLog: data.weight_log.map(mapWeight),
     dailyHistory: data.daily_history.map(mapDailyMetric),
     habits: data.habits.map(mapHabit),
@@ -219,13 +277,33 @@ export async function updateHealthTargets(payload: UpdateHealthTargetsPayload) {
   }
 }
 
+export async function updateHealthTodayMetrics(payload: UpdateTodayMetricsPayload) {
+  const response = await authApi.patch<HealthDashboardApi["today"]>(HEALTH.TODAY, payload)
+  return mapTodayMetrics(response.data)
+}
+
 export async function adjustHealthMetric(payload: AdjustMetricPayload) {
   const response = await authApi.post<HealthDashboardApi["today"]>(HEALTH.METRICS_ADJUST, payload)
-  return {
-    waterGlasses: response.data.water_glasses,
-    sleepHours: response.data.sleep_hours,
-    exerciseMinutes: response.data.exercise_minutes,
-  }
+  return mapTodayMetrics(response.data)
+}
+
+export async function toggleHealthSleep(payload: ToggleSleepPayload = {}) {
+  const response = await authApi.post<HealthSleepSessionApi>(HEALTH.SLEEP_TOGGLE, payload)
+  return mapSleepSession(response.data)
+}
+
+export async function createHealthSleepSession(payload: CreateSleepSessionPayload) {
+  const response = await authApi.post<HealthSleepSessionApi>(HEALTH.SLEEP_SESSIONS, payload)
+  return mapSleepSession(response.data)
+}
+
+export async function updateHealthSleepSession(id: string, payload: UpdateSleepSessionPayload) {
+  const response = await authApi.patch<HealthSleepSessionApi>(HEALTH.SLEEP_SESSION(id), payload)
+  return mapSleepSession(response.data)
+}
+
+export async function deleteHealthSleepSession(id: string) {
+  await authApi.delete(HEALTH.SLEEP_SESSION(id))
 }
 
 export async function logHealthWeight(payload: LogWeightPayload) {
@@ -241,6 +319,15 @@ export async function toggleHealthHabit(id: string) {
 export async function createHealthHabit(payload: CreateHabitPayload) {
   const response = await authApi.post<HealthHabitApi>(HEALTH.HABITS, payload)
   return mapHabit(response.data)
+}
+
+export async function updateHealthHabit(id: string, payload: UpdateHabitPayload) {
+  const response = await authApi.patch<HealthHabitApi>(HEALTH.HABIT(id), payload)
+  return mapHabit(response.data)
+}
+
+export async function deleteHealthHabit(id: string) {
+  await authApi.delete(HEALTH.HABIT(id))
 }
 
 export async function createHealthWorkout(payload: CreateWorkoutPayload) {

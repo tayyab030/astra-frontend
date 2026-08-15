@@ -7,6 +7,7 @@ import { AI_HEALTH_INSIGHTS } from "../constants"
 import { useHealthContext } from "../../_context/HealthProvider"
 import { METRIC_STEP } from "../constants"
 import { MetricStepperCard } from "../shared/MetricStepperCard"
+import { SleepScheduleCard } from "../shared/SleepScheduleCard"
 
 export function OverviewTab() {
   const { today, targets, habits, incrementMetric, decrementMetric, setTarget } = useHealthContext()
@@ -36,8 +37,8 @@ export function OverviewTab() {
           target={targets.sleepHours}
           unit="hours"
           step={METRIC_STEP.sleep}
-          onIncrement={() => incrementMetric("sleep")}
-          onDecrement={() => decrementMetric("sleep")}
+          hideSteppers
+          helperText="from sleep sessions"
           onTargetChange={(v) => setTarget("sleep", v)}
           compact
         />
@@ -54,6 +55,8 @@ export function OverviewTab() {
           compact
         />
       </div>
+
+      <SleepScheduleCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-slate-800/50 to-slate-700/50 border-slate-600/50 backdrop-blur-sm">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { format, subDays } from "date-fns"
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -8,15 +8,22 @@ import {
   adjustHealthMetric,
   createHealthHabit,
   createHealthWorkout,
+  deleteHealthHabit,
+  deleteHealthSleepSession,
   fetchHealthDashboard,
   getHealthErrorMessage,
   logHealthWeight,
   saveHealthMood,
   toggleHealthHabit,
+  toggleHealthSleep,
+  createHealthSleepSession,
+  updateHealthSleepSession,
+  updateHealthHabit,
   updateHealthProfile,
   updateHealthTargets,
 } from "@/lib/api/health"
 import type {
+  AdjustableMetric,
   HealthPeriodFilter,
   HeightUnit,
   MoodValue,
@@ -30,6 +37,15 @@ import {
   getPeriodRange,
 } from "../_utils/healthCharts"
 import { getLocalDateString } from "../_utils/date"
+import {
+  applyPendingSleepToggles,
+  enqueueSleepToggle,
+  flushSleepToggleQueue,
+  isNetworkError,
+  readSleepToggleQueue,
+  sumCompletedSleepHours,
+  writeSleepToggleQueue,
+} from "../_utils/sleepOfflineQueue"
 import { healthKeys } from "./queryKeys"
 
 const HEIGHT_UNIT_KEY = "health_height_unit"
@@ -46,6 +62,7 @@ export function useHealth() {
   const [heightUnit, setHeightUnitState] = useState<HeightUnit>(getStoredHeightUnit)
   const [moodToday, setMoodToday] = useState<MoodValue | "">("")
   const [moodNotes, setMoodNotes] = useState("")
+  const [sleepQueueVersion, setSleepQueueVersion] = useState(0)
 
   const fetchRange = useMemo(() => {
     const today = getLocalDateString()
@@ -79,13 +96,37 @@ export function useHealth() {
     [data?.profile.heightCm, heightUnit]
   )
 
-  const today = data?.today ?? { waterGlasses: 0, sleepHours: 0, exerciseMinutes: 0 }
+  const todayBase = data?.today ?? {
+    waterGlasses: 0,
+    sleepHours: 0,
+    exerciseMinutes: 0,
+  }
   const targets = data?.targets ?? { waterGlasses: 8, sleepHours: 7.5, exerciseMinutes: 60 }
   const weightLog = data?.weightLog ?? []
   const dailyHistory = data?.dailyHistory ?? []
   const habits = data?.habits ?? []
   const workouts = data?.workouts ?? []
   const moodEntries = data?.moodEntries ?? []
+
+  const pendingSleepQueue = useMemo(() => {
+    void sleepQueueVersion
+    return readSleepToggleQueue()
+  }, [sleepQueueVersion])
+
+  const sleepSessions = useMemo(
+    () => applyPendingSleepToggles(data?.sleepSessions ?? [], pendingSleepQueue),
+    [data?.sleepSessions, pendingSleepQueue]
+  )
+
+  const today = useMemo(() => {
+    if (pendingSleepQueue.length === 0) return todayBase
+    return {
+      ...todayBase,
+      sleepHours: sumCompletedSleepHours(sleepSessions),
+    }
+  }, [todayBase, pendingSleepQueue.length, sleepSessions])
+
+  const pendingSleepSyncCount = pendingSleepQueue.length
 
   const periodRange = useMemo(() => getPeriodRange(periodFilter), [periodFilter])
 
@@ -142,7 +183,7 @@ export function useHealth() {
   )
 
   const adjustMetricMutation = useMutation({
-    mutationFn: (payload: { metric: TrackableMetric; direction: -1 | 1 }) =>
+    mutationFn: (payload: { metric: AdjustableMetric; direction: -1 | 1 }) =>
       adjustHealthMetric({ ...payload, date: getLocalDateString() }),
     onSuccess: () => invalidateHealth(),
     onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update metric")),
@@ -187,6 +228,110 @@ export function useHealth() {
     onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to create habit")),
   })
 
+  const updateHabitMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: { name?: string; frequency?: string; target?: number } }) =>
+      updateHealthHabit(id, payload),
+    onSuccess: () => {
+      toast.success("Habit updated")
+      invalidateHealth()
+    },
+    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update habit")),
+  })
+
+  const deleteHabitMutation = useMutation({
+    mutationFn: deleteHealthHabit,
+    onSuccess: () => {
+      toast.success("Habit deleted")
+      invalidateHealth()
+    },
+    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to delete habit")),
+  })
+
+  const toggleSleepMutation = useMutation({
+    mutationFn: toggleHealthSleep,
+    onSuccess: (session) => {
+      toast.success(session.isActive ? "Goodnight — sleep started" : "You're awake — sleep logged")
+      invalidateHealth()
+    },
+    onError: (error) => {
+      if (!isNetworkError(error)) {
+        toast.error(getHealthErrorMessage(error, "Failed to toggle sleep"))
+      }
+    },
+  })
+
+  const deleteSleepSessionMutation = useMutation({
+    mutationFn: deleteHealthSleepSession,
+    onSuccess: () => {
+      toast.success("Sleep session deleted")
+      invalidateHealth()
+    },
+    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to delete sleep session")),
+  })
+
+  const createSleepSessionMutation = useMutation({
+    mutationFn: createHealthSleepSession,
+    onSuccess: () => {
+      toast.success("Sleep session added")
+      invalidateHealth()
+    },
+    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to add sleep session")),
+  })
+
+  const updateSleepSessionMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: { start_time?: string; end_time?: string; date?: string } }) =>
+      updateHealthSleepSession(id, payload),
+    onSuccess: () => {
+      toast.success("Sleep session updated")
+      invalidateHealth()
+    },
+    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update sleep session")),
+  })
+
+  const syncPendingSleep = useCallback(async () => {
+    if (typeof window !== "undefined" && !navigator.onLine) return 0
+    const pendingBefore = readSleepToggleQueue().length
+    if (pendingBefore === 0) return 0
+
+    try {
+      const synced = await flushSleepToggleQueue()
+      setSleepQueueVersion((version) => version + 1)
+      if (synced > 0) {
+        toast.success(
+          synced === 1 ? "Offline sleep synced" : `${synced} offline sleep taps synced`
+        )
+        invalidateHealth()
+      }
+      return synced
+    } catch (error) {
+      // Partial successes already removed only uploaded taps inside flush.
+      setSleepQueueVersion((version) => version + 1)
+      const remaining = readSleepToggleQueue().length
+      const synced = Math.max(0, pendingBefore - remaining)
+      if (synced > 0) {
+        toast.success(
+          synced === 1
+            ? "Synced 1 tap; others still waiting"
+            : `Synced ${synced} taps; others still waiting`
+        )
+        invalidateHealth()
+      }
+      if (!isNetworkError(error)) {
+        toast.error(getHealthErrorMessage(error, "Failed to sync offline sleep"))
+      }
+      return synced
+    }
+  }, [invalidateHealth])
+
+  useEffect(() => {
+    const onOnline = () => {
+      void syncPendingSleep()
+    }
+    window.addEventListener("online", onOnline)
+    void syncPendingSleep()
+    return () => window.removeEventListener("online", onOnline)
+  }, [syncPendingSleep])
+
   const createWorkoutMutation = useMutation({
     mutationFn: createHealthWorkout,
     onSuccess: () => {
@@ -206,14 +351,14 @@ export function useHealth() {
   })
 
   const incrementMetric = useCallback(
-    (metric: TrackableMetric) => {
+    (metric: AdjustableMetric) => {
       adjustMetricMutation.mutate({ metric, direction: 1 })
     },
     [adjustMetricMutation]
   )
 
   const decrementMetric = useCallback(
-    (metric: TrackableMetric) => {
+    (metric: AdjustableMetric) => {
       adjustMetricMutation.mutate({ metric, direction: -1 })
     },
     [adjustMetricMutation]
@@ -230,6 +375,88 @@ export function useHealth() {
       updateTargetsMutation.mutate(payload)
     },
     [updateTargetsMutation]
+  )
+
+  const toggleSleep = useCallback(async () => {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      local_date: getLocalDateString(),
+    }
+
+    const saveOffline = () => {
+      enqueueSleepToggle(payload)
+      setSleepQueueVersion((version) => version + 1)
+      toast.message("Saved offline — will sync when you're back online")
+    }
+
+    if (typeof window !== "undefined" && !navigator.onLine) {
+      saveOffline()
+      return
+    }
+
+    // Keep order: flush any queued taps before a new online tap
+    if (readSleepToggleQueue().length > 0) {
+      await syncPendingSleep()
+      if (readSleepToggleQueue().length > 0) {
+        saveOffline()
+        return
+      }
+    }
+
+    try {
+      await toggleSleepMutation.mutateAsync(payload)
+    } catch (error) {
+      if (isNetworkError(error)) {
+        saveOffline()
+        return
+      }
+      throw error
+    }
+  }, [syncPendingSleep, toggleSleepMutation])
+
+  const createSleepSession = useCallback(
+    (startTime: string, endTime: string) => {
+      return createSleepSessionMutation.mutateAsync({
+        start_time: startTime,
+        end_time: endTime,
+        date: getLocalDateString(),
+      })
+    },
+    [createSleepSessionMutation]
+  )
+
+  const updateSleepSession = useCallback(
+    (id: string, payload: { startTime?: string; endTime?: string }) => {
+      return updateSleepSessionMutation.mutateAsync({
+        id,
+        payload: {
+          start_time: payload.startTime,
+          end_time: payload.endTime,
+          date: getLocalDateString(),
+        },
+      })
+    },
+    [updateSleepSessionMutation]
+  )
+
+  const deleteSleepSession = useCallback(
+    async (id: string) => {
+      if (id.startsWith("local-")) {
+        const tapId = id.slice("local-".length)
+        const queue = readSleepToggleQueue()
+        const index = queue.findIndex((item) => item.id === tapId)
+        if (index >= 0) {
+          const session = sleepSessions.find((item) => item.id === id)
+          const removeCount = session?.isActive ? 1 : 2
+          writeSleepToggleQueue([...queue.slice(0, index), ...queue.slice(index + removeCount)])
+          setSleepQueueVersion((version) => version + 1)
+          toast.success("Removed offline sleep")
+          return
+        }
+      }
+      return deleteSleepSessionMutation.mutateAsync(id)
+    },
+    [deleteSleepSessionMutation, sleepSessions]
   )
 
   const setHeight = useCallback(
@@ -265,6 +492,20 @@ export function useHealth() {
     [createHabitMutation]
   )
 
+  const updateHabit = useCallback(
+    (id: string, payload: { name?: string; frequency?: string; target?: number }) => {
+      return updateHabitMutation.mutateAsync({ id, payload })
+    },
+    [updateHabitMutation]
+  )
+
+  const deleteHabit = useCallback(
+    (id: string) => {
+      return deleteHabitMutation.mutateAsync(id)
+    },
+    [deleteHabitMutation]
+  )
+
   const createWorkout = useCallback(
     (type: string, duration: number, calories?: number) => {
       return createWorkoutMutation.mutateAsync({
@@ -296,6 +537,8 @@ export function useHealth() {
     weightLog,
     dailyHistory,
     habits,
+    sleepSessions,
+    pendingSleepSyncCount,
     workouts,
     moodEntries,
     moodToday: effectiveMoodToday,
@@ -317,16 +560,28 @@ export function useHealth() {
       logWeightMutation.isPending ||
       toggleHabitMutation.isPending ||
       createHabitMutation.isPending ||
+      updateHabitMutation.isPending ||
+      deleteHabitMutation.isPending ||
+      toggleSleepMutation.isPending ||
+      createSleepSessionMutation.isPending ||
+      updateSleepSessionMutation.isPending ||
+      deleteSleepSessionMutation.isPending ||
       createWorkoutMutation.isPending ||
       saveMoodMutation.isPending,
     incrementMetric,
     decrementMetric,
     setTarget,
+    toggleSleep,
+    createSleepSession,
+    updateSleepSession,
+    deleteSleepSession,
     setHeight,
     setHeightUnit,
     logWeight,
     toggleHabit,
     createHabit,
+    updateHabit,
+    deleteHabit,
     createWorkout,
     saveMood,
     setMoodToday,

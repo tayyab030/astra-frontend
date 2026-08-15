@@ -6,6 +6,7 @@ import { METRIC_STEP } from "../constants"
 import { HealthPeriodFilterBar } from "../shared/HealthPeriodFilterBar"
 import { HealthTrendChart } from "../shared/HealthTrendChart"
 import { MetricStepperCard } from "../shared/MetricStepperCard"
+import { SleepScheduleCard } from "../shared/SleepScheduleCard"
 
 export function TrackingTab() {
   const {
@@ -42,8 +43,8 @@ export function TrackingTab() {
           target={targets.sleepHours}
           unit="hours"
           step={METRIC_STEP.sleep}
-          onIncrement={() => incrementMetric("sleep")}
-          onDecrement={() => decrementMetric("sleep")}
+          hideSteppers
+          helperText="from sleep sessions"
           onTargetChange={(v) => setTarget("sleep", v)}
         />
         <MetricStepperCard
@@ -58,6 +59,8 @@ export function TrackingTab() {
           onTargetChange={(v) => setTarget("exercise", v)}
         />
       </div>
+
+      <SleepScheduleCard />
 
       <HealthPeriodFilterBar filter={periodFilter} onChange={setPeriodFilter} />
 
