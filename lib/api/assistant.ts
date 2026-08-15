@@ -42,6 +42,17 @@ export async function listAssistantConversations() {
   return response.data
 }
 
+export type DailyQuoteResponse = {
+  quote: string
+  date: string
+  source: "groq" | "cache" | "fallback"
+}
+
+export async function fetchDailyQuote() {
+  const response = await authApi.get<DailyQuoteResponse>(ASSISTANT.DAILY_QUOTE)
+  return response.data
+}
+
 export async function getAssistantConversation(id: string) {
   const response = await authApi.get<{
     conversation: AssistantConversation

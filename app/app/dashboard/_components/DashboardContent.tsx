@@ -31,6 +31,7 @@ import {
   Star,
   Zap,
 } from "lucide-react"
+import { useDailyQuote } from "../_hooks/useDailyQuote"
 import { useDashboard } from "../_hooks/useDashboard"
 import { QuickActions } from "./QuickActions"
 
@@ -57,6 +58,7 @@ export function DashboardContent() {
   const { formatCurrency } = useCurrency()
   const user = useAppSelector((state) => state.user.user)
   const { dashboard, isLoading, isError, refetch } = useDashboard()
+  const { quote } = useDailyQuote()
 
   const firstName = user?.first_name?.trim() || user?.username || "there"
   const greeting = getGreeting(new Date().getHours())
@@ -87,9 +89,7 @@ export function DashboardContent() {
           <h1 className="astra-title">
             {greeting}, {firstName}
           </h1>
-          <p className="astra-subtitle mt-1">
-            &quot;Success is the sum of small efforts repeated day in and day out.&quot;
-          </p>
+          <p className="astra-subtitle mt-1">&quot;{quote}&quot;</p>
         </div>
         <Link href={ROUTES.APP.LIFE_SCORE}>
           <Badge

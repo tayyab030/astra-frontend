@@ -119,6 +119,7 @@ export const API_ENDPOINTS = {
     TRANSCRIBE_BASE64: "/assistant/transcribe/base64/",
     CONVERSATIONS: "/assistant/conversations/",
     CONVERSATION: (id: string) => `/assistant/conversations/${id}/`,
+    DAILY_QUOTE: "/assistant/daily-quote/",
   },
 
   // Settings endpoints
