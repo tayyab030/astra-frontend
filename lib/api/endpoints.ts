@@ -73,6 +73,17 @@ export const API_ENDPOINTS = {
     SETTINGS: "/time-track/settings/",
   },
 
+  // Habits endpoints
+  HABITS: {
+    LIST: "/habits/",
+    DAY: "/habits/day/",
+    PACK: "/habits/pack/",
+    HABIT: (id: string) => `/habits/${id}/`,
+    TOGGLE: (id: string) => `/habits/${id}/toggle/`,
+    ADJUST: (id: string) => `/habits/${id}/adjust/`,
+    LOG: (id: string) => `/habits/${id}/log/`,
+  },
+
   // Health endpoints
   HEALTH: {
     DASHBOARD: "/health/",
@@ -81,9 +92,6 @@ export const API_ENDPOINTS = {
     TODAY: "/health/today/",
     METRICS_ADJUST: "/health/metrics/adjust/",
     WEIGHT: "/health/weight/",
-    HABITS: "/health/habits/",
-    HABIT: (id: string) => `/health/habits/${id}/`,
-    HABIT_TOGGLE: (id: string) => `/health/habits/${id}/toggle/`,
     SLEEP_SESSIONS: "/health/sleep-sessions/",
     SLEEP_SESSION: (id: string) => `/health/sleep-sessions/${id}/`,
     SLEEP_TOGGLE: "/health/sleep-sessions/toggle/",

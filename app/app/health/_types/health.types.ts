@@ -64,6 +64,13 @@ export interface Habit {
   target: number
   current: number
   frequency?: string
+  domain?: string
+  metricType?: string
+  unit?: string | null
+  groupKey?: string | null
+  groupName?: string | null
+  isRequired?: boolean
+  repeatDays?: number[]
 }
 
 export interface Workout {

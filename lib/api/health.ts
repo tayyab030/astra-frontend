@@ -1,5 +1,6 @@
 import { authApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
+import { mapHabit, type HabitApi } from "./habits"
 
 const { HEALTH } = API_ENDPOINTS
 
@@ -26,7 +27,7 @@ export interface HealthDashboardApi {
   sleep_sessions: HealthSleepSessionApi[]
   weight_log: HealthWeightEntryApi[]
   daily_history: HealthDailyMetricApi[]
-  habits: HealthHabitApi[]
+  habits: HabitApi[]
   workouts: HealthWorkoutApi[]
   mood_entries: HealthMoodEntryApi[]
   mood_today: { mood: string; notes: string }
@@ -60,16 +61,6 @@ export interface HealthSleepSessionApi {
   end_time: string | null
   hours: number | null
   is_active: boolean
-}
-
-export interface HealthHabitApi {
-  id: string
-  name: string
-  streak: number
-  target: number
-  current: number
-  completed: boolean
-  frequency: string
 }
 
 export interface HealthWorkoutApi {
@@ -122,18 +113,6 @@ export interface UpdateSleepSessionPayload {
 export interface LogWeightPayload {
   weight_kg: number
   date?: string
-}
-
-export interface CreateHabitPayload {
-  name: string
-  frequency?: string
-  target?: number
-}
-
-export interface UpdateHabitPayload {
-  name?: string
-  frequency?: string
-  target?: number
 }
 
 export interface CreateWorkoutPayload {
@@ -197,18 +176,6 @@ function mapSleepSession(session: HealthSleepSessionApi) {
     endTime: session.end_time,
     hours: session.hours,
     isActive: session.is_active,
-  }
-}
-
-function mapHabit(habit: HealthHabitApi) {
-  return {
-    id: habit.id,
-    name: habit.name,
-    streak: habit.streak,
-    target: habit.target,
-    current: habit.current,
-    completed: habit.completed,
-    frequency: habit.frequency,
   }
 }
 
@@ -309,25 +276,6 @@ export async function deleteHealthSleepSession(id: string) {
 export async function logHealthWeight(payload: LogWeightPayload) {
   const response = await authApi.post<HealthWeightEntryApi>(HEALTH.WEIGHT, payload)
   return mapWeight(response.data)
-}
-
-export async function toggleHealthHabit(id: string) {
-  const response = await authApi.patch<HealthHabitApi>(HEALTH.HABIT_TOGGLE(id))
-  return mapHabit(response.data)
-}
-
-export async function createHealthHabit(payload: CreateHabitPayload) {
-  const response = await authApi.post<HealthHabitApi>(HEALTH.HABITS, payload)
-  return mapHabit(response.data)
-}
-
-export async function updateHealthHabit(id: string, payload: UpdateHabitPayload) {
-  const response = await authApi.patch<HealthHabitApi>(HEALTH.HABIT(id), payload)
-  return mapHabit(response.data)
-}
-
-export async function deleteHealthHabit(id: string) {
-  await authApi.delete(HEALTH.HABIT(id))
 }
 
 export async function createHealthWorkout(payload: CreateWorkoutPayload) {

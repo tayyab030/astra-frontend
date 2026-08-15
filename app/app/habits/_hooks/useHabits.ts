@@ -1,40 +1,40 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { format, subDays } from "date-fns"
 import { toast } from "sonner"
 import {
-  createHealthHabit,
-  deleteHealthHabit,
-  fetchHealthDashboard,
-  getHealthErrorMessage,
-  toggleHealthHabit,
-  updateHealthHabit,
-} from "@/lib/api/health"
-import { healthKeys } from "../../health/_hooks/queryKeys"
+  adjustHabit,
+  createHabit,
+  createHabitPack,
+  deleteHabit,
+  fetchHabits,
+  fetchHabitsDay,
+  getHabitsErrorMessage,
+  toggleHabit,
+  updateHabit,
+  type CreateHabitPackPayload,
+  type CreateHabitPayload,
+  type UpdateHabitPayload,
+} from "@/lib/api/habits"
 import { getLocalDateString } from "../../health/_utils/date"
+import { healthKeys } from "../../health/_hooks/queryKeys"
 import { habitsKeys } from "./queryKeys"
 
 export function useHabits() {
   const queryClient = useQueryClient()
-
-  const fetchRange = useMemo(() => {
-    const today = getLocalDateString()
-    const startDate = format(subDays(new Date(), 7), "yyyy-MM-dd")
-    return { startDate, endDate: today, todayDate: today }
-  }, [])
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDateString())
 
   const habitsQuery = useQuery({
     queryKey: habitsKeys.list(),
-    queryFn: () =>
-      fetchHealthDashboard({
-        start_date: fetchRange.startDate,
-        end_date: fetchRange.endDate,
-        today_date: fetchRange.todayDate,
-      }),
-    select: (data) => data.habits,
+    queryFn: fetchHabits,
     staleTime: 30_000,
+  })
+
+  const dayQuery = useQuery({
+    queryKey: habitsKeys.day(selectedDate),
+    queryFn: () => fetchHabitsDay(selectedDate),
+    staleTime: 15_000,
   })
 
   const invalidate = useCallback(() => {
@@ -43,65 +43,157 @@ export function useHabits() {
   }, [queryClient])
 
   const toggleHabitMutation = useMutation({
-    mutationFn: toggleHealthHabit,
+    mutationFn: ({
+      id,
+      date,
+      delay_reason,
+      cannot_do,
+      is_late,
+    }: {
+      id: string
+      date: string
+      delay_reason?: string
+      cannot_do?: boolean
+      is_late?: boolean
+    }) => toggleHabit(id, { date, delay_reason, cannot_do, is_late }),
     onSuccess: () => invalidate(),
-    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update habit")),
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to update habit")),
   })
 
-  const createHabitMutation = useMutation({
-    mutationFn: createHealthHabit,
-    onSuccess: () => {
-      toast.success("Habit created")
-      invalidate()
-    },
-    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to create habit")),
-  })
-
-  const updateHabitMutation = useMutation({
+  const adjustHabitMutation = useMutation({
     mutationFn: ({
       id,
       payload,
     }: {
       id: string
-      payload: { name?: string; frequency?: string; target?: number }
-    }) => updateHealthHabit(id, payload),
+      payload: {
+        date: string
+        direction?: -1 | 1
+        value?: number
+        step?: number
+        delay_reason?: string
+        cannot_do?: boolean
+        is_late?: boolean
+      }
+    }) => adjustHabit(id, payload),
+    onSuccess: () => invalidate(),
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to update progress")),
+  })
+
+  const createHabitMutation = useMutation({
+    mutationFn: createHabit,
+    onSuccess: () => {
+      toast.success("Habit created")
+      invalidate()
+    },
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to create habit")),
+  })
+
+  const createPackMutation = useMutation({
+    mutationFn: createHabitPack,
+    onSuccess: (habits) => {
+      toast.success(`${habits.length} habits created`)
+      invalidate()
+    },
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to create habit pack")),
+  })
+
+  const updateHabitMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateHabitPayload }) =>
+      updateHabit(id, payload),
     onSuccess: () => {
       toast.success("Habit updated")
       invalidate()
     },
-    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update habit")),
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to update habit")),
   })
 
   const deleteHabitMutation = useMutation({
-    mutationFn: deleteHealthHabit,
+    mutationFn: deleteHabit,
     onSuccess: () => {
       toast.success("Habit deleted")
       invalidate()
     },
-    onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to delete habit")),
+    onError: (error) => toast.error(getHabitsErrorMessage(error, "Failed to delete habit")),
   })
 
   const habits = habitsQuery.data ?? []
-  const completedCount = habits.filter((habit) => habit.completed).length
-  const longestStreak = habits.reduce((max, habit) => Math.max(max, habit.streak), 0)
+  const dayHabits = dayQuery.data?.items ?? []
+  const daySummary = dayQuery.data?.summary
+  const completedCount = dayHabits.filter((habit) => habit.completed).length
+  const longestStreakHabit = habits.reduce<(typeof habits)[number] | null>((best, habit) => {
+    if (!best || habit.streak > best.streak) return habit
+    return best
+  }, null)
+  const longestStreak = longestStreakHabit?.streak ?? 0
+  const highHabits = dayHabits.filter((habit) => habit.priority === "high")
+  const highCompleted = highHabits.filter((habit) => habit.completed).length
 
   return {
     habits,
+    dayHabits,
+    dayView: dayQuery.data,
+    selectedDate,
+    setSelectedDate,
     completedCount,
+    highCompleted,
+    highTotal: highHabits.length,
     longestStreak,
+    longestStreakHabitName: longestStreakHabit?.name ?? null,
+    daySummary,
     isLoading: habitsQuery.isLoading && !habitsQuery.data,
+    isDayLoading: dayQuery.isLoading && !dayQuery.data,
     isSaving:
       toggleHabitMutation.isPending ||
+      adjustHabitMutation.isPending ||
       createHabitMutation.isPending ||
+      createPackMutation.isPending ||
       updateHabitMutation.isPending ||
       deleteHabitMutation.isPending,
-    toggleHabit: (id: string) => toggleHabitMutation.mutate(id),
-    createHabit: (name: string, frequency?: string, target?: number) =>
-      createHabitMutation.mutateAsync({ name, frequency, target }),
-    updateHabit: (id: string, payload: { name?: string; frequency?: string; target?: number }) =>
+    toggleHabit: (
+      id: string,
+      opts?: { delayReason?: string; date?: string; cannotDo?: boolean; isLate?: boolean }
+    ) =>
+      toggleHabitMutation.mutateAsync({
+        id,
+        date: opts?.date ?? selectedDate,
+        delay_reason: opts?.delayReason,
+        cannot_do: opts?.cannotDo,
+        is_late: opts?.isLate,
+      }),
+    adjustHabit: (
+      id: string,
+      payload: {
+        direction?: -1 | 1
+        value?: number
+        step?: number
+        delay_reason?: string
+        date?: string
+        cannot_do?: boolean
+        is_late?: boolean
+      }
+    ) =>
+      adjustHabitMutation.mutateAsync({
+        id,
+        payload: {
+          direction: payload.direction,
+          value: payload.value,
+          step: payload.step,
+          delay_reason: payload.delay_reason,
+          cannot_do: payload.cannot_do,
+          is_late: payload.is_late,
+          date: payload.date ?? selectedDate,
+        },
+      }),
+    createHabit: (payload: CreateHabitPayload) => createHabitMutation.mutateAsync(payload),
+    createPack: (payload: CreateHabitPackPayload) => createPackMutation.mutateAsync(payload),
+    updateHabit: (id: string, payload: UpdateHabitPayload) =>
       updateHabitMutation.mutateAsync({ id, payload }),
     deleteHabit: (id: string) => deleteHabitMutation.mutateAsync(id),
-    refetch: habitsQuery.refetch,
+    refetch: () => {
+      habitsQuery.refetch()
+      dayQuery.refetch()
+    },
   }
 }
 

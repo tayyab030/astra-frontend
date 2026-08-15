@@ -5,23 +5,26 @@ import { format, subDays } from "date-fns"
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
+  createHabit as createHabitRequest,
+  deleteHabit as deleteHabitRequest,
+  toggleHabit as toggleHabitRequest,
+  updateHabit as updateHabitRequest,
+} from "@/lib/api/habits"
+import {
   adjustHealthMetric,
-  createHealthHabit,
   createHealthWorkout,
-  deleteHealthHabit,
   deleteHealthSleepSession,
   fetchHealthDashboard,
   getHealthErrorMessage,
   logHealthWeight,
   saveHealthMood,
-  toggleHealthHabit,
   toggleHealthSleep,
   createHealthSleepSession,
   updateHealthSleepSession,
-  updateHealthHabit,
   updateHealthProfile,
   updateHealthTargets,
 } from "@/lib/api/health"
+import { habitsKeys } from "../../habits/_hooks/queryKeys"
 import type {
   AdjustableMetric,
   HealthPeriodFilter,
@@ -86,6 +89,7 @@ export function useHealth() {
 
   const invalidateHealth = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: healthKeys.all })
+    queryClient.invalidateQueries({ queryKey: habitsKeys.all })
   }, [queryClient])
 
   const profile = useMemo(
@@ -214,13 +218,13 @@ export function useHealth() {
   })
 
   const toggleHabitMutation = useMutation({
-    mutationFn: toggleHealthHabit,
+    mutationFn: toggleHabitRequest,
     onSuccess: () => invalidateHealth(),
     onError: (error) => toast.error(getHealthErrorMessage(error, "Failed to update habit")),
   })
 
   const createHabitMutation = useMutation({
-    mutationFn: createHealthHabit,
+    mutationFn: createHabitRequest,
     onSuccess: () => {
       toast.success("Habit created")
       invalidateHealth()
@@ -230,7 +234,7 @@ export function useHealth() {
 
   const updateHabitMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: { name?: string; frequency?: string; target?: number } }) =>
-      updateHealthHabit(id, payload),
+      updateHabitRequest(id, payload),
     onSuccess: () => {
       toast.success("Habit updated")
       invalidateHealth()
@@ -239,7 +243,7 @@ export function useHealth() {
   })
 
   const deleteHabitMutation = useMutation({
-    mutationFn: deleteHealthHabit,
+    mutationFn: deleteHabitRequest,
     onSuccess: () => {
       toast.success("Habit deleted")
       invalidateHealth()
