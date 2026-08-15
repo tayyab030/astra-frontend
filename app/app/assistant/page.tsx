@@ -8,7 +8,17 @@ import { VoiceWaveform } from "@/components/assistant/VoiceWaveform"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { chunkForSpeech, type ChatMessage } from "@/lib/groq"
+import {
+  createAssistantConversation,
+  fetchAssistantSpeechWav,
+  getAssistantConversation,
+  getAssistantErrorMessage,
+  listAssistantConversations,
+  sendAssistantMessage,
+  transcribeAssistantAudioFile,
+  type AssistantChatMessage,
+} from "@/lib/api/assistant"
+import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
 
 type Message = {
   id: string
@@ -20,13 +30,22 @@ type Message = {
 const WELCOME: Message = {
   id: "welcome",
   content:
-    "Good day. I am Astra. Click the mic to speak, or type a message. I listen with Groq Whisper and reply with voice.",
+    "Good day. I am Astra. I know your profile and wealth data. Click the mic to speak, or type a message.",
   role: "assistant",
   timestamp: new Date(),
 }
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function mapApiMessage(message: AssistantChatMessage): Message {
+  return {
+    id: message.id,
+    content: message.content,
+    role: message.role,
+    timestamp: new Date(message.created_at),
+  }
 }
 
 function pickRecorderMimeType() {
@@ -51,7 +70,7 @@ export default function AssistantPage() {
   const [error, setError] = useState<string | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
 
-  const historyRef = useRef<ChatMessage[]>([])
+  const conversationIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const stopSpeechRef = useRef(false)
@@ -70,11 +89,9 @@ export default function AssistantPage() {
     return audioRef.current
   }
 
-  /** Unlock autoplay during a user gesture (send / mic). */
   const unlockAudio = async () => {
     const audio = ensureAudioElement()
     try {
-      // Tiny silent wav to unlock playback for later async TTS.
       audio.src =
         "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"
       audio.muted = true
@@ -85,7 +102,7 @@ export default function AssistantPage() {
       audio.removeAttribute("src")
       audio.load()
     } catch {
-      // Ignore unlock failures; real playback may still work after a click.
+      // Ignore unlock failures.
     }
   }
 
@@ -96,6 +113,29 @@ export default function AssistantPage() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, isLoading, isSpeaking, isRecording, isTranscribing])
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const conversations = await listAssistantConversations()
+        if (cancelled) return
+        const latest = conversations[0]
+        if (!latest) return
+        const detail = await getAssistantConversation(latest.id)
+        if (cancelled) return
+        conversationIdRef.current = detail.conversation.id
+        if (detail.messages.length > 0) {
+          setMessages(detail.messages.map(mapApiMessage))
+        }
+      } catch {
+        // Keep welcome message if history cannot load.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -128,7 +168,7 @@ export default function AssistantPage() {
   const playWavBytes = async (bytes: ArrayBuffer) => {
     const header = new TextDecoder().decode(bytes.slice(0, 4))
     if (header !== "RIFF") {
-      throw new Error("Invalid audio from Groq (expected WAV).")
+      throw new Error("Invalid audio from assistant (expected WAV).")
     }
 
     const blob = new Blob([bytes], { type: "audio/wav" })
@@ -148,7 +188,7 @@ export default function AssistantPage() {
         }
         const onError = () => {
           cleanup()
-          reject(new Error("Browser could not decode Groq audio."))
+          reject(new Error("Browser could not decode audio."))
         }
         const cleanup = () => {
           audio.removeEventListener("ended", onEnded)
@@ -162,7 +202,6 @@ export default function AssistantPage() {
       await audio.play()
       await waitForElementEnd()
     } catch {
-      // Fallback for browsers that reject HTMLAudioElement after async delays.
       const context = new AudioContext()
       try {
         if (context.state === "suspended") {
@@ -191,7 +230,7 @@ export default function AssistantPage() {
     }
   }
 
-  const speakWithGroq = async (text: string) => {
+  const speakReply = async (text: string) => {
     stopSpeechRef.current = false
     setIsSpeaking(true)
 
@@ -199,23 +238,10 @@ export default function AssistantPage() {
       const chunks = chunkForSpeech(text)
       for (const chunk of chunks) {
         if (stopSpeechRef.current) break
-
-        const response = await fetch("/api/assistant/speech", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: chunk }),
-        })
-
-        if (!response.ok) {
-          const data = (await response.json().catch(() => null)) as { error?: string } | null
-          throw new Error(data?.error ?? `Speech failed (${response.status})`)
-        }
-
-        const bytes = await response.arrayBuffer()
+        const bytes = await fetchAssistantSpeechWav(chunk)
         if (!bytes.byteLength) {
-          throw new Error("Empty audio returned from Groq.")
+          throw new Error("Empty audio returned.")
         }
-
         await playWavBytes(bytes)
       }
     } finally {
@@ -229,61 +255,48 @@ export default function AssistantPage() {
 
     await unlockAudio()
 
-    const userMessage: Message = {
+    const optimistic: Message = {
       id: createId(),
       content: text,
       role: "user",
       timestamp: new Date(),
     }
 
-    setMessages((prev) => [...prev, userMessage])
+    setMessages((prev) => [...prev, optimistic])
     setInput("")
     setError(null)
     setIsLoading(true)
-    historyRef.current = [...historyRef.current, { role: "user", content: text }]
     stopSpeech()
     stopSpeechRef.current = false
 
     try {
-      const response = await fetch("/api/assistant/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: historyRef.current }),
+      const result = await sendAssistantMessage({
+        message: text,
+        conversationId: conversationIdRef.current,
       })
+      conversationIdRef.current = result.conversation.id
 
-      const data = (await response.json()) as { content?: string; error?: string }
-      if (!response.ok || !data.content) {
-        throw new Error(data.error ?? `Request failed (${response.status})`)
-      }
+      const userMessage = mapApiMessage(result.user_message)
+      const assistantMessage = mapApiMessage(result.assistant_message)
 
-      const assistantMessage: Message = {
-        id: createId(),
-        content: data.content,
-        role: "assistant",
-        timestamp: new Date(),
-      }
-
-      historyRef.current = [
-        ...historyRef.current,
-        { role: "assistant", content: data.content },
-      ]
-      setMessages((prev) => [...prev, assistantMessage])
+      setMessages((prev) => {
+        const withoutOptimistic = prev.filter((item) => item.id !== optimistic.id)
+        return [...withoutOptimistic, userMessage, assistantMessage]
+      })
 
       if (speakRepliesRef.current) {
         try {
-          await speakWithGroq(data.content)
+          await speakReply(assistantMessage.content)
         } catch (speechError) {
-          console.warn("[groq-tts]", speechError)
+          console.warn("[assistant-tts]", speechError)
           setError(
-            speechError instanceof Error
-              ? `Reply ready, but speech failed: ${speechError.message}`
-              : "Reply ready, but speech failed."
+            getAssistantErrorMessage(speechError, "Reply ready, but speech failed.")
           )
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to reach Astra."
-      setError(message)
+      setMessages((prev) => prev.filter((item) => item.id !== optimistic.id))
+      setError(getAssistantErrorMessage(err, "Failed to reach Astra."))
     } finally {
       setIsLoading(false)
     }
@@ -325,26 +338,15 @@ export default function AssistantPage() {
             }
 
             setIsTranscribing(true)
-            const formData = new FormData()
             const extension = blobType.includes("mp4")
               ? "mp4"
               : blobType.includes("ogg")
                 ? "ogg"
                 : "webm"
-            formData.append("file", blob, `voice.${extension}`)
-
-            const response = await fetch("/api/assistant/transcribe", {
-              method: "POST",
-              body: formData,
-            })
-            const data = (await response.json()) as { text?: string; error?: string }
-            if (!response.ok || !data.text) {
-              throw new Error(data.error ?? `Transcription failed (${response.status})`)
-            }
-
-            await handleSendText(data.text)
+            const text = await transcribeAssistantAudioFile(blob, `voice.${extension}`)
+            await handleSendText(text)
           } catch (err) {
-            setError(err instanceof Error ? err.message : "Voice transcription failed.")
+            setError(getAssistantErrorMessage(err, "Voice transcription failed."))
           } finally {
             setIsTranscribing(false)
             setIsRecording(false)
@@ -376,15 +378,19 @@ export default function AssistantPage() {
       setMicStream(null)
       return
     }
-    // Return composer to text mode immediately; transcription continues in onstop.
     setIsRecording(false)
     recorder.stop()
   }
 
-  const clearChat = () => {
+  const clearChat = async () => {
     stopSpeech()
     if (isRecording) stopRecording()
-    historyRef.current = []
+    try {
+      const conversation = await createAssistantConversation("New chat")
+      conversationIdRef.current = conversation.id
+    } catch {
+      conversationIdRef.current = null
+    }
     setMessages([{ ...WELCOME, id: createId(), timestamp: new Date() }])
     setError(null)
   }
@@ -399,7 +405,7 @@ export default function AssistantPage() {
   const statusLabel = isRecording
     ? "Listening… click send to finish"
     : isTranscribing
-      ? "Transcribing with Whisper…"
+      ? "Transcribing…"
       : isLoading
         ? "Astra is thinking…"
         : isSpeaking
@@ -449,7 +455,7 @@ export default function AssistantPage() {
               type="button"
               variant="outline"
               size="icon"
-              onClick={clearChat}
+              onClick={() => void clearChat()}
               aria-label="Clear chat"
             >
               <Trash2 className="h-4 w-4" />

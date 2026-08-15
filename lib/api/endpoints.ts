@@ -101,9 +101,12 @@ export const API_ENDPOINTS = {
 
   // Assistant endpoints
   ASSISTANT: {
-    // CHAT: "/assistant/chat",
-    // HISTORY: "/assistant/history",
-    // CLEAR_HISTORY: "/assistant/clear-history",
+    CHAT: "/assistant/chat/",
+    SPEECH: "/assistant/speech/",
+    TRANSCRIBE: "/assistant/transcribe/",
+    TRANSCRIBE_BASE64: "/assistant/transcribe/base64/",
+    CONVERSATIONS: "/assistant/conversations/",
+    CONVERSATION: (id: string) => `/assistant/conversations/${id}/`,
   },
 
   // Settings endpoints
