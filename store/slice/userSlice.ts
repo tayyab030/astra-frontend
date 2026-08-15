@@ -17,6 +17,7 @@ export interface User {
   ai_personality?: "professional" | "casual" | "motivational";
   ai_insights?: boolean;
   ai_data_scope?: "tasks" | "productivity" | "all";
+  ai_language?: string;
 }
 
 interface UserState {

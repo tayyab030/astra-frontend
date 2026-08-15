@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { Bot, Menu, MessageSquarePlus, Mic, Send, Square, User, Volume2, VolumeX } from "lucide-react"
 
 import { ConversationSidebar } from "@/components/assistant/ConversationSidebar"
+import { LanguageSelect } from "@/components/assistant/LanguageSelect"
 import { VoiceWaveform } from "@/components/assistant/VoiceWaveform"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -23,9 +24,15 @@ import {
   type AssistantConversation,
 } from "@/lib/api/assistant"
 import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
-import { fetchCurrentUser } from "@/lib/api/user"
+import { fetchCurrentUser, updateCurrentUser } from "@/lib/api/user"
 import { DEFAULT_AI_VOICE_MODE } from "@/lib/ai-settings"
-import { useQuery } from "@tanstack/react-query"
+import {
+  DEFAULT_AI_LANGUAGE,
+  isAiLanguage,
+  type AiLanguage,
+} from "@/lib/ai-language"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 type Message = {
   id: string
@@ -74,6 +81,7 @@ export default function AssistantPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [speakReplies, setSpeakReplies] = useState(DEFAULT_AI_VOICE_MODE)
+  const [aiLanguage, setAiLanguage] = useState<AiLanguage>(DEFAULT_AI_LANGUAGE)
   const [error, setError] = useState<string | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
   const [conversations, setConversations] = useState<AssistantConversation[]>([])
@@ -82,6 +90,7 @@ export default function AssistantPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [historyBusy, setHistoryBusy] = useState(false)
 
+  const queryClient = useQueryClient()
   const { data: me } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: fetchCurrentUser,
@@ -92,7 +101,26 @@ export default function AssistantPage() {
     setSpeakReplies(
       typeof me.ai_voice_mode === "boolean" ? me.ai_voice_mode : DEFAULT_AI_VOICE_MODE
     )
+    setAiLanguage(isAiLanguage(me.ai_language) ? me.ai_language : DEFAULT_AI_LANGUAGE)
   }, [me])
+
+  const { mutate: saveLanguage, isPending: isSavingLanguage } = useMutation({
+    mutationFn: updateCurrentUser,
+    onSuccess: (user) => {
+      setAiLanguage(isAiLanguage(user.ai_language) ? user.ai_language : DEFAULT_AI_LANGUAGE)
+      queryClient.setQueryData(["auth", "me"], user)
+      toast.success("Language updated")
+    },
+    onError: (error) => {
+      toast.error(getAssistantErrorMessage(error, "Failed to update language"))
+    },
+  })
+
+  const handleLanguageChange = (value: string) => {
+    if (!isAiLanguage(value) || value === aiLanguage || isSavingLanguage) return
+    setAiLanguage(value)
+    saveLanguage({ ai_language: value })
+  }
 
   const conversationIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -586,7 +614,12 @@ export default function AssistantPage() {
               <p className="astra-subtitle text-xs md:text-sm">Chats save automatically</p>
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <LanguageSelect
+              value={aiLanguage}
+              onValueChange={handleLanguageChange}
+              disabled={isSavingLanguage}
+            />
             <Button
               type="button"
               variant="outline"

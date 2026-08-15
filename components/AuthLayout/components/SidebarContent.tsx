@@ -26,6 +26,7 @@ import {
     Settings,
     LogOut,
     Target,
+    Flame,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,6 +38,7 @@ const sidebarItems = [
     { id: "goals", label: "Goals", icon: Target, href: ROUTES.APP.GOALS },
     { id: "wealth", label: "Wealth", icon: DollarSign, href: ROUTES.APP.WEALTH },
     { id: "health", label: "Health", icon: Heart, href: ROUTES.APP.HEALTH },
+    { id: "habits", label: "Habits", icon: Flame, href: ROUTES.APP.HABITS },
     { id: "notes", label: "Notes", icon: FileText, href: ROUTES.APP.NOTES },
     { id: "assistant", label: "Assistant", icon: Bot, href: ROUTES.APP.ASSISTANT },
     { id: "communication", label: "Communication", icon: Mail, href: ROUTES.APP.COMMUNICATION },

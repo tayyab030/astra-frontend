@@ -70,12 +70,16 @@ export async function updateAssistantConversation(id: string, title: string) {
 }
 
 export async function fetchAssistantSpeechWav(text: string) {
-  const response = await authApi.post<ArrayBuffer>(
-    ASSISTANT.SPEECH,
-    { text },
-    { responseType: "arraybuffer" }
-  )
-  return response.data
+  try {
+    const response = await authApi.post<ArrayBuffer>(
+      ASSISTANT.SPEECH,
+      { text },
+      { responseType: "arraybuffer" }
+    )
+    return response.data
+  } catch (error) {
+    throw decodeSpeechError(error)
+  }
 }
 
 export async function transcribeAssistantAudioFile(file: Blob, fileName = "voice.webm") {
@@ -87,14 +91,68 @@ export async function transcribeAssistantAudioFile(file: Blob, fileName = "voice
   return response.data.text
 }
 
-export function getAssistantErrorMessage(error: unknown, fallback: string) {
-  const responseData = (error as { response?: { data?: Record<string, unknown> } })?.response
-    ?.data
-  if (!responseData) {
-    return error instanceof Error ? error.message : fallback
+function decodeSpeechError(error: unknown): Error {
+  const responseData = (error as { response?: { data?: unknown } })?.response?.data
+  const message = parseSpeechErrorPayload(responseData)
+  if (message) return new Error(message)
+  if (error instanceof Error && error.message) return error
+  return new Error("Speech request failed.")
+}
+
+function parseSpeechErrorPayload(data: unknown): string | null {
+  if (!data) return null
+
+  if (typeof data === "string") {
+    try {
+      return parseSpeechErrorPayload(JSON.parse(data))
+    } catch {
+      return data.trim() || null
+    }
   }
-  if (typeof responseData.message === "string") return responseData.message
-  if (typeof responseData.detail === "string") return responseData.detail
-  if (typeof responseData.error === "string") return responseData.error
+
+  if (typeof ArrayBuffer !== "undefined" && data instanceof ArrayBuffer) {
+    try {
+      const text = new TextDecoder().decode(data)
+      return parseSpeechErrorPayload(JSON.parse(text))
+    } catch {
+      return null
+    }
+  }
+
+  if (typeof Uint8Array !== "undefined" && data instanceof Uint8Array) {
+    try {
+      const text = new TextDecoder().decode(data)
+      return parseSpeechErrorPayload(JSON.parse(text))
+    } catch {
+      return null
+    }
+  }
+
+  if (typeof data === "object" && data !== null) {
+    const record = data as Record<string, unknown>
+    if (typeof record.message === "string") return record.message
+    if (Array.isArray(record.message) && typeof record.message[0] === "string") {
+      return record.message[0]
+    }
+    if (typeof record.detail === "string") return record.detail
+    if (typeof record.error === "string") return record.error
+    if (
+      record.error &&
+      typeof record.error === "object" &&
+      typeof (record.error as { message?: unknown }).message === "string"
+    ) {
+      return (record.error as { message: string }).message
+    }
+  }
+
+  return null
+}
+
+export function getAssistantErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message
+  const fromPayload = parseSpeechErrorPayload(
+    (error as { response?: { data?: unknown } })?.response?.data
+  )
+  if (fromPayload) return fromPayload
   return fallback
 }

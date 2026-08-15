@@ -2,7 +2,6 @@ export type HealthTabId =
   | "overview"
   | "weight"
   | "tracking"
-  | "habits"
   | "exercise"
   | "wellness"
   | "insights"

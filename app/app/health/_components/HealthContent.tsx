@@ -18,10 +18,6 @@ const TrackingTab = dynamic(
   () => import("./TrackingTab").then((m) => ({ default: m.TrackingTab })),
   { loading: () => <TabSkeleton tall /> }
 )
-const HabitsTab = dynamic(
-  () => import("./HabitsTab").then((m) => ({ default: m.HabitsTab })),
-  { loading: () => <TabSkeleton /> }
-)
 const ExerciseTab = dynamic(
   () => import("./ExerciseTab").then((m) => ({ default: m.ExerciseTab })),
   { loading: () => <TabSkeleton /> }
@@ -58,9 +54,6 @@ export function HealthContent({ currentView, onTabChange }: HealthContentProps) 
         </TabsContent>
         <TabsContent value="tracking" className="mt-4">
           {currentView === "tracking" ? <TrackingTab /> : null}
-        </TabsContent>
-        <TabsContent value="habits" className="mt-4">
-          {currentView === "habits" ? <HabitsTab /> : null}
         </TabsContent>
         <TabsContent value="exercise" className="mt-4">
           {currentView === "exercise" ? <ExerciseTab /> : null}

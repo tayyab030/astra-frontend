@@ -1,8 +1,10 @@
 "use client"
 
 import { Dumbbell, Droplets, Moon, Target, Zap } from "lucide-react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { ROUTES } from "@/constants/routes"
 import { AI_HEALTH_INSIGHTS } from "../constants"
 import { useHealthContext } from "../../_context/HealthProvider"
 import { METRIC_STEP } from "../constants"
@@ -68,7 +70,12 @@ export function OverviewTab() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-mono text-slate-200">Habits</span>
+              <Link
+                href={ROUTES.APP.HABITS}
+                className="text-sm font-mono text-slate-200 hover:text-cyan-300 transition-colors"
+              >
+                Habits
+              </Link>
               <div className="flex items-center space-x-2">
                 <Progress value={habitsProgress} className="w-24 h-2" />
                 <span className="text-sm text-slate-400 font-mono">{Math.round(habitsProgress)}%</span>

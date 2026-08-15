@@ -2,6 +2,7 @@ import { authApi } from "./simpleApi"
 import { API_ENDPOINTS } from "./endpoints"
 import type { AiVoice } from "@/lib/ai-voice"
 import type { AiDataScope, AiPersonality } from "@/lib/ai-settings"
+import type { AiLanguage } from "@/lib/ai-language"
 
 const { AUTH } = API_ENDPOINTS
 
@@ -21,6 +22,7 @@ export interface AuthUser {
   ai_personality: AiPersonality
   ai_insights: boolean
   ai_data_scope: AiDataScope
+  ai_language: AiLanguage
 }
 
 export interface UpdateProfilePayload {
@@ -35,6 +37,7 @@ export interface UpdateProfilePayload {
   ai_personality?: AiPersonality
   ai_insights?: boolean
   ai_data_scope?: AiDataScope
+  ai_language?: AiLanguage
 }
 
 export function getUserErrorMessage(error: unknown, fallback: string) {
