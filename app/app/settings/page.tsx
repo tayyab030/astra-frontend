@@ -81,6 +81,19 @@ import {
   type AiDataScope,
   type AiPersonality,
 } from "@/lib/ai-settings"
+import {
+  DEFAULT_MODULE_ENABLED,
+  DEFAULT_MODULE_WEIGHTS,
+  MODULE_TOGGLE_KEYS,
+  MODULE_TOGGLE_LABELS,
+  MODULE_WEIGHT_KEYS,
+  MODULE_WEIGHT_LABELS,
+  moduleWeightsTotal,
+  normalizeModuleSettings,
+  type ModuleEnabled,
+  type ModuleWeightKey,
+  type ModuleWeights,
+} from "@/lib/module-settings"
 
 const ACCENT_OPTIONS = [
   {
@@ -168,11 +181,11 @@ export default function SettingsPage() {
   })
   const [quietHours, setQuietHours] = useState({ start: "22:00", end: "08:00" })
 
-  const [moduleWeights, setModuleWeights] = useState({
-    productivity: 25,
-    health: 25,
-    wealth: 25,
-    knowledge: 25,
+  const [moduleWeights, setModuleWeights] = useState<ModuleWeights>({
+    ...DEFAULT_MODULE_WEIGHTS,
+  })
+  const [moduleEnabled, setModuleEnabled] = useState<ModuleEnabled>({
+    ...DEFAULT_MODULE_ENABLED,
   })
 
   // Token from when this page mounted / started loading profile — ignores late overwrites.
@@ -224,6 +237,9 @@ export default function SettingsPage() {
         ? profile.ai_data_scope
         : DEFAULT_AI_DATA_SCOPE
     )
+    const modules = normalizeModuleSettings(profile.module_settings)
+    setModuleWeights(modules.weights)
+    setModuleEnabled(modules.enabled)
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
   }, [profile, dispatch, setTheme])
@@ -307,21 +323,40 @@ export default function SettingsPage() {
     },
   })
 
+  const { mutate: saveModuleSettings, isPending: isSavingModules } = useMutation({
+    mutationFn: updateCurrentUser,
+    onSuccess: (user) => {
+      dispatch(setUser(user))
+      const modules = normalizeModuleSettings(user.module_settings)
+      setModuleWeights(modules.weights)
+      setModuleEnabled(modules.enabled)
+      queryClient.setQueryData(["auth", "me"], user)
+      toast.success("Module settings updated")
+    },
+    onError: (error) => {
+      const cached = queryClient.getQueryData<Awaited<ReturnType<typeof fetchCurrentUser>>>([
+        "auth",
+        "me",
+      ])
+      if (cached) {
+        const modules = normalizeModuleSettings(cached.module_settings)
+        setModuleWeights(modules.weights)
+        setModuleEnabled(modules.enabled)
+      }
+      toast.error(getUserErrorMessage(error, "Failed to update module settings"))
+    },
+  })
+
   const handleSaveProfile = () => {
     if (!firstName.trim() || !lastName.trim()) {
       toast.error("First name and last name are required")
       return
     }
 
-    if (!gender) {
-      toast.error("Gender is required")
-      return
-    }
-
     saveProfile({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      gender,
+      ...(gender ? { gender } : {}),
       currency: profileCurrency,
       timezone,
     })
@@ -330,6 +365,41 @@ export default function SettingsPage() {
   const handleCurrencyChange = (nextCurrency: string) => {
     setProfileCurrency(nextCurrency)
     setCurrency(nextCurrency)
+  }
+
+  const weightsTotal = moduleWeightsTotal(moduleWeights)
+
+  const handleModuleWeightChange = (key: ModuleWeightKey, value: number) => {
+    setModuleWeights((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleModuleEnabledChange = (
+    key: (typeof MODULE_TOGGLE_KEYS)[number],
+    checked: boolean
+  ) => {
+    setModuleEnabled((prev) => {
+      const next = { ...prev, [key]: checked }
+      saveModuleSettings({
+        module_settings: {
+          weights: moduleWeights,
+          enabled: next,
+        },
+      })
+      return next
+    })
+  }
+
+  const handleSaveModules = () => {
+    if (weightsTotal !== 100) {
+      toast.error("Module weights must add up to 100%")
+      return
+    }
+    saveModuleSettings({
+      module_settings: {
+        weights: moduleWeights,
+        enabled: moduleEnabled,
+      },
+    })
   }
 
   const handleThemeChange = (nextTheme: UserTheme) => {
@@ -545,8 +615,12 @@ export default function SettingsPage() {
                         <Select
                           value={gender || undefined}
                           onValueChange={(value) => setGender(value as UserGender)}
+                          disabled
                         >
-                          <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono w-full">
+                          <SelectTrigger
+                            id="gender"
+                            className="bg-secondary/40 border-border text-muted-foreground font-mono w-full"
+                          >
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
                           <SelectContent className="bg-popover border-border">
@@ -586,8 +660,11 @@ export default function SettingsPage() {
                         <Label htmlFor="language" className="font-mono text-muted-foreground">
                           Language
                         </Label>
-                        <Select defaultValue="en">
-                          <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono w-full">
+                        <Select defaultValue="en" disabled>
+                          <SelectTrigger
+                            id="language"
+                            className="bg-secondary/40 border-border text-muted-foreground font-mono w-full"
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-popover border-border">
@@ -725,35 +802,6 @@ export default function SettingsPage() {
                     Accent follows your theme automatically.
                   </p>
                 </div>
-
-                <div className="space-y-4">
-                  <Label className="font-mono text-muted-foreground">Dashboard Layout</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      variant="outline"
-                      className="h-16 flex-col bg-secondary/60 border-border text-foreground hover:bg-accent font-mono"
-                    >
-                      <div className="grid grid-cols-2 gap-1 w-8 h-6 mb-2">
-                        <div className="bg-primary/50 rounded-sm"></div>
-                        <div className="bg-primary/50 rounded-sm"></div>
-                        <div className="bg-primary/50 rounded-sm"></div>
-                        <div className="bg-primary/50 rounded-sm"></div>
-                      </div>
-                      Grid View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-16 flex-col bg-secondary/60 border-border text-foreground hover:bg-accent font-mono"
-                    >
-                      <div className="space-y-1 w-8 h-6 mb-2">
-                        <div className="bg-primary/50 rounded-sm h-1"></div>
-                        <div className="bg-primary/50 rounded-sm h-1"></div>
-                        <div className="bg-primary/50 rounded-sm h-1"></div>
-                      </div>
-                      List View
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -769,23 +817,51 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <Label className="font-mono text-muted-foreground">Module Weights (affects Life Score calculation)</Label>
-                  {Object.entries(moduleWeights).map(([module, weight]) => (
+                  <div className="flex items-center justify-between gap-3">
+                    <Label className="font-mono text-muted-foreground">
+                      Module Weights (affects Life Score calculation)
+                    </Label>
+                    <span
+                      className={cn(
+                        "text-sm font-mono",
+                        weightsTotal === 100 ? "text-muted-foreground" : "text-destructive"
+                      )}
+                    >
+                      Total {weightsTotal}%
+                    </span>
+                  </div>
+                  {MODULE_WEIGHT_KEYS.map((module) => (
                     <div key={module} className="space-y-2">
                       <div className="flex justify-between">
-                        <Label className="capitalize font-mono text-muted-foreground">{module}</Label>
-                        <span className="text-sm text-muted-foreground font-mono">{weight}%</span>
+                        <Label className="font-mono text-muted-foreground">
+                          {MODULE_WEIGHT_LABELS[module]}
+                        </Label>
+                        <span className="text-sm text-muted-foreground font-mono">
+                          {moduleWeights[module]}%
+                        </span>
                       </div>
                       <Slider
-                        value={[weight]}
-                        onValueChange={(value) => setModuleWeights((prev) => ({ ...prev, [module]: value[0] }))}
+                        value={[moduleWeights[module]]}
+                        onValueChange={(value) =>
+                          handleModuleWeightChange(module, value[0] ?? 0)
+                        }
                         max={50}
                         min={0}
                         step={5}
                         className="w-full"
+                        disabled={isSavingModules}
                       />
                     </div>
                   ))}
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSaveModules}
+                      disabled={isSavingModules || weightsTotal !== 100}
+                      className="font-mono bg-primary text-primary-foreground"
+                    >
+                      {isSavingModules ? "Saving…" : "Save Weights"}
+                    </Button>
+                  </div>
                 </div>
 
                 <Separator />
@@ -793,13 +869,26 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <Label className="font-mono text-muted-foreground">Enable/Disable Modules</Label>
                   <div className="space-y-3">
-                    {["Tasks", "Wealth", "Health", "Notes", "Analytics"].map((module) => (
+                    {MODULE_TOGGLE_KEYS.map((module) => (
                       <div key={module} className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="font-mono text-muted-foreground">{module}</span>
+                          <div
+                            className={cn(
+                              "w-2 h-2 rounded-full",
+                              moduleEnabled[module] ? "bg-green-500" : "bg-muted-foreground/40"
+                            )}
+                          />
+                          <span className="font-mono text-muted-foreground">
+                            {MODULE_TOGGLE_LABELS[module]}
+                          </span>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch
+                          checked={moduleEnabled[module]}
+                          disabled={isSavingModules}
+                          onCheckedChange={(checked) =>
+                            handleModuleEnabledChange(module, checked)
+                          }
+                        />
                       </div>
                     ))}
                   </div>

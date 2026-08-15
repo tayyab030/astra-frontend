@@ -452,27 +452,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setPage((p) => p + 1)
   }, [])
 
-  const runAiAction = useCallback((actionId: string, noteId?: string) => {
-    const actionLabels: Record<string, string> = {
-      summarize: "Summary generated",
-      improve: "Writing improved",
-      grammar: "Grammar fixed",
-      translate: "Translation ready",
-      "action-items": "Action items extracted",
-      "extract-tasks": "Tasks extracted",
-      "extract-events": "Events extracted",
-      flashcards: "Flashcards generated",
-      quiz: "Quiz generated",
-      "mind-map": "Mind map generated",
-      "suggest-tags": "Tags suggested",
-      "suggest-category": "Category suggested",
-      related: "Related notes found",
-      duplicates: "No duplicates found",
-      merge: "Similar notes identified",
-      chat: "AI chat opened",
-    }
-    toast.success(actionLabels[actionId] ?? "AI action completed", {
-      description: noteId ? "Applied to note" : undefined,
+  const runAiAction = useCallback((_actionId: string, _noteId?: string) => {
+    toast.message("Coming soon", {
+      description: "AI note actions are not available yet.",
     })
   }, [])
 

@@ -1,6 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { revertAll } from "./resetStore";
 import type { AppTheme } from "@/lib/theme";
+import type { AiVoice } from "@/lib/ai-voice";
+import type { AiDataScope, AiPersonality } from "@/lib/ai-settings";
+import type { AiLanguage } from "@/lib/ai-language";
+import type { ModuleSettings } from "@/lib/module-settings";
 
 export interface User {
   id: string;
@@ -13,12 +17,13 @@ export interface User {
   country?: string | null;
   timezone?: string;
   theme?: AppTheme;
-  ai_voice?: "austin" | "daniel" | "troy" | "autumn" | "diana" | "hannah";
+  ai_voice?: AiVoice;
   ai_voice_mode?: boolean;
-  ai_personality?: "professional" | "casual" | "motivational";
+  ai_personality?: AiPersonality;
   ai_insights?: boolean;
-  ai_data_scope?: "tasks" | "productivity" | "all";
-  ai_language?: string;
+  ai_data_scope?: AiDataScope;
+  ai_language?: AiLanguage;
+  module_settings?: ModuleSettings;
 }
 
 interface UserState {

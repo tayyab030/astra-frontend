@@ -29,8 +29,8 @@ const SideBarDrawer = () => {
                     <Menu className="h-4 w-4" />
                 </Button>
             </DrawerTrigger>
-            <DrawerContent className="astra-sidebar min-h-screen w-64">
-                <nav className="space-y-2 p-4">
+            <DrawerContent className="astra-sidebar flex min-h-screen w-64 flex-col">
+                <nav className="flex h-full min-h-0 flex-1 flex-col p-4">
                     <SidebarContent isSidebarOpen={isSidebarOpen} />
                 </nav>
             </DrawerContent>

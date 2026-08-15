@@ -49,9 +49,11 @@ import {
 } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
 import { useAiInsight } from "@/hooks/useAiInsight"
+import { useAppSelector } from "@/store/hooks"
 import { useAnalytics } from "../_hooks/useAnalytics"
 import type { AnalyticsPeriod } from "../_utils/dateRanges"
 import type { AnalyticsComputed } from "../_utils/computeAnalytics"
+import { exportAnalyticsReport } from "../_utils/exportAnalytics"
 
 const taskChartConfig = {
   completed: { label: "Completed", color: "hsl(var(--primary))" },
@@ -110,6 +112,7 @@ const CROSS_DOMAIN_ICONS = [Moon, CheckSquare, FileText] as const
 
 export function AnalyticsContent() {
   const { formatCurrency } = useCurrency()
+  const user = useAppSelector((state) => state.user.user)
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>("week")
   const { analytics, isLoading, isError, refetch } = useAnalytics(selectedPeriod)
 
@@ -124,9 +127,23 @@ export function AnalyticsContent() {
   })
 
   const handleExport = () => {
-    toast.message("Export Report", {
-      description: "Live export is coming soon.",
-    })
+    if (!analytics) return
+    try {
+      const userName =
+        [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim() ||
+        user?.username ||
+        user?.email ||
+        ""
+      const filename = exportAnalyticsReport(analytics, {
+        formatCurrency,
+        userName,
+      })
+      toast.success("PDF report downloaded", {
+        description: filename,
+      })
+    } catch {
+      toast.error("Couldn’t generate PDF report")
+    }
   }
 
   const periodTitle =

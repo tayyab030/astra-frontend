@@ -27,6 +27,8 @@ import {
 } from "lucide-react"
 import { useAnalytics } from "../../analytics/_hooks/useAnalytics"
 import { useAiInsight } from "@/hooks/useAiInsight"
+import { useAppSelector } from "@/store/hooks"
+import { normalizeModuleSettings } from "@/lib/module-settings"
 import { computeLifeScoreView } from "../_utils/computeLifeScore"
 
 const colorMap = {
@@ -69,10 +71,16 @@ function levelIcon(key: string) {
 export function LifeScoreContent() {
   const [selectedPeriod, setSelectedPeriod] = useState<"day" | "week" | "month">("week")
   const { analytics, isLoading, isError, refetch } = useAnalytics(selectedPeriod)
+  const moduleSettings = useAppSelector((state) => state.user.user?.module_settings)
+  const weights = useMemo(
+    () => normalizeModuleSettings(moduleSettings).weights,
+    [moduleSettings]
+  )
+  const weightSummary = `${weights.productivity}/${weights.health}/${weights.wealth}/${weights.knowledge}`
 
   const view = useMemo(
-    () => (analytics ? computeLifeScoreView(analytics) : null),
-    [analytics]
+    () => (analytics ? computeLifeScoreView(analytics, weights) : null),
+    [analytics, weights]
   )
 
   const insightContext = view
@@ -280,11 +288,11 @@ export function LifeScoreContent() {
             Category Breakdown
           </CardTitle>
           <CardDescription>
-            Weighted contribution to your 100-point Life Score (25/25/25/15/10)
+            Weighted contribution to your 100-point Life Score ({weightSummary})
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {view.weightedCategories.map((category) => {
               const Icon =
                 categoryIcons[category.name as keyof typeof categoryIcons] ?? Target

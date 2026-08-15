@@ -1,11 +1,28 @@
 import type { AnalyticsComputed } from "../../analytics/_utils/computeAnalytics"
+import {
+  normalizeModuleWeights,
+  type ModuleWeights,
+} from "@/lib/module-settings"
 
-export const LIFE_SCORE_WEIGHTS = [
-  { name: "Productivity", maxScore: 25, weightLabel: "25%", color: "blue" },
-  { name: "Health", maxScore: 25, weightLabel: "25%", color: "green" },
-  { name: "Wealth", maxScore: 25, weightLabel: "25%", color: "yellow" },
-  { name: "Knowledge", maxScore: 25, weightLabel: "25%", color: "purple" },
-] as const
+const CATEGORY_META = [
+  { key: "productivity" as const, name: "Productivity", color: "blue" },
+  { key: "health" as const, name: "Health", color: "green" },
+  { key: "wealth" as const, name: "Wealth", color: "yellow" },
+  { key: "knowledge" as const, name: "Knowledge", color: "purple" },
+]
+
+export function buildLifeScoreWeights(weights?: Partial<ModuleWeights> | null) {
+  const resolved = normalizeModuleWeights(weights)
+  return CATEGORY_META.map((meta) => ({
+    name: meta.name,
+    maxScore: resolved[meta.key],
+    weightLabel: `${resolved[meta.key]}%`,
+    color: meta.color,
+  }))
+}
+
+/** Default equal weights — prefer buildLifeScoreWeights(user.module_settings.weights). */
+export const LIFE_SCORE_WEIGHTS = buildLifeScoreWeights()
 
 export interface WeightedCategory {
   name: string
@@ -45,14 +62,19 @@ export function getScoreLevel(score: number) {
   return { level: "Survivor", key: "survivor" as const }
 }
 
-export function computeLifeScoreView(analytics: AnalyticsComputed) {
+export function computeLifeScoreView(
+  analytics: AnalyticsComputed,
+  moduleWeights?: Partial<ModuleWeights> | null
+) {
   const periodLabel = analytics.periodLabel
-  const weightedCategories: WeightedCategory[] = LIFE_SCORE_WEIGHTS.map((weight) => {
+  const lifeScoreWeights = buildLifeScoreWeights(moduleWeights)
+  const weightedCategories: WeightedCategory[] = lifeScoreWeights.map((weight) => {
     const category = analytics.categories.find((item) => item.name === weight.name)
     const percent = category?.score ?? 0
+    const previousPercent = category?.previousScore ?? 0
     const score = Math.round((percent / 100) * weight.maxScore)
-    const trendDelta =
-      category?.trend === "up" ? 3 : category?.trend === "down" ? -3 : 0
+    const previousWeighted = Math.round((previousPercent / 100) * weight.maxScore)
+    const trendDelta = score - previousWeighted
     return {
       name: weight.name,
       score,
@@ -67,6 +89,15 @@ export function computeLifeScoreView(analytics: AnalyticsComputed) {
   const weightedOverall = Math.round(
     weightedCategories.reduce((sum, category) => sum + category.score, 0)
   )
+
+  const previousScore = Math.round(
+    lifeScoreWeights.reduce((sum, weight) => {
+      const category = analytics.categories.find((item) => item.name === weight.name)
+      const previousPercent = category?.previousScore ?? 0
+      return sum + Math.round((previousPercent / 100) * weight.maxScore)
+    }, 0)
+  )
+  const trendDelta = weightedOverall - previousScore
 
   const snapshot = analytics.dailySnapshot
   const tasksDue = snapshot.tasksCompleted + snapshot.tasksPending
@@ -192,9 +223,6 @@ export function computeLifeScoreView(analytics: AnalyticsComputed) {
       color: "purple",
     },
   ]
-
-  const previousScore = analytics.previousLifeScoreOverall
-  const trendDelta = weightedOverall - previousScore
 
   return {
     lifeScore: weightedOverall,

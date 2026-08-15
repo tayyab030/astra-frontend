@@ -4,6 +4,7 @@ import type { AppTheme } from "@/lib/theme"
 import type { AiVoice } from "@/lib/ai-voice"
 import type { AiDataScope, AiPersonality } from "@/lib/ai-settings"
 import type { AiLanguage } from "@/lib/ai-language"
+import type { ModuleSettings } from "@/lib/module-settings"
 
 const { AUTH } = API_ENDPOINTS
 
@@ -24,6 +25,7 @@ export interface AuthUser {
   ai_insights: boolean
   ai_data_scope: AiDataScope
   ai_language: AiLanguage
+  module_settings?: ModuleSettings
 }
 
 export interface UpdateProfilePayload {
@@ -39,6 +41,10 @@ export interface UpdateProfilePayload {
   ai_insights?: boolean
   ai_data_scope?: AiDataScope
   ai_language?: AiLanguage
+  module_settings?: Partial<ModuleSettings> & {
+    weights?: Partial<ModuleSettings["weights"]>
+    enabled?: Partial<ModuleSettings["enabled"]>
+  }
 }
 
 export function getUserErrorMessage(error: unknown, fallback: string) {

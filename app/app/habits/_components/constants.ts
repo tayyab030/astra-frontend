@@ -1,15 +1,5 @@
 import type { ChartConfig } from "@/components/ui/chart"
 
-export const WEEKLY_CONSISTENCY_DATA = [
-  { day: "Mon", completed: 72 },
-  { day: "Tue", completed: 80 },
-  { day: "Wed", completed: 65 },
-  { day: "Thu", completed: 88 },
-  { day: "Fri", completed: 70 },
-  { day: "Sat", completed: 55 },
-  { day: "Sun", completed: 60 },
-]
-
 export const weeklyConsistencyChartConfig = {
   completed: {
     label: "Completion %",
@@ -34,16 +24,3 @@ export const streakChartConfig = {
     color: "hsl(24 95% 53%)",
   },
 } satisfies ChartConfig
-
-export const HABIT_ACHIEVEMENTS = [
-  {
-    title: "Consistency Builder",
-    description: "Completed high-priority habits 5 days in a row",
-    gradient: "from-orange-400 to-red-500",
-  },
-  {
-    title: "Pack Completer",
-    description: "Finished every item in a habit pack once",
-    gradient: "from-amber-400 to-orange-500",
-  },
-]

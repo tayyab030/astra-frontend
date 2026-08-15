@@ -12,9 +12,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import type { Habit } from "../_types/habits.types"
+import type {
+  HabitAchievement,
+  WeeklyConsistencyPoint,
+} from "../_utils/computeHabitsOverview"
 import {
-  HABIT_ACHIEVEMENTS,
-  WEEKLY_CONSISTENCY_DATA,
   completionChartConfig,
   streakChartConfig,
   weeklyConsistencyChartConfig,
@@ -30,6 +32,8 @@ interface HabitsOverviewProps {
   highTotal: number
   longestStreak: number
   longestStreakHabitName?: string | null
+  weeklyConsistency: WeeklyConsistencyPoint[]
+  achievements: HabitAchievement[]
   isLoading?: boolean
 }
 
@@ -40,6 +44,8 @@ export function HabitsOverview({
   highTotal,
   longestStreak,
   longestStreakHabitName,
+  weeklyConsistency,
+  achievements,
   isLoading,
 }: HabitsOverviewProps) {
   const completionRate = habits.length
@@ -210,7 +216,7 @@ export function HabitsOverview({
               config={weeklyConsistencyChartConfig}
               className={chartClassName}
             >
-              <BarChart data={WEEKLY_CONSISTENCY_DATA} margin={{ left: 0, right: 8 }}>
+              <BarChart data={weeklyConsistency} margin={{ left: 0, right: 8 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis dataKey="day" tickLine={false} axisLine={false} />
                 <YAxis
@@ -225,7 +231,7 @@ export function HabitsOverview({
               </BarChart>
             </ChartContainer>
             <p className="mt-2 text-xs text-muted-foreground">
-              Sample weekly trend — live history will replace this when habit logs are available.
+              Completion rate for each weekday over the last 7 days.
             </p>
           </CardContent>
         </Card>
@@ -238,15 +244,25 @@ export function HabitsOverview({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {HABIT_ACHIEVEMENTS.map((item) => (
-              <div key={item.title} className="flex items-center gap-3">
+            {achievements.map((item) => (
+              <div
+                key={item.id}
+                className={`flex items-center gap-3 ${item.earned ? "" : "opacity-45"}`}
+              >
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r ${item.gradient}`}
                 >
                   <Flame className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {item.title}
+                    {!item.earned ? (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        Locked
+                      </span>
+                    ) : null}
+                  </p>
                   <p className="text-xs text-muted-foreground">{item.description}</p>
                 </div>
               </div>

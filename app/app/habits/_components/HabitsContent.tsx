@@ -65,6 +65,7 @@ import { AiHabitInsights } from "./AiHabitInsights"
 import { HabitDateNav } from "./HabitDateNav"
 import { HabitScheduleFields, type HabitScheduleValue } from "./HabitScheduleFields"
 import { HabitsOverview } from "./HabitsOverview"
+import { useHabitsWeek } from "../_hooks/useHabitsWeek"
 import { getLocalDateString } from "../../health/_utils/date"
 
 function defaultSchedule(): HabitScheduleValue {
@@ -627,6 +628,12 @@ export function HabitsContent() {
   const [activeTab, setActiveTab] = useState<HabitsTab>("habits")
   const [createMode, setCreateMode] = useState<HabitCreateMode>("single")
 
+  const {
+    weeklyConsistency,
+    achievements,
+    isLoading: isWeekLoading,
+  } = useHabitsWeek(activeTab === "overview")
+
   const openAddHabit = useCallback(() => {
     setDialogOpen(true)
   }, [])
@@ -1105,7 +1112,9 @@ export function HabitsContent() {
             highTotal={habits.filter((habit) => habit.priority === "high").length}
             longestStreak={longestStreak}
             longestStreakHabitName={longestStreakHabitName}
-            isLoading={isLoading}
+            weeklyConsistency={weeklyConsistency}
+            achievements={achievements}
+            isLoading={isLoading || isWeekLoading}
           />
         </div>
       ) : activeTab === "missed" ? (

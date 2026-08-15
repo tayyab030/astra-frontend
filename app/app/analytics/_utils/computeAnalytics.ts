@@ -24,6 +24,7 @@ export type ScoreTrend = "up" | "down" | "flat"
 export interface LifeScoreCategory {
   name: string
   score: number
+  previousScore: number
   trend: ScoreTrend
 }
 
@@ -325,21 +326,25 @@ export function computeAnalytics(input: {
     {
       name: "Productivity",
       score: prodScore,
+      previousScore: prevProdScore,
       trend: trendFrom(completion, prevCompletion),
     },
     {
       name: "Health",
       score: healthScore,
+      previousScore: prevHealthScore,
       trend: trendFrom(periodExercise, prevExercise),
     },
     {
       name: "Wealth",
       score: moneyScore,
+      previousScore: prevWealthScore,
       trend: trendFrom(prevSpend || 1, periodSpend || 1),
     },
     {
       name: "Knowledge",
       score: knowledgeScore,
+      previousScore: prevKnowledgeScore,
       trend: trendFrom(knowledgeScore, prevKnowledgeScore),
     },
   ]
