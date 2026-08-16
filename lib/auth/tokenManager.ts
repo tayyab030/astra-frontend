@@ -1,9 +1,15 @@
 import type { Store } from "@reduxjs/toolkit"
 import { setAccessToken } from "@/store/slice/authSlice"
-import { getRefreshTokenCookie } from "@/lib/cookies"
+import {
+  getRefreshTokenCookie,
+  setRefreshTokenCookie,
+} from "@/lib/cookies"
 import { publicApi } from "@/lib/api/simpleApiClient"
 import { API_ENDPOINTS } from "@/lib/api/endpoints"
-import { getWebClientDeviceMeta } from "@/lib/sessions/clientDevice"
+import {
+  getWebClientDeviceMeta,
+  saveAuthSessionId,
+} from "@/lib/sessions/clientDevice"
 
 const { AUTH } = API_ENDPOINTS
 
@@ -29,6 +35,18 @@ export async function refreshAccessToken(): Promise<string | null> {
       ...device,
     })
     const newAccessToken = res?.data?.access as string | undefined
+    const sessionId = res?.data?.session_id as string | undefined
+    const rotatedRefresh = res?.data?.refresh as string | undefined
+
+    if (rotatedRefresh) {
+      await setRefreshTokenCookie(rotatedRefresh)
+    }
+
+    const userId = store?.getState()?.user?.user?.id
+    if (userId && sessionId) {
+      saveAuthSessionId(String(userId), String(sessionId))
+    }
+
     if (newAccessToken) {
       store?.dispatch(setAccessToken(newAccessToken))
       return newAccessToken

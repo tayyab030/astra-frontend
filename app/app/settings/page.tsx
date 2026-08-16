@@ -1386,8 +1386,9 @@ function SettingsPageContent() {
                 <DialogHeader>
                   <DialogTitle className="font-mono">Where you&apos;re signed in</DialogTitle>
                   <DialogDescription className="font-mono">
-                    Website keeps only your latest browser login (older website sessions are signed out
-                    automatically). Mobile and Desktop can stay signed in on multiple devices.
+                    Website keeps only your latest browser login — signing in elsewhere signs out
+                    older website sessions immediately. Mobile and Desktop can stay signed in on
+                    multiple devices. &quot;Sign out everywhere&quot; ends every device at once.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -1417,13 +1418,25 @@ function SettingsPageContent() {
                       </div>
                     </div>
                   ) : remoteSessions.length === 0 ? (
-                    <p className="font-mono text-sm text-muted-foreground py-4 text-center">
-                      No active sessions found. Sign in again to register this device.
-                    </p>
+                    <div className="space-y-3 py-4 text-center">
+                      <p className="font-mono text-sm text-muted-foreground">
+                        No active sessions found. This browser may have been signed out from
+                        another login, or your session was never registered.
+                      </p>
+                      <Button
+                        variant="destructive"
+                        className="font-mono"
+                        onClick={() => void logout({ reason: "manual" })}
+                      >
+                        Sign in again
+                      </Button>
+                    </div>
                   ) : (
                     remoteSessions.map((session) => {
                       const Icon = sessionIcon(session.client_type)
-                      const isCurrent = currentAuthSessionId === session.id
+                      const isCurrent =
+                        session.is_current === true ||
+                        currentAuthSessionId === session.id
                       return (
                         <div
                           key={session.id}
