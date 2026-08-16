@@ -18,6 +18,7 @@ export type AdjustableMetric = "water" | "exercise"
 export interface HealthProfile {
   heightCm: number | null
   heightUnit: HeightUnit
+  idealWeightKg: number | null
 }
 
 export interface HealthTargets {
@@ -114,4 +115,12 @@ export interface BmiStatus {
   bmi: number | null
   label: string
   tone: BmiTone
+  /** Positive = kg above healthy max; negative = kg below healthy min; 0 = within range */
+  deltaKg: number | null
+  deltaLabel: string | null
+  healthyMinKg: number | null
+  healthyMaxKg: number | null
+  /** Positive = kg above ideal; negative = kg below ideal; 0 = at ideal */
+  idealDeltaKg: number | null
+  idealDeltaLabel: string | null
 }

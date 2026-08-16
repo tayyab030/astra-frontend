@@ -194,11 +194,11 @@ export function NoteFormDialog({
             </div>
 
             {typeFields.length > 0 && (
-              <div className="space-y-3 p-4 rounded-lg bg-slate-900/30 border border-slate-600/50">
+              <div className="space-y-2 p-4 rounded-lg bg-slate-900/30 border border-slate-600/50">
                 <Label className="text-cyan-300 font-mono text-sm">Type-Specific Fields</Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {typeFields.map((field) => (
-                    <div key={field.key} className="space-y-1">
+                    <div key={field.key} className="space-y-2">
                       <Label className="text-slate-400 text-xs">{field.label}</Label>
                       {field.type === "date" ? (
                         <DatePicker
@@ -241,7 +241,7 @@ export function NoteFormDialog({
                   <Star className="h-4 w-4" /> Favorite
                 </Label>
               </div>
-              <div className="min-w-[240px] flex-1 space-y-1">
+              <div className="min-w-[240px] flex-1 space-y-2">
                 <Label className="text-slate-400 text-xs">Reminder</Label>
                 <DateTimePicker
                   value={watch("reminder")}
@@ -250,7 +250,7 @@ export function NoteFormDialog({
                   buttonClassName={inputClassName}
                 />
               </div>
-              <div className="min-w-[160px] space-y-1">
+              <div className="min-w-[160px] space-y-2">
                 <Label className="text-slate-400 text-xs">Visibility</Label>
                 <Select value={watch("visibility")} onValueChange={(v) => setValue("visibility", v as NoteFormValues["visibility"])}>
                   <SelectTrigger className={cn(inputClassName, "w-full")}>

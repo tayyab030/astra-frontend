@@ -84,8 +84,8 @@ export function PatternsTab() {
   return (
     <div className="space-y-4 pb-6">
       <div className="flex flex-wrap items-end gap-4">
-        <div>
-          <Label className="mb-2 block font-mono text-xs text-slate-400">View</Label>
+        <div className="space-y-2">
+          <Label className="text-xs text-slate-400">View</Label>
           <ToggleGroup
             type="single"
             value={mode}
@@ -133,8 +133,8 @@ export function PatternsTab() {
         )}
 
         {mode === "year" && (
-          <div>
-            <Label className="text-slate-400 font-mono text-xs mb-2 block">Year</Label>
+          <div className="space-y-2">
+            <Label className="text-slate-400 text-xs">Year</Label>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[120px] bg-slate-900/50 border-slate-600/50 text-white font-mono h-9">
                 <SelectValue />

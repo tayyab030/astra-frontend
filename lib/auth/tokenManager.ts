@@ -3,6 +3,7 @@ import { setAccessToken } from "@/store/slice/authSlice"
 import { getRefreshTokenCookie } from "@/lib/cookies"
 import { publicApi } from "@/lib/api/simpleApiClient"
 import { API_ENDPOINTS } from "@/lib/api/endpoints"
+import { getWebClientDeviceMeta } from "@/lib/sessions/clientDevice"
 
 const { AUTH } = API_ENDPOINTS
 
@@ -22,8 +23,10 @@ export async function refreshAccessToken(): Promise<string | null> {
   if (!refreshToken) return null
 
   try {
+    const device = getWebClientDeviceMeta()
     const res = await publicApi.post(AUTH.REFRESH_ACCESS_TOKEN, {
       refresh: refreshToken,
+      ...device,
     })
     const newAccessToken = res?.data?.access as string | undefined
     if (newAccessToken) {

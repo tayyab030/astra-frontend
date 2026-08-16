@@ -32,7 +32,7 @@ import type {
   MoodValue,
   TrackableMetric,
 } from "../_types/health.types"
-import { calculateBmi, getBmiStatus } from "../_utils/bmi"
+import { getBmiStatusFromMetrics } from "../_utils/bmi"
 import {
   buildMetricChartData,
   buildWeightChartData,
@@ -96,8 +96,9 @@ export function useHealth() {
     () => ({
       heightCm: data?.profile.heightCm ?? null,
       heightUnit,
+      idealWeightKg: data?.profile.idealWeightKg ?? null,
     }),
-    [data?.profile.heightCm, heightUnit]
+    [data?.profile.heightCm, data?.profile.idealWeightKg, heightUnit]
   )
 
   const todayBase = data?.today ?? {
@@ -162,9 +163,12 @@ export function useHealth() {
   const latestWeight = data?.latestWeightKg ?? null
 
   const bmiStatus = useMemo(() => {
-    if (!profile.heightCm || !latestWeight) return getBmiStatus(null)
-    return getBmiStatus(calculateBmi(latestWeight, profile.heightCm))
-  }, [profile.heightCm, latestWeight])
+    return getBmiStatusFromMetrics(
+      latestWeight,
+      profile.heightCm,
+      profile.idealWeightKg
+    )
+  }, [profile.heightCm, profile.idealWeightKg, latestWeight])
 
   const weightChartData = useMemo(
     () => buildWeightChartData(weightLog, periodFilter),
@@ -470,6 +474,13 @@ export function useHealth() {
     [updateProfileMutation]
   )
 
+  const setIdealWeight = useCallback(
+    (idealWeightKg: number | null) => {
+      updateProfileMutation.mutate({ ideal_weight_kg: idealWeightKg })
+    },
+    [updateProfileMutation]
+  )
+
   const setHeightUnit = useCallback((unit: HeightUnit) => {
     setHeightUnitState(unit)
     localStorage.setItem(HEIGHT_UNIT_KEY, unit)
@@ -580,6 +591,7 @@ export function useHealth() {
     updateSleepSession,
     deleteSleepSession,
     setHeight,
+    setIdealWeight,
     setHeightUnit,
     logWeight,
     toggleHabit,

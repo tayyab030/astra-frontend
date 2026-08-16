@@ -19,7 +19,15 @@ export function TodaySummaryRow() {
           title="Weight & BMI"
           icon={Scale}
           value={formatWeightKg(latestWeight)}
-          subtitle={`BMI ${bmiStatus.bmi}`}
+          subtitle={
+            [
+              `BMI ${bmiStatus.bmi}`,
+              bmiStatus.deltaLabel,
+              bmiStatus.idealDeltaLabel,
+            ]
+              .filter(Boolean)
+              .join(" · ")
+          }
           statusLabel={bmiStatus.label}
           tone={weightTone}
         />

@@ -19,6 +19,9 @@ export const API_ENDPOINTS = {
     ACCOUNT_DELETE_STATUS: (token: string) =>
       `/auth/account-delete/${token}/status/`,
     CONFIRM_DELETE_ACCOUNT: "/auth/account-delete/confirm/",
+    SESSIONS: "/auth/sessions/",
+    SESSION: (id: string) => `/auth/sessions/${id}/`,
+    LOGOUT_ALL: "/auth/sessions/logout-all/",
   },
 
   // User endpoints

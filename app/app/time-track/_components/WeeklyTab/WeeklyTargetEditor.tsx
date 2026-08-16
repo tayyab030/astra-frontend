@@ -33,8 +33,8 @@ export function WeeklyTargetEditor({ hoursPerWeek, onChange }: WeeklyTargetEdito
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
           <Target className="h-5 w-5 text-purple-300" />
         </div>
-        <div className="flex-1">
-          <Label className="text-slate-400 font-mono text-xs">Weekly Target (hours)</Label>
+        <div className="flex-1 space-y-2">
+          <Label className="text-slate-400 text-xs">Weekly Target (hours)</Label>
           <Input
             type="number"
             min={1}
@@ -43,7 +43,7 @@ export function WeeklyTargetEditor({ hoursPerWeek, onChange }: WeeklyTargetEdito
             onChange={(e) => setValue(e.target.value)}
             onBlur={commitValue}
             onKeyDown={(e) => e.key === "Enter" && commitValue()}
-            className="mt-1 max-w-[120px] bg-slate-900/50 border-slate-600 text-white font-mono"
+            className="max-w-[120px] bg-slate-900/50 border-slate-600 text-white font-mono"
           />
         </div>
       </CardContent>

@@ -37,6 +37,8 @@ import {
   Key,
   Settings2,
   Plus,
+  Monitor,
+  Laptop,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -48,6 +50,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { logout } from "@/lib/auth"
+import {
+  ensureCurrentSession,
+  formatSessionWhen,
+  type CurrentSessionInfo,
+} from "@/lib/sessions/currentSession"
+import {
+  clientTypeLabel,
+  loadAuthSessionId,
+  type AuthClientType,
+} from "@/lib/sessions/clientDevice"
+import {
+  fetchAuthSessions,
+  revokeAllAuthSessions,
+  revokeAuthSession,
+  type AuthSessionApi,
+} from "@/lib/api/sessions"
 import CurrencySelect from "@/components/common/CurrencySelect"
 import TimezoneSelect from "@/components/common/TimezoneSelect"
 import { TimePicker } from "@/components/ui/time-picker"
@@ -116,6 +143,7 @@ import {
   type NotificationSettings,
 } from "@/lib/notification-settings"
 import { requestPushPermission } from "@/lib/notifications/browserPush"
+import { exportAstraDataPdf } from "@/lib/export/exportAstraDataPdf"
 import { useSearchParams } from "next/navigation"
 
 const SETTINGS_TAB_VALUES = [
@@ -237,6 +265,11 @@ function SettingsPageContent() {
   const [settingsTab, setSettingsTab] = useState<SettingsTabValue>("profile")
   const searchParams = useSearchParams()
   const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false)
+  const [showSessionsDialog, setShowSessionsDialog] = useState(false)
+  const [currentSession, setCurrentSession] = useState<CurrentSessionInfo | null>(null)
+  const [isSigningOutSession, setIsSigningOutSession] = useState(false)
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null)
+  const [isExportingData, setIsExportingData] = useState(false)
 
   const [moduleWeights, setModuleWeights] = useState<ModuleWeights>({
     ...DEFAULT_MODULE_WEIGHTS,
@@ -256,6 +289,86 @@ function SettingsPageContent() {
     queryKey: ["auth", "me"],
     queryFn: fetchCurrentUser,
   })
+
+  const {
+    data: sessionsData,
+    isLoading: isSessionsLoading,
+    isError: isSessionsError,
+    refetch: refetchSessions,
+  } = useQuery({
+    queryKey: ["auth", "sessions"],
+    queryFn: fetchAuthSessions,
+    enabled: Boolean(profile?.id),
+    staleTime: 30_000,
+  })
+
+  const currentAuthSessionId = profile?.id ? loadAuthSessionId(profile.id) : null
+  const remoteSessions = sessionsData?.sessions ?? []
+  const sessionCount = sessionsData?.count ?? remoteSessions.length
+
+  const sessionSummary = useMemo(() => {
+    if (isSessionsLoading) return "Loading devices…"
+    if (isSessionsError) {
+      return currentSession
+        ? `This device · ${currentSession.deviceLabel}`
+        : "Could not load devices"
+    }
+    if (sessionCount <= 0) {
+      return currentSession
+        ? `1 device · ${currentSession.deviceLabel}`
+        : "No active devices"
+    }
+    const types = new Set(remoteSessions.map((s) => s.client_type))
+    const parts: string[] = []
+    if (types.has("web")) parts.push("Website")
+    if (types.has("mobile")) parts.push("Mobile app")
+    if (types.has("desktop")) parts.push("Desktop")
+    const typeLabel = parts.length > 0 ? parts.join(" · ") : "devices"
+    return `${sessionCount} active · ${typeLabel}`
+  }, [
+    isSessionsLoading,
+    isSessionsError,
+    sessionCount,
+    remoteSessions,
+    currentSession,
+  ])
+
+  function sessionIcon(type: AuthClientType | string) {
+    if (type === "mobile") return Smartphone
+    if (type === "desktop") return Laptop
+    return Monitor
+  }
+
+  async function handleRevokeSession(session: AuthSessionApi) {
+    const isCurrent = currentAuthSessionId === session.id
+    setRevokingSessionId(session.id)
+    try {
+      await revokeAuthSession(session.id)
+      if (isCurrent) {
+        toast.success("Signed out this device")
+        await logout({ reason: "manual" })
+        return
+      }
+      toast.success("Session revoked")
+      await refetchSessions()
+    } catch (error) {
+      toast.error(getUserErrorMessage(error, "Failed to revoke session"))
+    } finally {
+      setRevokingSessionId(null)
+    }
+  }
+
+  async function handleRevokeAllSessions() {
+    setIsSigningOutSession(true)
+    try {
+      await revokeAllAuthSessions()
+      toast.success("Signed out of all devices")
+      await logout({ reason: "manual" })
+    } catch (error) {
+      toast.error(getUserErrorMessage(error, "Failed to sign out everywhere"))
+      setIsSigningOutSession(false)
+    }
+  }
 
   useEffect(() => {
     if (!profile) return
@@ -298,6 +411,7 @@ function SettingsPageContent() {
     setModuleWeights(modules.weights)
     setModuleEnabled(modules.enabled)
     setNotifications(loadNotificationSettings(profile.id))
+    setCurrentSession(ensureCurrentSession(profile.id))
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
   }, [profile, dispatch, setTheme])
@@ -453,6 +567,29 @@ function SettingsPageContent() {
       )
     },
   })
+
+  const handleExportData = async () => {
+    if (!profile) {
+      toast.error("Profile is still loading")
+      return
+    }
+    setIsExportingData(true)
+    const toastId = toast.loading("Building your ASTRA data PDF…")
+    try {
+      const filename = await exportAstraDataPdf({
+        user: profile,
+        formatCurrency,
+      })
+      toast.success(`Downloaded ${filename}`, { id: toastId })
+    } catch (error) {
+      toast.error(
+        getUserErrorMessage(error, "Failed to export data. Please try again."),
+        { id: toastId }
+      )
+    } finally {
+      setIsExportingData(false)
+    }
+  }
 
   const handleSaveProfile = () => {
     if (!firstName.trim() || !lastName.trim()) {
@@ -834,7 +971,7 @@ function SettingsPageContent() {
                 <CardDescription className="font-mono text-muted-foreground">Customize your ASTRA experience</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <Label className="font-mono text-muted-foreground">Theme Preference</Label>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {THEME_OPTIONS.map((option) => {
@@ -879,7 +1016,7 @@ function SettingsPageContent() {
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <Label className="font-mono text-muted-foreground">Accent Color</Label>
                   <div className="flex flex-wrap gap-3">
                     {ACCENT_OPTIONS.map((accent) => {
@@ -1091,12 +1228,28 @@ function SettingsPageContent() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
-                    <div>
+                  <div className="flex items-center justify-between gap-4 p-4 border border-red-500/30 rounded-lg">
+                    <div className="min-w-0">
                       <h4 className="font-semibold font-mono text-primary">Active Sessions</h4>
-                      <p className="text-sm text-muted-foreground font-mono">3 devices currently logged in</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        {sessionSummary}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground font-mono">
+                        Website, mobile app, and desktop software
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent shrink-0"
+                      disabled={!profile}
+                      onClick={() => {
+                        if (profile?.id) {
+                          setCurrentSession(ensureCurrentSession(profile.id))
+                        }
+                        void refetchSessions()
+                        setShowSessionsDialog(true)
+                      }}
+                    >
                       <Smartphone className="mr-2 h-4 w-4" />
                       Manage Devices
                     </Button>
@@ -1105,11 +1258,18 @@ function SettingsPageContent() {
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold font-mono text-primary">Data Export</h4>
-                      <p className="text-sm text-muted-foreground font-mono">Download all your ASTRA data</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Download all your ASTRA data as a formatted PDF
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent"
+                      disabled={isExportingData || isProfileLoading || !profile}
+                      onClick={() => void handleExportData()}
+                    >
                       <Download className="mr-2 h-4 w-4" />
-                      Export Data
+                      {isExportingData ? "Exporting…" : "Export Data"}
                     </Button>
                   </div>
 
@@ -1132,6 +1292,125 @@ function SettingsPageContent() {
                 </div>
               </CardContent>
             </Card>
+
+            <Dialog open={showSessionsDialog} onOpenChange={setShowSessionsDialog}>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="font-mono">Where you&apos;re signed in</DialogTitle>
+                  <DialogDescription className="font-mono">
+                    Every ASTRA login shows up here — Website, Mobile app, or Desktop software.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1">
+                  {isSessionsLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-20 w-full" />
+                      <Skeleton className="h-20 w-full" />
+                    </div>
+                  ) : isSessionsError ? (
+                    <div className="rounded-lg border border-border p-4 space-y-2">
+                      <p className="font-mono text-sm text-muted-foreground">
+                        Could not load sessions from the server. Showing this browser only.
+                      </p>
+                      <div className="rounded-lg border border-border/60 p-3 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-mono text-sm font-semibold">
+                            {currentSession?.deviceLabel ?? "This browser · Website"}
+                          </p>
+                          <Badge variant="secondary" className="font-mono text-[10px]">
+                            Current
+                          </Badge>
+                        </div>
+                        <p className="font-mono text-xs text-muted-foreground">
+                          Client: Website
+                        </p>
+                      </div>
+                    </div>
+                  ) : remoteSessions.length === 0 ? (
+                    <p className="font-mono text-sm text-muted-foreground py-4 text-center">
+                      No active sessions found. Sign in again to register this device.
+                    </p>
+                  ) : (
+                    remoteSessions.map((session) => {
+                      const Icon = sessionIcon(session.client_type)
+                      const isCurrent = currentAuthSessionId === session.id
+                      return (
+                        <div
+                          key={session.id}
+                          className="rounded-lg border border-border p-4 space-y-2"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-start gap-3">
+                              <div className="mt-0.5 rounded-md border border-border p-2">
+                                <Icon className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-mono text-sm font-semibold text-foreground truncate">
+                                  {session.device_label || clientTypeLabel(session.client_type)}
+                                </p>
+                                <p className="font-mono text-xs text-muted-foreground">
+                                  {clientTypeLabel(session.client_type)}
+                                  {session.platform ? ` · ${session.platform}` : ""}
+                                </p>
+                                <p className="font-mono text-[11px] text-muted-foreground mt-1">
+                                  Signed in {formatSessionWhen(session.created_at)}
+                                </p>
+                                <p className="font-mono text-[11px] text-muted-foreground">
+                                  Last active {formatSessionWhen(session.last_seen_at)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-2">
+                              {isCurrent ? (
+                                <Badge variant="secondary" className="font-mono text-[10px]">
+                                  This device
+                                </Badge>
+                              ) : null}
+                              <Button
+                                variant={isCurrent ? "destructive" : "outline"}
+                                size="sm"
+                                className="font-mono"
+                                disabled={revokingSessionId === session.id || isSigningOutSession}
+                                onClick={() => void handleRevokeSession(session)}
+                              >
+                                {revokingSessionId === session.id
+                                  ? "…"
+                                  : isCurrent
+                                    ? "Sign out"
+                                    : "Revoke"}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+                  <Button
+                    variant="ghost"
+                    className="font-mono text-destructive"
+                    disabled={
+                      isSigningOutSession ||
+                      isSessionsLoading ||
+                      remoteSessions.length === 0
+                    }
+                    onClick={() => void handleRevokeAllSessions()}
+                  >
+                    {isSigningOutSession ? "Signing out…" : "Sign out everywhere"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="font-mono"
+                    onClick={() => setShowSessionsDialog(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
               <AlertDialogContent>

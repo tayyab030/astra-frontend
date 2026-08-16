@@ -4,6 +4,7 @@ import { Clock } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
@@ -66,12 +67,7 @@ export function TimePicker({
   return (
     <div className={cn("flex flex-col space-y-2", className)}>
       {label ? (
-        <label
-          htmlFor={id}
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          {label}
-        </label>
+        <Label htmlFor={id}>{label}</Label>
       ) : null}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

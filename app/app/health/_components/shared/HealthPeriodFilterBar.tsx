@@ -26,8 +26,8 @@ export function HealthPeriodFilterBar({ filter, onChange }: HealthPeriodFilterBa
 
   return (
     <div className="flex flex-wrap items-end gap-4">
-      <div>
-        <Label className="text-slate-400 font-mono text-xs mb-2 block">Period</Label>
+      <div className="space-y-2">
+        <Label className="text-slate-400 text-xs">Period</Label>
         <ToggleGroup
           type="single"
           value={filter.mode}
@@ -65,8 +65,8 @@ export function HealthPeriodFilterBar({ filter, onChange }: HealthPeriodFilterBa
       )}
 
       {filter.mode === "year" && (
-        <div>
-          <Label className="text-slate-400 font-mono text-xs mb-2 block">Year</Label>
+        <div className="space-y-2">
+          <Label className="text-slate-400 text-xs">Year</Label>
           <Select
             value={filter.selectedYear}
             onValueChange={(year) => onChange({ ...filter, selectedYear: year })}

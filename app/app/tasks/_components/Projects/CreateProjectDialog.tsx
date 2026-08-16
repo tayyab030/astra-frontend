@@ -203,7 +203,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <Label
                                         htmlFor="status"
                                         className="text-white text-sm font-medium flex items-center"
@@ -223,7 +223,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                     />
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <Label
                                         htmlFor="due_date"
                                         className="text-white text-sm font-medium flex items-center"
@@ -242,7 +242,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <Label
                                     htmlFor="description"
                                     className="text-white text-sm font-medium flex items-center"
@@ -265,7 +265,7 @@ const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({
                                 />
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 <Label className="text-white text-sm font-medium flex items-center">
                                     <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
                                     Color & Icon

@@ -25,9 +25,10 @@ export type AiSettingsLike = {
   ai_voice_mode?: boolean | null
   ai_voice?: string | null
   ai_language?: string | null
+  currency?: string | null
 }
 
-/** Cache/query key so quotes and insights refresh when Settings → AI change. */
+/** Cache key so quotes/insights regenerate when Settings → AI or currency change. */
 export function aiSettingsFingerprint(user: AiSettingsLike | null | undefined): string {
   const personalityRaw = user?.ai_personality
   const scopeRaw = user?.ai_data_scope
@@ -43,7 +44,8 @@ export function aiSettingsFingerprint(user: AiSettingsLike | null | undefined): 
   const voice = isAiVoice(voiceRaw) ? voiceRaw : DEFAULT_AI_VOICE
   const voiceMode =
     typeof user?.ai_voice_mode === "boolean" ? user.ai_voice_mode : DEFAULT_AI_VOICE_MODE
-  return `${personality}:${scope}:${language}:${insights ? "1" : "0"}:${voice}:${voiceMode ? "1" : "0"}`
+  const currency = (user?.currency || "USD").trim().toUpperCase() || "USD"
+  return `${personality}:${scope}:${language}:${insights ? "1" : "0"}:${voice}:${voiceMode ? "1" : "0"}:${currency}`
 }
 
 export const AI_PERSONALITY_OPTIONS: { value: AiPersonality; label: string }[] = [

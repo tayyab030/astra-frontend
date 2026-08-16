@@ -38,9 +38,9 @@ export function WellnessTab() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label className="text-sm font-mono text-slate-200">How are you feeling today?</Label>
-            <div className="grid grid-cols-5 gap-2 mt-2">
+          <div className="space-y-2">
+            <Label className="text-sm text-slate-200">How are you feeling today?</Label>
+            <div className="grid grid-cols-5 gap-2">
               {MOOD_OPTIONS.map((mood) => {
                 const Icon = MOOD_ICONS[mood.value]
                 return (
@@ -62,8 +62,8 @@ export function WellnessTab() {
               })}
             </div>
           </div>
-          <div>
-            <Label htmlFor="mood-notes" className="text-slate-200 font-mono">
+          <div className="space-y-2">
+            <Label htmlFor="mood-notes" className="text-slate-200">
               Notes (optional)
             </Label>
             <Textarea
@@ -71,7 +71,7 @@ export function WellnessTab() {
               placeholder="How was your day? Any thoughts or feelings to record..."
               value={moodNotes}
               onChange={(e) => setMoodNotes(e.target.value)}
-              className="mt-1 bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
+              className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
             />
           </div>
           <Button

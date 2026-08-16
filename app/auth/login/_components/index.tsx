@@ -18,6 +18,11 @@ import { setAccessToken } from '@/store/slice/authSlice'
 import { setCurrency } from '@/store/slice/currencySlice'
 import { setUser } from '@/store/slice/userSlice'
 import { setRefreshTokenCookie } from '@/lib/cookies'
+import {
+    getWebClientDeviceMeta,
+    saveAuthSessionId,
+} from '@/lib/sessions/clientDevice'
+import { ensureCurrentSession } from '@/lib/sessions/currentSession'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { isAppTheme } from '@/lib/theme'
@@ -51,8 +56,11 @@ const LoginForm = () => {
         setUnverified(null)
 
         try {
-            const response = await publicApi.post(AUTH.LOGIN, data);
-            const { access, refresh, user } = response.data;
+            const response = await publicApi.post(AUTH.LOGIN, {
+                ...data,
+                ...getWebClientDeviceMeta(),
+            });
+            const { access, refresh, user, session_id } = response.data;
 
             dispatch(setAccessToken(access));
             dispatch(setUser(user));
@@ -63,6 +71,10 @@ const LoginForm = () => {
                 setTheme(user.theme);
             }
             await setRefreshTokenCookie(refresh);
+            if (user?.id) {
+                ensureCurrentSession(String(user.id))
+                if (session_id) saveAuthSessionId(String(user.id), String(session_id))
+            }
 
             toast.success("Login successful");
             router.replace(redirectTo);

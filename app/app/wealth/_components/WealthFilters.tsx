@@ -107,8 +107,8 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
 
       {mode === "month" ? (
         <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
-            <Label className="font-mono text-xs text-slate-400">Year</Label>
+          <div className="space-y-2">
+            <Label className="text-xs text-slate-400">Year</Label>
             <Select value={monthYear} onValueChange={setMonthYear}>
               <SelectTrigger className={selectTriggerClassName}>
                 <SelectValue placeholder="Year" />
@@ -122,8 +122,8 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
-            <Label className="font-mono text-xs text-slate-400">Month</Label>
+          <div className="space-y-2">
+            <Label className="text-xs text-slate-400">Month</Label>
             <Select value={month} onValueChange={setMonth}>
               <SelectTrigger className={`${selectTriggerClassName} min-w-[130px]`}>
                 <SelectValue placeholder="Month" />
@@ -140,8 +140,8 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
         </div>
       ) : (
         <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
-            <Label className="font-mono text-xs text-slate-400">Start Year</Label>
+          <div className="space-y-2">
+            <Label className="text-xs text-slate-400">Start Year</Label>
             <Select value={startYear} onValueChange={handleStartYearChange}>
               <SelectTrigger className={selectTriggerClassName}>
                 <SelectValue placeholder="Start" />
@@ -155,8 +155,8 @@ export function WealthFilters({ onChange }: WealthFiltersProps) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
-            <Label className="font-mono text-xs text-slate-400">End Year</Label>
+          <div className="space-y-2">
+            <Label className="text-xs text-slate-400">End Year</Label>
             <Select value={endYear} onValueChange={setEndYear}>
               <SelectTrigger className={selectTriggerClassName}>
                 <SelectValue placeholder="End" />
