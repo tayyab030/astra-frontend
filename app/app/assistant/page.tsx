@@ -26,6 +26,8 @@ import {
 import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
 import { fetchCurrentUser, updateCurrentUser } from "@/lib/api/user"
 import { DEFAULT_AI_VOICE_MODE } from "@/lib/ai-settings"
+import { setUser } from "@/store/slice/userSlice"
+import { useAppDispatch } from "@/store/hooks"
 import {
   DEFAULT_AI_LANGUAGE,
   isAiLanguage,
@@ -91,6 +93,7 @@ export default function AssistantPage() {
   const [historyBusy, setHistoryBusy] = useState(false)
 
   const queryClient = useQueryClient()
+  const dispatch = useAppDispatch()
   const { data: me } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: fetchCurrentUser,
@@ -108,7 +111,11 @@ export default function AssistantPage() {
     mutationFn: updateCurrentUser,
     onSuccess: (user) => {
       setAiLanguage(isAiLanguage(user.ai_language) ? user.ai_language : DEFAULT_AI_LANGUAGE)
+      dispatch(setUser(user))
       queryClient.setQueryData(["auth", "me"], user)
+      void queryClient.invalidateQueries({ queryKey: ["daily-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["goals-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["ai-insight"] })
       toast.success("Language updated")
     },
     onError: (error) => {

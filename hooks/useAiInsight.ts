@@ -11,7 +11,7 @@ import {
   type InsightPeriod,
   type InsightsResponse,
 } from "@/lib/api/insights"
-import { DEFAULT_AI_INSIGHTS } from "@/lib/ai-settings"
+import { DEFAULT_AI_INSIGHTS, aiSettingsFingerprint } from "@/lib/ai-settings"
 import {
   readInsightCache,
   writeInsightCache,
@@ -37,6 +37,8 @@ export function useAiInsight(
   const smartInsightsEnabled =
     typeof user?.ai_insights === "boolean" ? user.ai_insights : DEFAULT_AI_INSIGHTS
 
+  const fingerprint = aiSettingsFingerprint(user)
+
   const enabled =
     Boolean(options?.enabled ?? true) &&
     smartInsightsEnabled &&
@@ -45,7 +47,7 @@ export function useAiInsight(
   const contextKey = useMemo(() => stableContextKey(context), [context])
 
   const query = useQuery({
-    queryKey: ["ai-insight", userId, kind, period, contextKey],
+    queryKey: ["ai-insight", userId, kind, period, fingerprint, contextKey],
     enabled,
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 31 * 24 * 60 * 60 * 1000,
@@ -53,10 +55,10 @@ export function useAiInsight(
     retry: 1,
     placeholderData: () => {
       if (!userId) return undefined
-      return readInsightCache(userId, kind, period) ?? undefined
+      return readInsightCache(userId, kind, period, fingerprint) ?? undefined
     },
     queryFn: async (): Promise<InsightsResponse> => {
-      const cached = readInsightCache(userId, kind, period)
+      const cached = readInsightCache(userId, kind, period, fingerprint)
       if (cached) {
         return {
           ...cached,
@@ -66,7 +68,7 @@ export function useAiInsight(
 
       const data = await fetchInsights({ kind, period, context })
       if (data.enabled !== false && insightsHaveContent(data)) {
-        writeInsightCache(userId, kind, period, data)
+        writeInsightCache(userId, kind, period, fingerprint, data)
       }
       return {
         ...data,

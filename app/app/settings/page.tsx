@@ -328,6 +328,9 @@ export default function SettingsPage() {
           : DEFAULT_AI_DATA_SCOPE
       )
       queryClient.setQueryData(["auth", "me"], user)
+      void queryClient.invalidateQueries({ queryKey: ["daily-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["goals-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["ai-insight"] })
       toast.success("AI settings updated")
     },
     onError: (error) => {
@@ -1258,15 +1261,20 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="font-mono text-primary">AI & Assistant Settings</CardTitle>
                 <CardDescription className="font-mono text-muted-foreground">
-                  Configure your AI assistant preferences
+                  Strict rules Astra must follow for conversation, quotes, insights, and every future AI feature
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <p className="text-sm font-mono text-foreground">
+                    These settings are mandatory. Astra applies them to chat, daily quotes, insights, and any new AI surface — they cannot be skipped per feature.
+                  </p>
+                </div>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">AI speaker</Label>
                     <p className="text-sm text-muted-foreground font-mono">
-                      Choose who speaks when Astra replies with voice
+                      Voice used whenever Astra speaks — assistant chat and any future spoken replies
                     </p>
                     <Select
                       value={aiVoice}
@@ -1293,7 +1301,9 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="font-mono text-muted-foreground">Voice Mode</Label>
-                      <p className="text-sm text-muted-foreground font-mono">Enable voice input and output</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Enable voice input and spoken replies across the assistant
+                      </p>
                     </div>
                     <Switch
                       checked={aiVoiceMode}
@@ -1305,6 +1315,9 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">AI Personality</Label>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      Tone for every AI output — conversation, quotes, and insights
+                    </p>
                     <Select
                       value={aiPersonality}
                       onValueChange={handleAiPersonalityChange}
@@ -1330,7 +1343,9 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="font-mono text-muted-foreground">Smart Insights</Label>
-                      <p className="text-sm text-muted-foreground font-mono">AI-powered suggestions and analysis</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        When off, Astra will not generate insight panels or volunteer extra analysis
+                      </p>
                     </div>
                     <Switch
                       checked={aiInsights}
@@ -1342,6 +1357,9 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">Data Analysis Scope</Label>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      What Astra may analyze in chat, insights, and future AI features
+                    </p>
                     <Select
                       value={aiDataScope}
                       onValueChange={handleAiDataScopeChange}

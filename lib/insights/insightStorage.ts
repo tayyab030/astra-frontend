@@ -11,8 +11,13 @@ type StoredInsight = {
   cache_until?: string
 }
 
-function storageKey(userId: string, kind: InsightKind, period: InsightPeriod) {
-  return `astra-insight:${userId}:${kind}:${period}`
+function storageKey(
+  userId: string,
+  kind: InsightKind,
+  period: InsightPeriod,
+  fingerprint: string
+) {
+  return `astra-insight:${userId}:${kind}:${period}:${fingerprint}`
 }
 
 function isFresh(stored: StoredInsight): boolean {
@@ -36,11 +41,14 @@ function isFresh(stored: StoredInsight): boolean {
 export function readInsightCache(
   userId: string,
   kind: InsightKind,
-  period: InsightPeriod
+  period: InsightPeriod,
+  fingerprint: string
 ): InsightsResponse | null {
   if (typeof window === "undefined") return null
   try {
-    const raw = window.localStorage.getItem(storageKey(userId, kind, period))
+    const raw = window.localStorage.getItem(
+      storageKey(userId, kind, period, fingerprint)
+    )
     if (!raw) return null
     const parsed = JSON.parse(raw) as StoredInsight
     if (!isFresh(parsed)) return null
@@ -54,6 +62,7 @@ export function writeInsightCache(
   userId: string,
   kind: InsightKind,
   period: InsightPeriod,
+  fingerprint: string,
   data: InsightsResponse
 ) {
   if (typeof window === "undefined") return
@@ -65,7 +74,7 @@ export function writeInsightCache(
       cache_until: data.cache_until,
     }
     window.localStorage.setItem(
-      storageKey(userId, kind, period),
+      storageKey(userId, kind, period, fingerprint),
       JSON.stringify(payload)
     )
   } catch {
