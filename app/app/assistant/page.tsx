@@ -615,10 +615,10 @@ export default function AssistantPage() {
               <Menu className="h-4 w-4" />
             </Button>
             <div className="min-w-0 text-left">
-              <h1 className="astra-title truncate text-2xl md:text-4xl">
+              <h1 className="astra-title truncate">
                 {activeTitle || "AI Assistant"}
               </h1>
-              <p className="astra-subtitle text-xs md:text-sm">Chats save automatically</p>
+              <p className="astra-subtitle mt-1">Chats save automatically</p>
             </div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">

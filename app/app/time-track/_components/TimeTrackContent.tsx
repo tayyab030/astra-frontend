@@ -83,8 +83,8 @@ export default function TimeTrackContent() {
     <div className="relative flex flex-col">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white font-mono">Time Track</h1>
-          <p className="text-sm text-slate-400 font-mono mt-1">
+          <h1 className="astra-title">Time Track</h1>
+          <p className="astra-subtitle mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
           </p>
         </div>

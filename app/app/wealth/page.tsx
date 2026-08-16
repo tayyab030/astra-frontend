@@ -123,7 +123,7 @@ export default function WealthPage() {
     <div className="astra-page">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="astra-title">💰 Wealth Dashboard</h1>
+            <h1 className="astra-title">Wealth</h1>
             <p className="astra-subtitle mt-1">Your complete financial command center</p>
           </div>
           <WealthFilters onChange={setFilter} />

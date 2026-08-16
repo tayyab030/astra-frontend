@@ -27,9 +27,7 @@ function NotesPageInner() {
     <div className="astra-page">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="astra-title text-3xl md:text-4xl">
-            Notes & Knowledge
-          </h1>
+          <h1 className="astra-title">Notes</h1>
           <p className="astra-subtitle mt-1">
             Your personal second brain — capture, organize, and connect ideas
           </p>
