@@ -83,8 +83,10 @@ import {
   fetchCurrentUser,
   getUserErrorMessage,
   requestAccountDeletion,
+  requestPasswordResetForCurrentUser,
   updateCurrentUser,
 } from "@/lib/api/user"
+import { ROUTES } from "@/constants/routes"
 import { getCountryByCode } from "@/lib/countries"
 import { USER_GENDER_OPTIONS, type UserGender } from "@/lib/gender"
 import { setCurrency as setCurrencyAction } from "@/store/slice/currencySlice"
@@ -144,7 +146,7 @@ import {
 } from "@/lib/notification-settings"
 import { requestPushPermission } from "@/lib/notifications/browserPush"
 import { exportAstraDataPdf } from "@/lib/export/exportAstraDataPdf"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 const SETTINGS_TAB_VALUES = [
   "profile",
@@ -243,6 +245,7 @@ export default function SettingsPage() {
 function SettingsPageContent() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
+  const router = useRouter()
   const { currency, setCurrency, formatCurrency } = useCurrency()
   const { setTheme } = useTheme()
 
@@ -265,6 +268,7 @@ function SettingsPageContent() {
   const [settingsTab, setSettingsTab] = useState<SettingsTabValue>("profile")
   const searchParams = useSearchParams()
   const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false)
+  const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false)
   const [showSessionsDialog, setShowSessionsDialog] = useState(false)
   const [currentSession, setCurrentSession] = useState<CurrentSessionInfo | null>(null)
   const [isSigningOutSession, setIsSigningOutSession] = useState(false)
@@ -567,6 +571,33 @@ function SettingsPageContent() {
       )
     },
   })
+
+  const { mutate: requestChangePassword, isPending: isRequestingPasswordReset } =
+    useMutation({
+      mutationFn: requestPasswordResetForCurrentUser,
+      onSuccess: (data) => {
+        setShowChangePasswordDialog(false)
+        // TEMPORARY_EMAIL_FLOW — non-local returns reset_token (no email).
+        if (typeof data.reset_token === "string" && data.reset_token.length > 0) {
+          toast.success(data.message || "Continue to set a new password.")
+          router.push(
+            `${ROUTES.AUTH.RESET_PASSWORD}?token=${encodeURIComponent(data.reset_token)}`
+          )
+          return
+        }
+        toast.success(
+          data.message ||
+            (data.sent
+              ? "We sent a password reset link to your email."
+              : "A recovery link is still valid. Check your inbox.")
+        )
+      },
+      onError: (error) => {
+        toast.error(
+          getUserErrorMessage(error, "Failed to start password reset")
+        )
+      },
+    })
 
   const handleExportData = async () => {
     if (!profile) {
@@ -1221,9 +1252,16 @@ function SettingsPageContent() {
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold font-mono text-primary">Password</h4>
-                      <p className="text-sm text-muted-foreground font-mono">Last changed 30 days ago</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Reset your account password
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent"
+                      disabled={!profile}
+                      onClick={() => setShowChangePasswordDialog(true)}
+                    >
                       Change Password
                     </Button>
                   </div>
@@ -1411,6 +1449,39 @@ function SettingsPageContent() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            <AlertDialog
+              open={showChangePasswordDialog}
+              onOpenChange={setShowChangePasswordDialog}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Change your password?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    We&apos;ll start a password reset for{" "}
+                    <span className="font-medium text-foreground">
+                      {email || "your account"}
+                    </span>
+                    . You&apos;ll either get a reset email or continue to the
+                    reset form, depending on your environment.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isRequestingPasswordReset}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isRequestingPasswordReset}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      requestChangePassword()
+                    }}
+                  >
+                    {isRequestingPasswordReset ? "Starting…" : "Continue"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
               <AlertDialogContent>

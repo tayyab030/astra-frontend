@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     PASSWORD_RESET_STATUS: (token: string) =>
       `/auth/password/${token}/status/`,
     REQUEST_DELETE_ACCOUNT: "/auth/me/delete-account/",
+    FORGOT_PASSWORD_AUTHED: "/auth/me/forgot-password/",
     ACCOUNT_DELETE_STATUS: (token: string) =>
       `/auth/account-delete/${token}/status/`,
     CONFIRM_DELETE_ACCOUNT: "/auth/account-delete/confirm/",

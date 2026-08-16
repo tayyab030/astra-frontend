@@ -78,7 +78,19 @@ export async function requestAccountDeletion() {
     message: string
     sent: boolean
     remaining_time_seconds?: number
+    email?: string
   }>(AUTH.REQUEST_DELETE_ACCOUNT)
+  return response.data
+}
+
+/** Settings → Change Password (same TEMPORARY_EMAIL_FLOW as public forgot). */
+export async function requestPasswordResetForCurrentUser() {
+  const response = await authApi.post<{
+    message: string
+    sent: boolean
+    reset_token?: string
+    remaining_time_seconds?: number
+  }>(AUTH.FORGOT_PASSWORD_AUTHED)
   return response.data
 }
 

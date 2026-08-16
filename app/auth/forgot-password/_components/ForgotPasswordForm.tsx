@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export default function ForgotPasswordForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -47,9 +49,23 @@ export default function ForgotPasswordForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: ForgotPasswordType) => {
       const response = await publicApi.post(AUTH.FORGOT_PASSWORD, data);
-      return response.data;
+      return response.data as {
+        message?: string;
+        sent?: boolean;
+        reset_token?: string;
+        remaining_time_seconds?: number;
+      };
     },
     onSuccess: (data) => {
+      // TEMPORARY_EMAIL_FLOW — non-local returns reset_token (no email). Revert with backend.
+      if (typeof data?.reset_token === "string" && data.reset_token.length > 0) {
+        toast.success(data.message || "Continue to set a new password.");
+        router.push(
+          `${ROUTES.AUTH.RESET_PASSWORD}?token=${encodeURIComponent(data.reset_token)}`
+        );
+        return;
+      }
+
       setIsSubmitted(true);
       setLinkSent(data?.sent !== false);
       setRemainingSeconds(
