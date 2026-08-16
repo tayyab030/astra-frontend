@@ -146,6 +146,7 @@ import {
 } from "@/lib/notification-settings"
 import { requestPushPermission } from "@/lib/notifications/browserPush"
 import { exportAstraDataPdf } from "@/lib/export/exportAstraDataPdf"
+import { isLocalMode } from "@/lib/api/config"
 import { useRouter, useSearchParams } from "next/navigation"
 
 const SETTINGS_TAB_VALUES = [
@@ -163,8 +164,22 @@ const SETTINGS_TAB_VALUES = [
 
 type SettingsTabValue = (typeof SETTINGS_TAB_VALUES)[number]
 
+/** Placeholder / demo-only tabs — visible when `isLocalMode()` is true. */
+const LOCAL_ONLY_SETTINGS_TABS = new Set<SettingsTabValue>([
+  "integrations",
+  "billing",
+  "advanced",
+  "support",
+])
+
 function isSettingsTab(value: string | null): value is SettingsTabValue {
   return SETTINGS_TAB_VALUES.includes(value as SettingsTabValue)
+}
+
+function isAvailableSettingsTab(value: string | null): value is SettingsTabValue {
+  if (!isSettingsTab(value)) return false
+  if (isLocalMode()) return true
+  return !LOCAL_ONLY_SETTINGS_TABS.has(value)
 }
 
 const ACCENT_OPTIONS = [
@@ -422,8 +437,20 @@ function SettingsPageContent() {
 
   useEffect(() => {
     const tab = searchParams.get("tab")
-    if (isSettingsTab(tab)) setSettingsTab(tab)
+    if (isAvailableSettingsTab(tab)) {
+      setSettingsTab(tab)
+      return
+    }
+    if (isSettingsTab(tab) && LOCAL_ONLY_SETTINGS_TABS.has(tab) && !isLocalMode()) {
+      setSettingsTab("profile")
+    }
   }, [searchParams])
+
+  useEffect(() => {
+    if (!isLocalMode() && LOCAL_ONLY_SETTINGS_TABS.has(settingsTab)) {
+      setSettingsTab("profile")
+    }
+  }, [settingsTab])
 
   const persistAlertSettings = (
     next: NotificationSettings,
@@ -719,6 +746,8 @@ function SettingsPageContent() {
     saveAiSettings({ ai_data_scope: value })
   }
 
+  const showLocalPlaceholders = isLocalMode()
+
   return (
     <div className="astra-page space-y-8">
       <div className="flex items-center justify-between">
@@ -728,20 +757,29 @@ function SettingsPageContent() {
             Your ASTRA Control Center - personalize your Life OS
           </p>
         </div>
-        <Badge variant="secondary" className="astra-badge-accent">
-          <Settings2 className="mr-2 h-4 w-4" />
-          Pro Plan
-        </Badge>
+        {showLocalPlaceholders ? (
+          <Badge variant="secondary" className="astra-badge-accent">
+            <Settings2 className="mr-2 h-4 w-4" />
+            Pro Plan
+          </Badge>
+        ) : null}
       </div>
 
       <Tabs
         value={settingsTab}
         onValueChange={(value) => {
-          if (isSettingsTab(value)) setSettingsTab(value)
+          if (isAvailableSettingsTab(value)) setSettingsTab(value)
         }}
         className="space-y-6"
       >
-        <TabsList className="astra-tabs grid w-full grid-cols-5 lg:grid-cols-10">
+        <TabsList
+          className={cn(
+            "astra-tabs grid w-full",
+            showLocalPlaceholders
+              ? "grid-cols-5 lg:grid-cols-10"
+              : "grid-cols-3 lg:grid-cols-6"
+          )}
+        >
           <TabsTrigger
             value="profile"
             className="astra-tab flex items-center gap-2"
@@ -763,13 +801,15 @@ function SettingsPageContent() {
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Modules</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="integrations"
-            className="astra-tab flex items-center gap-2"
-          >
-            <Cloud className="h-4 w-4" />
-            <span className="hidden sm:inline">Connect</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <TabsTrigger
+              value="integrations"
+              className="astra-tab flex items-center gap-2"
+            >
+              <Cloud className="h-4 w-4" />
+              <span className="hidden sm:inline">Connect</span>
+            </TabsTrigger>
+          ) : null}
           <TabsTrigger
             value="security"
             className="astra-tab flex items-center gap-2"
@@ -777,13 +817,15 @@ function SettingsPageContent() {
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="billing"
-            className="astra-tab flex items-center gap-2"
-          >
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Billing</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <TabsTrigger
+              value="billing"
+              className="astra-tab flex items-center gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+          ) : null}
           <TabsTrigger
             value="notifications"
             className="astra-tab flex items-center gap-2"
@@ -798,20 +840,24 @@ function SettingsPageContent() {
             <Bot className="h-4 w-4" />
             <span className="hidden sm:inline">AI</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="advanced"
-            className="astra-tab flex items-center gap-2"
-          >
-            <Zap className="h-4 w-4" />
-            <span className="hidden sm:inline">Advanced</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="support"
-            className="astra-tab flex items-center gap-2"
-          >
-            <HelpCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Help</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <>
+              <TabsTrigger
+                value="advanced"
+                className="astra-tab flex items-center gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="support"
+                className="astra-tab flex items-center gap-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </TabsTrigger>
+            </>
+          ) : null}
         </TabsList>
 
           {/* Profile & Account */}
@@ -1047,6 +1093,7 @@ function SettingsPageContent() {
                   </p>
                 </div>
 
+                {showLocalPlaceholders ? (
                 <div className="space-y-2">
                   <Label className="font-mono text-muted-foreground">Accent Color</Label>
                   <div className="flex flex-wrap gap-3">
@@ -1083,6 +1130,7 @@ function SettingsPageContent() {
                     Accent follows your theme automatically.
                   </p>
                 </div>
+                ) : null}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1178,7 +1226,8 @@ function SettingsPageContent() {
             </Card>
           </TabsContent>
 
-          {/* Integrations */}
+          {/* Integrations (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="integrations" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1237,6 +1286,7 @@ function SettingsPageContent() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
           {/* Security & Privacy */}
           <TabsContent value="security" className="space-y-6">
@@ -1512,7 +1562,8 @@ function SettingsPageContent() {
             </AlertDialog>
           </TabsContent>
 
-          {/* Billing */}
+          {/* Billing (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="billing" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1577,6 +1628,7 @@ function SettingsPageContent() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
           {/* Notifications */}
           <TabsContent value="notifications" className="space-y-6">
@@ -1920,7 +1972,8 @@ function SettingsPageContent() {
             </Card>
           </TabsContent>
 
-          {/* Advanced */}
+          {/* Advanced (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="advanced" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1980,8 +2033,10 @@ function SettingsPageContent() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
-          {/* Support */}
+          {/* Support (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="support" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -2026,6 +2081,7 @@ function SettingsPageContent() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
         </Tabs>
     </div>
   )

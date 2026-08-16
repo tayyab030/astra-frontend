@@ -1,7 +1,8 @@
 const LOCAL_API_BASE_URL = "http://localhost:3001/api";
 const LIVE_API_BASE_URL = "https://astra-backend-48lg.onrender.com/api";
 
-function isLocalMode() {
+/** True when NEXT_PUBLIC_MODE is local/localhost/development. */
+export function isLocalMode() {
   const mode = process.env.NEXT_PUBLIC_MODE?.toLowerCase();
   return mode === "local" || mode === "localhost" || mode === "development";
 }
