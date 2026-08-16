@@ -1336,7 +1336,8 @@ function SettingsPageContent() {
                 <DialogHeader>
                   <DialogTitle className="font-mono">Where you&apos;re signed in</DialogTitle>
                   <DialogDescription className="font-mono">
-                    Every ASTRA login shows up here — Website, Mobile app, or Desktop software.
+                    Website keeps only your latest browser login (older website sessions are signed out
+                    automatically). Mobile and Desktop can stay signed in on multiple devices.
                   </DialogDescription>
                 </DialogHeader>
 
