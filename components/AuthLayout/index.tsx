@@ -27,6 +27,13 @@ const SidebarContent = dynamic(() => import("./components/SidebarContent"), {
 const SideBarDrawer = dynamic(() => import("./components/SideBarDrawer"), {
   ssr: false,
 });
+const NotificationBell = dynamic(
+  () =>
+    import("./components/NotificationBell").then((m) => ({
+      default: m.NotificationBell,
+    })),
+  { ssr: false }
+);
 
 function getUserInitials(user: {
   first_name?: string | null
@@ -84,11 +91,14 @@ const AuthLayoutShell = ({
             </Link>
           </div>
 
-          <Avatar className="h-8 w-8 ring-2 ring-ring/50">
-            <AvatarFallback className="astra-btn-primary text-primary-foreground text-[10px] font-medium leading-none">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Avatar className="h-8 w-8 ring-2 ring-ring/50">
+              <AvatarFallback className="astra-btn-primary text-primary-foreground text-[10px] font-medium leading-none">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </header>
 

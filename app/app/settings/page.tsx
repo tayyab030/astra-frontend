@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, Suspense } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -105,6 +105,37 @@ import {
   type ModuleWeightKey,
   type ModuleWeights,
 } from "@/lib/module-settings"
+import {
+  DEFAULT_NOTIFICATION_SETTINGS,
+  NOTIFICATION_CATEGORY_KEYS,
+  NOTIFICATION_CATEGORY_LABELS,
+  loadNotificationSettings,
+  normalizeNotificationSettings,
+  saveNotificationSettings,
+  type NotificationDigest,
+  type NotificationSettings,
+} from "@/lib/notification-settings"
+import { requestPushPermission } from "@/lib/notifications/browserPush"
+import { useSearchParams } from "next/navigation"
+
+const SETTINGS_TAB_VALUES = [
+  "profile",
+  "personalization",
+  "modules",
+  "integrations",
+  "security",
+  "billing",
+  "notifications",
+  "ai",
+  "advanced",
+  "support",
+] as const
+
+type SettingsTabValue = (typeof SETTINGS_TAB_VALUES)[number]
+
+function isSettingsTab(value: string | null): value is SettingsTabValue {
+  return SETTINGS_TAB_VALUES.includes(value as SettingsTabValue)
+}
 
 const ACCENT_OPTIONS = [
   {
@@ -166,6 +197,22 @@ const ACCENT_OPTIONS = [
 type UserTheme = AppTheme
 
 export default function SettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-4 p-1">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <SettingsPageContent />
+    </Suspense>
+  )
+}
+
+function SettingsPageContent() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { currency, setCurrency, formatCurrency } = useCurrency()
@@ -184,13 +231,11 @@ export default function SettingsPage() {
   const [aiInsights, setAiInsights] = useState(DEFAULT_AI_INSIGHTS)
   const [aiDataScope, setAiDataScope] = useState<AiDataScope>(DEFAULT_AI_DATA_SCOPE)
 
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    inApp: true,
-    digest: "daily",
-  })
-  const [quietHours, setQuietHours] = useState({ start: "22:00", end: "08:00" })
+  const [notifications, setNotifications] = useState<NotificationSettings>(
+    () => normalizeNotificationSettings(null)
+  )
+  const [settingsTab, setSettingsTab] = useState<SettingsTabValue>("profile")
+  const searchParams = useSearchParams()
   const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false)
 
   const [moduleWeights, setModuleWeights] = useState<ModuleWeights>({
@@ -252,9 +297,29 @@ export default function SettingsPage() {
     const modules = normalizeModuleSettings(profile.module_settings)
     setModuleWeights(modules.weights)
     setModuleEnabled(modules.enabled)
+    setNotifications(loadNotificationSettings(profile.id))
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
   }, [profile, dispatch, setTheme])
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isSettingsTab(tab)) setSettingsTab(tab)
+  }, [searchParams])
+
+  const persistAlertSettings = (
+    next: NotificationSettings,
+    message = "Alerts preferences saved"
+  ) => {
+    const normalized = normalizeNotificationSettings(next)
+    setNotifications(normalized)
+    if (profile?.id) {
+      saveNotificationSettings(profile.id, normalized)
+      toast.success(message)
+    } else {
+      toast.error("Sign in to save alert preferences")
+    }
+  }
 
   const initials = useMemo(() => {
     const first = firstName.trim().charAt(0)
@@ -501,7 +566,13 @@ export default function SettingsPage() {
         </Badge>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
+      <Tabs
+        value={settingsTab}
+        onValueChange={(value) => {
+          if (isSettingsTab(value)) setSettingsTab(value)
+        }}
+        className="space-y-6"
+      >
         <TabsList className="astra-tabs grid w-full grid-cols-5 lg:grid-cols-10">
           <TabsTrigger
             value="profile"
@@ -1167,38 +1238,79 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-primary">Notification Types</h4>
+                  <h4 className="font-semibold font-mono text-primary">Channels</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Receive updates via email</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Preference saved for later — email delivery needs the backend
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.email}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, email: checked }))}
+                        checked={notifications.channels.email}
+                        onCheckedChange={(checked) =>
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, email: checked },
+                          })
+                        }
                         className="font-mono"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Browser and mobile notifications</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Browser notifications while ASTRA is open
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.push}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, push: checked }))}
+                        checked={notifications.channels.push}
+                        onCheckedChange={async (checked) => {
+                          if (!checked) {
+                            persistAlertSettings({
+                              ...notifications,
+                              channels: { ...notifications.channels, push: false },
+                            })
+                            return
+                          }
+                          const permission = await requestPushPermission()
+                          if (permission !== "granted") {
+                            toast.error(
+                              permission === "denied"
+                                ? "Browser blocked notification permission"
+                                : "Notification permission was not granted"
+                            )
+                            persistAlertSettings({
+                              ...notifications,
+                              channels: { ...notifications.channels, push: false },
+                            }, "Push left off")
+                            return
+                          }
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, push: true },
+                          })
+                        }}
                         className="font-mono"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">In-App Alerts</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Notifications within ASTRA</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Bell inbox in the app header
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.inApp}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, inApp: checked }))}
+                        checked={notifications.channels.inApp}
+                        onCheckedChange={(checked) =>
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, inApp: checked },
+                          })
+                        }
                         className="font-mono"
                       />
                     </div>
@@ -1208,10 +1320,48 @@ export default function SettingsPage() {
                 <Separator />
 
                 <div className="space-y-4">
+                  <h4 className="font-semibold font-mono text-primary">Categories</h4>
+                  <div className="space-y-3">
+                    {NOTIFICATION_CATEGORY_KEYS.map((key) => (
+                      <div key={key} className="flex items-center justify-between gap-4">
+                        <div>
+                          <Label className="font-mono text-muted-foreground">
+                            {NOTIFICATION_CATEGORY_LABELS[key]}
+                          </Label>
+                        </div>
+                        <Switch
+                          checked={notifications.categories[key]}
+                          onCheckedChange={(checked) =>
+                            persistAlertSettings({
+                              ...notifications,
+                              categories: {
+                                ...notifications.categories,
+                                [key]: checked,
+                              },
+                            })
+                          }
+                          className="font-mono"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-primary">Digest Frequency</h4>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    Instant fires each new alert (push). Daily/weekly batch push into one digest.
+                  </p>
                   <Select
                     value={notifications.digest}
-                    onValueChange={(value) => setNotifications((prev) => ({ ...prev, digest: value }))}
+                    onValueChange={(value) =>
+                      persistAlertSettings({
+                        ...notifications,
+                        digest: value as NotificationDigest,
+                      })
+                    }
                   >
                     <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                       <SelectValue />
@@ -1232,24 +1382,57 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-primary">Quiet Hours</h4>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    Suppresses browser push (in-app inbox still updates)
+                  </p>
                   <div className="grid grid-cols-2 gap-4">
                     <TimePicker
                       label="Start Time"
-                      value={quietHours.start}
+                      value={notifications.quietHours.start}
                       onChange={(value) =>
-                        value && setQuietHours((prev) => ({ ...prev, start: value }))
+                        value &&
+                        persistAlertSettings({
+                          ...notifications,
+                          quietHours: { ...notifications.quietHours, start: value },
+                        })
                       }
                       buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
                     />
                     <TimePicker
                       label="End Time"
-                      value={quietHours.end}
+                      value={notifications.quietHours.end}
                       onChange={(value) =>
-                        value && setQuietHours((prev) => ({ ...prev, end: value }))
+                        value &&
+                        persistAlertSettings({
+                          ...notifications,
+                          quietHours: { ...notifications.quietHours, end: value },
+                        })
                       }
                       buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
                     />
                   </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    className="font-mono"
+                    onClick={() =>
+                      persistAlertSettings(
+                        {
+                          ...DEFAULT_NOTIFICATION_SETTINGS,
+                          channels: { ...DEFAULT_NOTIFICATION_SETTINGS.channels },
+                          quietHours: { ...DEFAULT_NOTIFICATION_SETTINGS.quietHours },
+                          categories: { ...DEFAULT_NOTIFICATION_SETTINGS.categories },
+                        },
+                        "Alerts reset to defaults"
+                      )
+                    }
+                  >
+                    Reset to defaults
+                  </Button>
                 </div>
               </CardContent>
             </Card>
