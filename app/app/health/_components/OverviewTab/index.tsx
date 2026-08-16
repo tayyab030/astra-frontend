@@ -13,10 +13,28 @@ import { MetricStepperCard } from "../shared/MetricStepperCard"
 import { SleepScheduleCard } from "../shared/SleepScheduleCard"
 
 export function OverviewTab() {
-  const { today, targets, habits, incrementMetric, decrementMetric, setTarget } = useHealthContext()
+  const {
+    today,
+    targets,
+    habits,
+    latestWeight,
+    bmiStatus,
+    profile,
+    weightLog,
+    workouts,
+    moodToday,
+    incrementMetric,
+    decrementMetric,
+    setTarget,
+  } = useHealthContext()
 
   const habitsComplete = habits.filter((h) => h.completed).length
   const habitsProgress = habits.length ? (habitsComplete / habits.length) * 100 : 0
+
+  const recentWeights = weightLog.slice(-7).map((entry) => ({
+    date: entry.date,
+    weightKg: entry.weightKg,
+  }))
 
   const insightContext = {
     waterGlasses: today.waterGlasses,
@@ -28,6 +46,21 @@ export function OverviewTab() {
     habitsComplete,
     habitsTotal: habits.length,
     habitsProgress: Math.round(habitsProgress),
+    // Weight / body metrics (Weight tab)
+    latestWeightKg: latestWeight,
+    heightCm: profile.heightCm,
+    idealWeightKg: profile.idealWeightKg,
+    bmi: bmiStatus.bmi,
+    bmiLabel: bmiStatus.label,
+    healthyWeightDelta: bmiStatus.deltaLabel,
+    idealWeightDelta: bmiStatus.idealDeltaLabel,
+    healthyWeightRangeKg:
+      bmiStatus.healthyMinKg != null && bmiStatus.healthyMaxKg != null
+        ? { min: bmiStatus.healthyMinKg, max: bmiStatus.healthyMaxKg }
+        : null,
+    recentWeights,
+    recentWorkoutCount: workouts.slice(0, 7).length,
+    moodToday: moodToday || null,
   }
 
   const {

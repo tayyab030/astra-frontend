@@ -74,10 +74,19 @@ export function useAiInsight(
     retry: 1,
     placeholderData: () => {
       if (!userId) return undefined
-      return readInsightCache(userId, kind, period, fingerprint) ?? undefined
+      return (
+        readInsightCache(userId, kind, period, fingerprint, contextKey) ??
+        undefined
+      )
     },
     queryFn: async (): Promise<InsightsResponse> => {
-      const cached = readInsightCache(userId, kind, period, fingerprint)
+      const cached = readInsightCache(
+        userId,
+        kind,
+        period,
+        fingerprint,
+        contextKey
+      )
       if (cached) {
         return {
           ...cached,
@@ -91,7 +100,14 @@ export function useAiInsight(
         context: enrichedContext,
       })
       if (data.enabled !== false && insightsHaveContent(data)) {
-        writeInsightCache(userId, kind, period, fingerprint, data)
+        writeInsightCache(
+          userId,
+          kind,
+          period,
+          fingerprint,
+          data,
+          contextKey
+        )
       }
       return {
         ...data,
