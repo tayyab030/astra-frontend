@@ -86,8 +86,8 @@ const AuthLayoutShell = ({
             >
               <Menu className="h-4 w-4" />
             </Button>
-            <Link href={ROUTES.APP.DASHBOARD} aria-label="Go to home" className="inline-flex">
-              <AstraLogo className="h-8 w-auto" />
+            <Link href={ROUTES.APP.DASHBOARD} aria-label="Go to home" className="inline-flex items-center">
+              <AstraLogo className="h-11 w-auto sm:h-12" />
             </Link>
           </div>
 

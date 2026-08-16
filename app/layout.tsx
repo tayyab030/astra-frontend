@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   description:
     "Assistant for Scheduling, Tasks, Routines & Analytics - Manage wealth, health, work & knowledge with ASTRA, the modular Life OS.",
   generator: "v0.app",
+  icons: {
+    icon: [{ url: "/images/favicon.png", type: "image/png" }],
+    apple: [{ url: "/images/favicon.png", type: "image/png" }],
+    shortcut: ["/images/favicon.png"],
+  },
 }
 
 export default function RootLayout({
