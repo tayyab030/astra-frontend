@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Bot, Menu, MessageSquarePlus, Mic, Send, Square, User, Volume2, VolumeX } from "lucide-react"
 
 import { ConversationSidebar } from "@/components/assistant/ConversationSidebar"
@@ -24,6 +24,7 @@ import {
   type AssistantConversation,
 } from "@/lib/api/assistant"
 import { chunkForSpeech } from "@/lib/assistant/chunkSpeech"
+import { formatMessageTime, groupByDay } from "@/lib/assistant/chatDate"
 import { fetchCurrentUser, updateCurrentUser } from "@/lib/api/user"
 import { DEFAULT_AI_VOICE_MODE } from "@/lib/ai-settings"
 import { setUser } from "@/store/slice/userSlice"
@@ -574,6 +575,11 @@ export default function AssistantPage() {
     }
   }
 
+  const messageDays = useMemo(
+    () => groupByDay(messages, (message) => message.timestamp),
+    [messages]
+  )
+
   const statusLabel = isRecording
     ? "Listening… click send to finish"
     : isTranscribing
@@ -671,46 +677,56 @@ export default function AssistantPage() {
         <Card className="astra-card mb-4 flex-1 overflow-hidden">
           <div className="flex h-full flex-col">
             <div className="flex-1 space-y-4 overflow-y-auto p-6">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex items-start gap-3 ${
-                    message.role === "user" ? "flex-row-reverse" : "flex-row"
-                  }`}
-                >
-                  <div
-                    className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    {message.role === "user" ? (
-                      <User className="h-4 w-4" />
-                    ) : (
-                      <Bot className="h-4 w-4" />
-                    )}
+              {messageDays.map((day) => (
+                <div key={day.key} className="space-y-4">
+                  <div className="sticky top-0 z-10 flex justify-center py-1">
+                    <span className="rounded-full border border-border bg-muted/90 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur">
+                      {day.label}
+                    </span>
                   </div>
-                  <div
-                    className={`max-w-[70%] ${
-                      message.role === "user" ? "text-right" : "text-left"
-                    }`}
-                  >
+
+                  {day.items.map((message) => (
                     <div
-                      className={`inline-block rounded-lg p-3 ${
-                        message.role === "user"
-                          ? "astra-panel text-foreground"
-                          : "border border-border bg-muted text-foreground"
+                      key={message.id}
+                      className={`flex items-start gap-3 ${
+                        message.role === "user" ? "flex-row-reverse" : "flex-row"
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                      <div
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-secondary-foreground"
+                        }`}
+                      >
+                        {message.role === "user" ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div
+                        className={`max-w-[70%] ${
+                          message.role === "user" ? "text-right" : "text-left"
+                        }`}
+                      >
+                        <div
+                          className={`inline-block rounded-lg p-3 ${
+                            message.role === "user"
+                              ? "astra-panel text-foreground"
+                              : "border border-border bg-muted text-foreground"
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {formatMessageTime(message.timestamp)}
+                        </p>
+                      </div>
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
+                  ))}
                 </div>
               ))}
 
