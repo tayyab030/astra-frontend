@@ -9,6 +9,8 @@ import { clearAuthSessionId } from "@/lib/sessions/clientDevice"
 
 export type LogoutOptions = {
   reason?: "expired" | "manual"
+  /** Skip the default logout toast (e.g. account already deleted). */
+  silent?: boolean
 }
 
 export const logout = async (options?: LogoutOptions) => {
@@ -23,10 +25,12 @@ export const logout = async (options?: LogoutOptions) => {
     clearAuthSessionId(String(userId))
   }
 
-  if (reason === "expired") {
-    toast.error("Your session has expired. Please log in again.")
-  } else {
-    toast.success("Logged out successfully")
+  if (!options?.silent) {
+    if (reason === "expired") {
+      toast.error("Your session has expired. Please log in again.")
+    } else {
+      toast.success("Logged out successfully")
+    }
   }
 
   resetLogoutGuard()
