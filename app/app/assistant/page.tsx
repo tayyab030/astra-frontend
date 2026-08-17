@@ -366,8 +366,17 @@ export default function AssistantPage() {
         }
       }
     } catch (err) {
-      setMessages((prev) => prev.filter((item) => item.id !== optimistic.id))
-      setError(getAssistantErrorMessage(err, "Failed to reach Astra."))
+      const message = getAssistantErrorMessage(err, "Failed to reach Astra.")
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          content: message,
+          role: "assistant",
+          timestamp: new Date(),
+        },
+      ])
+      setError(message)
     } finally {
       setIsLoading(false)
     }

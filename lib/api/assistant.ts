@@ -165,10 +165,16 @@ function parseSpeechErrorPayload(data: unknown): string | null {
 }
 
 export function getAssistantErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) return error.message
   const fromPayload = parseSpeechErrorPayload(
     (error as { response?: { data?: unknown } })?.response?.data
   )
   if (fromPayload) return fromPayload
+
+  if (error instanceof Error && error.message) {
+    // Axios uses this generic string for 4xx/5xx — prefer the API payload above.
+    if (!/^Request failed with status code \d+$/.test(error.message)) {
+      return error.message
+    }
+  }
   return fallback
 }
