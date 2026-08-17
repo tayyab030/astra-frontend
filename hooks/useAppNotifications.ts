@@ -220,11 +220,19 @@ export function useAppNotifications() {
       goals: bundle.goals,
       projects: bundle.projects,
       healthToday: bundle.healthToday,
+      accountCreatedAt: user?.created_at ?? null,
       aiWarningMessages: userId ? collectCachedAiWarnings(userId) : [],
       modulesEnabled: moduleSettings.enabled,
       categoriesEnabled: prefs.categories,
     })
-  }, [bundle, moduleSettings.enabled, prefs.categories, userId, dataUpdatedAt])
+  }, [
+    bundle,
+    moduleSettings.enabled,
+    prefs.categories,
+    userId,
+    user?.created_at,
+    dataUpdatedAt,
+  ])
 
   const visibleAlerts: InboxAlert[] = useMemo(() => {
     const dismissed = new Set(inbox.dismissedIds)

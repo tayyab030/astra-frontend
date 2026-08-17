@@ -1,3 +1,4 @@
+import { AI_CACHE_TTL_MS } from "@/lib/ai-cache"
 import type {
   InsightKind,
   InsightPeriod,
@@ -7,8 +8,6 @@ import type {
 type StoredInsight = {
   data: InsightsResponse
   fetchedAt: number
-  period_key?: string
-  cache_until?: string
 }
 
 function storageKey(
@@ -33,20 +32,8 @@ function hashContextKey(contextKey: string) {
 
 function isFresh(stored: StoredInsight): boolean {
   if (!stored?.data) return false
-  if (stored.cache_until) {
-    const until = Date.parse(stored.cache_until)
-    if (Number.isFinite(until)) return Date.now() < until
-  }
-  if (stored.data.cache_until) {
-    const until = Date.parse(stored.data.cache_until)
-    if (Number.isFinite(until)) return Date.now() < until
-  }
-  // Fallback: weekly ~7d, monthly ~31d from fetch
-  const ttl =
-    stored.data.period === "monthly"
-      ? 31 * 24 * 60 * 60 * 1000
-      : 7 * 24 * 60 * 60 * 1000
-  return Date.now() - stored.fetchedAt < ttl
+  if (typeof stored.fetchedAt !== "number") return false
+  return Date.now() - stored.fetchedAt < AI_CACHE_TTL_MS
 }
 
 export function readInsightCache(
@@ -80,12 +67,7 @@ export function writeInsightCache(
 ) {
   if (typeof window === "undefined") return
   try {
-    const payload: StoredInsight = {
-      data,
-      fetchedAt: Date.now(),
-      period_key: data.period_key,
-      cache_until: data.cache_until,
-    }
+    const payload: StoredInsight = { data, fetchedAt: Date.now() }
     window.localStorage.setItem(
       storageKey(userId, kind, period, fingerprint, contextKey),
       JSON.stringify(payload)

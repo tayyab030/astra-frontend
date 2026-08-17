@@ -1,3 +1,4 @@
+import { AI_CACHE_TTL_MS } from "@/lib/ai-cache"
 import type { InsightsResponse } from "@/lib/api/insights"
 
 export type CachedAiWarning = {
@@ -21,7 +22,17 @@ export function collectCachedAiWarnings(userId: string): CachedAiWarning[] {
       if (!raw) continue
       let data: InsightsResponse | null = null
       try {
-        const parsed = JSON.parse(raw) as { data?: InsightsResponse }
+        const parsed = JSON.parse(raw) as {
+          data?: InsightsResponse
+          fetchedAt?: number
+        }
+        const fetchedAt = parsed?.fetchedAt
+        if (
+          typeof fetchedAt !== "number" ||
+          Date.now() - fetchedAt >= AI_CACHE_TTL_MS
+        ) {
+          continue
+        }
         data = parsed?.data ?? null
       } catch {
         continue

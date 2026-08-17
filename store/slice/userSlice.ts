@@ -24,6 +24,9 @@ export interface User {
   ai_data_scope?: AiDataScope;
   ai_language?: AiLanguage;
   module_settings?: ModuleSettings;
+  is_verified?: boolean;
+  /** ISO signup date from the API. */
+  created_at?: string | null;
 }
 
 interface UserState {

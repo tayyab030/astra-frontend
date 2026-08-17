@@ -2,13 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { fetchGoalsQuote, type DailyQuoteResponse } from "@/lib/api/assistant"
+import { AI_CACHE_TTL_MS } from "@/lib/ai-cache"
 import { aiSettingsFingerprint } from "@/lib/ai-settings"
 import { useAppSelector } from "@/store/hooks"
 
 const FALLBACK_QUOTE = "A goal is a dream with a deadline."
 
 const STORAGE_PREFIX = "astra-goals-quote"
-const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000
 
 type StoredQuote = {
   quote: string
@@ -29,7 +29,7 @@ function readLocalQuote(userId: string, fingerprint: string): string | null {
       typeof parsed.quote === "string" &&
       parsed.quote.trim() &&
       typeof parsed.fetchedAt === "number" &&
-      Date.now() - parsed.fetchedAt < TWELVE_HOURS_MS
+      Date.now() - parsed.fetchedAt < AI_CACHE_TTL_MS
     ) {
       return parsed.quote.trim()
     }
@@ -74,8 +74,8 @@ export function useGoalsQuote() {
       writeLocalQuote(userId, fingerprint, quote)
       return { ...data, quote }
     },
-    staleTime: TWELVE_HOURS_MS,
-    gcTime: TWELVE_HOURS_MS,
+    staleTime: AI_CACHE_TTL_MS,
+    gcTime: AI_CACHE_TTL_MS,
     refetchOnWindowFocus: false,
     retry: 1,
     placeholderData: () => {

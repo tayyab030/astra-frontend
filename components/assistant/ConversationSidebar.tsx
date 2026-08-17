@@ -1,11 +1,28 @@
 "use client"
 
-import { useState } from "react"
-import { MessageSquarePlus, Pencil, Trash2, X } from "lucide-react"
+import { useMemo, useState } from "react"
+import {
+  MessageSquarePlus,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import type { AssistantConversation } from "@/lib/api/assistant"
+import {
+  formatConversationStamp,
+  sortByRecentActivity,
+} from "@/lib/assistant/chatDate"
 
 type Props = {
   open: boolean
@@ -32,6 +49,13 @@ export function ConversationSidebar({
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftTitle, setDraftTitle] = useState("")
+
+  // The API already returns newest first; re-sort so an optimistic local
+  // update still floats the active chat to the top before the next refetch.
+  const ordered = useMemo(
+    () => sortByRecentActivity(conversations),
+    [conversations]
+  )
 
   const startRename = (item: AssistantConversation) => {
     setEditingId(item.id)
@@ -82,12 +106,12 @@ export function ConversationSidebar({
         </Button>
 
         <div className="flex-1 space-y-1 overflow-y-auto pr-1">
-          {conversations.length === 0 ? (
+          {ordered.length === 0 ? (
             <p className="px-2 py-3 text-xs text-muted-foreground">
               No chats yet. Start a new one.
             </p>
           ) : (
-            conversations.map((item) => {
+            ordered.map((item) => {
               const active = item.id === activeId
               const editing = editingId === item.id
               return (
@@ -117,42 +141,54 @@ export function ConversationSidebar({
                   ) : (
                     <button
                       type="button"
-                      className="min-w-0 flex-1 truncate text-left text-sm"
+                      className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
                       onClick={() => {
                         onSelect(item.id)
                         onClose()
                       }}
                     >
-                      {item.title || "New chat"}
+                      <span className="min-w-0 flex-1 truncate text-sm">
+                        {item.title || "New chat"}
+                      </span>
+                      <span className="shrink-0 text-[10px] text-muted-foreground">
+                        {formatConversationStamp(
+                          new Date(item.updated_at || item.created_at)
+                        )}
+                      </span>
                     </button>
                   )}
 
-                  <div className="flex shrink-0 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => startRename(item)}
-                      aria-label="Rename chat"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive"
-                      onClick={() => {
-                        if (window.confirm(`Delete “${item.title}”?`)) {
-                          onDelete(item.id)
-                        }
-                      }}
-                      aria-label="Delete chat"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 md:opacity-0 md:group-hover:opacity-100 md:data-[state=open]:opacity-100"
+                        aria-label="Chat actions"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem onClick={() => startRename(item)}>
+                        <Pencil className="mr-2 h-3.5 w-3.5" />
+                        Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => {
+                          if (window.confirm(`Delete “${item.title}”?`)) {
+                            onDelete(item.id)
+                          }
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-3.5 w-3.5" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )
             })

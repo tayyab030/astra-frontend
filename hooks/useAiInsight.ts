@@ -11,6 +11,7 @@ import {
   type InsightPeriod,
   type InsightsResponse,
 } from "@/lib/api/insights"
+import { AI_CACHE_TTL_MS } from "@/lib/ai-cache"
 import { DEFAULT_AI_INSIGHTS, aiSettingsFingerprint } from "@/lib/ai-settings"
 import {
   readInsightCache,
@@ -68,8 +69,8 @@ export function useAiInsight(
   const query = useQuery({
     queryKey: ["ai-insight", userId, kind, period, fingerprint, contextKey],
     enabled,
-    staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 31 * 24 * 60 * 60 * 1000,
+    staleTime: AI_CACHE_TTL_MS,
+    gcTime: AI_CACHE_TTL_MS,
     refetchOnWindowFocus: false,
     retry: 1,
     placeholderData: () => {
