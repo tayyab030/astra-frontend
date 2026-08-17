@@ -55,8 +55,8 @@ function HealthPageInner() {
     <div className="astra-page">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="astra-title">Health Dashboard</h1>
-          <p className="astra-subtitle mt-1 text-sm">
+          <h1 className="astra-title">Health</h1>
+          <p className="astra-subtitle mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
           </p>
         </div>

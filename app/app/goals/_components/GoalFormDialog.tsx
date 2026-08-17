@@ -330,7 +330,7 @@ export function GoalFormDialog({
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <Label className="text-sm font-medium text-slate-200">Milestones</Label>

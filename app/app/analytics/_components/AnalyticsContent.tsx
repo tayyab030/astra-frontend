@@ -174,8 +174,8 @@ export function AnalyticsContent() {
     <div className="astra-page space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="astra-title text-4xl">Analytics Dashboard</h1>
-          <p className="astra-subtitle mt-2 text-lg">Your Personal Life Intelligence Report</p>
+          <h1 className="astra-title">Analytics</h1>
+          <p className="astra-subtitle mt-1">Your Personal Life Intelligence Report</p>
         </div>
         <div className="flex items-center space-x-3">
           <Button

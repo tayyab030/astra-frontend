@@ -56,8 +56,8 @@ function LogWorkoutDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div>
-            <Label className="text-slate-200 font-mono">Workout Type</Label>
+          <div className="space-y-2">
+            <Label className="text-slate-200">Workout Type</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono">
                 <SelectValue placeholder="Select workout type" />
@@ -71,8 +71,8 @@ function LogWorkoutDialog({
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="text-slate-200 font-mono">Duration (minutes)</Label>
+          <div className="space-y-2">
+            <Label className="text-slate-200">Duration (minutes)</Label>
             <Input
               type="number"
               placeholder="30"
@@ -81,8 +81,8 @@ function LogWorkoutDialog({
               className="bg-slate-700/50 border-slate-600 text-slate-100 font-mono"
             />
           </div>
-          <div>
-            <Label className="text-slate-200 font-mono">Calories Burned</Label>
+          <div className="space-y-2">
+            <Label className="text-slate-200">Calories Burned</Label>
             <Input
               type="number"
               placeholder="250"

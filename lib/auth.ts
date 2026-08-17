@@ -4,6 +4,8 @@ import { revertAll } from "@/store/slice/resetStore"
 import { ROUTES } from "@/constants/routes"
 import { toast } from "sonner"
 import { resetLogoutGuard } from "@/lib/auth/tokenManager"
+import { clearCurrentSession } from "@/lib/sessions/currentSession"
+import { clearAuthSessionId } from "@/lib/sessions/clientDevice"
 
 export type LogoutOptions = {
   reason?: "expired" | "manual"
@@ -11,10 +13,15 @@ export type LogoutOptions = {
 
 export const logout = async (options?: LogoutOptions) => {
   const reason = options?.reason ?? "manual"
+  const userId = store.getState().user?.user?.id
 
   store.dispatch(revertAll())
   await persistor.purge()
   await removeRefreshTokenCookie()
+  if (userId) {
+    clearCurrentSession(String(userId))
+    clearAuthSessionId(String(userId))
+  }
 
   if (reason === "expired") {
     toast.error("Your session has expired. Please log in again.")

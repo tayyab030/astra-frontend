@@ -28,8 +28,8 @@ export function DateRangeFilterBar({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4">
-        <div className="min-w-0">
-          <Label className="text-slate-400 font-mono text-xs mb-2 block">Period</Label>
+        <div className="min-w-0 space-y-2">
+          <Label className="text-slate-400 text-xs">Period</Label>
           <ToggleGroup
             type="single"
             value={dateRange.preset}

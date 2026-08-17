@@ -11,6 +11,7 @@ import { useAppDispatch } from "@/store/hooks"
 import { isAppTheme } from "@/lib/theme"
 import { applyThemeClass } from "@/lib/apply-theme-class"
 import { canApplyServerTheme, captureThemeSyncToken } from "@/lib/theme-sync"
+import { ensureCurrentSession } from "@/lib/sessions/currentSession"
 
 /**
  * Validates the session when the protected app shell mounts.
@@ -44,6 +45,9 @@ export function useAuthSession() {
       try {
         const user = await fetchCurrentUser()
         dispatch(setUser(user))
+        if (user?.id) {
+          ensureCurrentSession(String(user.id))
+        }
         if (user.currency) {
           dispatch(setCurrency(user.currency))
         }

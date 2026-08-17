@@ -42,10 +42,12 @@ const Header = ({ period, onPeriodChange, listParams }: HeaderProps) => {
   )
 
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex flex-col">
-        <h1 className="text-2xl font-semibold text-white mb-1">{formattedDate}</h1>
-        <p className="text-gray-400 text-lg">{getGreeting()}</p>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
+      <div>
+        <h1 className="astra-title">Tasks</h1>
+        <p className="astra-subtitle mt-1">
+          {getGreeting()} · {formattedDate}
+        </p>
       </div>
 
       <div className="flex items-center gap-6">
@@ -58,7 +60,7 @@ const Header = ({ period, onPeriodChange, listParams }: HeaderProps) => {
         />
 
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-300">
+          <span className="text-muted-foreground">
             {summary?.completed ?? 0} task{summary?.completed === 1 ? "" : "s"} completed
           </span>
         </div>

@@ -41,8 +41,8 @@ export function PublicNavbar() {
     <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-slate-900/80 border-b border-cyan-500/20">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link href={ROUTES.PUBLIC.HOME}>
-            <AstraLogo className="text-cyan-400" />
+          <Link href={ROUTES.PUBLIC.HOME} className="inline-flex items-center">
+            <AstraLogo className="h-11 w-auto sm:h-12" />
           </Link>
           <nav className="hidden md:flex items-center space-x-8">
             <Link

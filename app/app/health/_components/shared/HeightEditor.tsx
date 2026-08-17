@@ -22,7 +22,7 @@ export function HeightEditor({
   const { feet, inches } = heightCm ? cmToFeetInches(heightCm) : { feet: 5, inches: 9 }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-slate-300 font-mono text-sm">Height</Label>
         <ToggleGroup
@@ -55,8 +55,8 @@ export function HeightEditor({
         />
       ) : (
         <div className="flex gap-2">
-          <div className="flex-1">
-            <Label className="text-xs text-slate-400 font-mono">Feet</Label>
+          <div className="flex-1 space-y-2">
+            <Label className="text-xs text-slate-400">Feet</Label>
             <Input
               type="number"
               min={3}
@@ -66,11 +66,11 @@ export function HeightEditor({
                 const f = parseInt(e.target.value, 10)
                 if (!isNaN(f)) onHeightChange(feetInchesToCm(f, inches))
               }}
-              className="bg-slate-900/50 border-slate-600/50 text-white font-mono mt-1"
+              className="bg-slate-900/50 border-slate-600/50 text-white font-mono"
             />
           </div>
-          <div className="flex-1">
-            <Label className="text-xs text-slate-400 font-mono">Inches</Label>
+          <div className="flex-1 space-y-2">
+            <Label className="text-xs text-slate-400">Inches</Label>
             <Input
               type="number"
               min={0}
@@ -80,7 +80,7 @@ export function HeightEditor({
                 const i = parseInt(e.target.value, 10)
                 if (!isNaN(i)) onHeightChange(feetInchesToCm(feet, i))
               }}
-              className="bg-slate-900/50 border-slate-600/50 text-white font-mono mt-1"
+              className="bg-slate-900/50 border-slate-600/50 text-white font-mono"
             />
           </div>
         </div>

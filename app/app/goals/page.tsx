@@ -74,7 +74,7 @@ export default function GoalsPage() {
     <div className="astra-page">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="astra-title">Goals Dashboard 🎯</h1>
+            <h1 className="astra-title">Goals</h1>
             <p className="astra-subtitle mt-1">&quot;{quote}&quot;</p>
           </div>
           <div className="flex flex-col gap-3 sm:items-end">

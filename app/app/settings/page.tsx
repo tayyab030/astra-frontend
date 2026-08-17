@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, Suspense } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -37,6 +37,8 @@ import {
   Key,
   Settings2,
   Plus,
+  Monitor,
+  Laptop,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -48,6 +50,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { logout } from "@/lib/auth"
+import {
+  ensureCurrentSession,
+  formatSessionWhen,
+  type CurrentSessionInfo,
+} from "@/lib/sessions/currentSession"
+import {
+  clientTypeLabel,
+  loadAuthSessionId,
+  type AuthClientType,
+} from "@/lib/sessions/clientDevice"
+import {
+  fetchAuthSessions,
+  revokeAllAuthSessions,
+  revokeAuthSession,
+  type AuthSessionApi,
+} from "@/lib/api/sessions"
 import CurrencySelect from "@/components/common/CurrencySelect"
 import TimezoneSelect from "@/components/common/TimezoneSelect"
 import { TimePicker } from "@/components/ui/time-picker"
@@ -56,8 +83,10 @@ import {
   fetchCurrentUser,
   getUserErrorMessage,
   requestAccountDeletion,
+  requestPasswordResetForCurrentUser,
   updateCurrentUser,
 } from "@/lib/api/user"
+import { ROUTES } from "@/constants/routes"
 import { getCountryByCode } from "@/lib/countries"
 import { USER_GENDER_OPTIONS, type UserGender } from "@/lib/gender"
 import { setCurrency as setCurrencyAction } from "@/store/slice/currencySlice"
@@ -105,6 +134,53 @@ import {
   type ModuleWeightKey,
   type ModuleWeights,
 } from "@/lib/module-settings"
+import {
+  DEFAULT_NOTIFICATION_SETTINGS,
+  NOTIFICATION_CATEGORY_KEYS,
+  NOTIFICATION_CATEGORY_LABELS,
+  loadNotificationSettings,
+  normalizeNotificationSettings,
+  saveNotificationSettings,
+  type NotificationDigest,
+  type NotificationSettings,
+} from "@/lib/notification-settings"
+import { requestPushPermission } from "@/lib/notifications/browserPush"
+import { exportAstraDataPdf } from "@/lib/export/exportAstraDataPdf"
+import { isLocalMode } from "@/lib/api/config"
+import { useRouter, useSearchParams } from "next/navigation"
+
+const SETTINGS_TAB_VALUES = [
+  "profile",
+  "personalization",
+  "modules",
+  "integrations",
+  "security",
+  "billing",
+  "notifications",
+  "ai",
+  "advanced",
+  "support",
+] as const
+
+type SettingsTabValue = (typeof SETTINGS_TAB_VALUES)[number]
+
+/** Placeholder / demo-only tabs — visible when `isLocalMode()` is true. */
+const LOCAL_ONLY_SETTINGS_TABS = new Set<SettingsTabValue>([
+  "integrations",
+  "billing",
+  "advanced",
+  "support",
+])
+
+function isSettingsTab(value: string | null): value is SettingsTabValue {
+  return SETTINGS_TAB_VALUES.includes(value as SettingsTabValue)
+}
+
+function isAvailableSettingsTab(value: string | null): value is SettingsTabValue {
+  if (!isSettingsTab(value)) return false
+  if (isLocalMode()) return true
+  return !LOCAL_ONLY_SETTINGS_TABS.has(value)
+}
 
 const ACCENT_OPTIONS = [
   {
@@ -166,8 +242,25 @@ const ACCENT_OPTIONS = [
 type UserTheme = AppTheme
 
 export default function SettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-4 p-1">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <SettingsPageContent />
+    </Suspense>
+  )
+}
+
+function SettingsPageContent() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
+  const router = useRouter()
   const { currency, setCurrency, formatCurrency } = useCurrency()
   const { setTheme } = useTheme()
 
@@ -184,14 +277,18 @@ export default function SettingsPage() {
   const [aiInsights, setAiInsights] = useState(DEFAULT_AI_INSIGHTS)
   const [aiDataScope, setAiDataScope] = useState<AiDataScope>(DEFAULT_AI_DATA_SCOPE)
 
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    inApp: true,
-    digest: "daily",
-  })
-  const [quietHours, setQuietHours] = useState({ start: "22:00", end: "08:00" })
+  const [notifications, setNotifications] = useState<NotificationSettings>(
+    () => normalizeNotificationSettings(null)
+  )
+  const [settingsTab, setSettingsTab] = useState<SettingsTabValue>("profile")
+  const searchParams = useSearchParams()
   const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false)
+  const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false)
+  const [showSessionsDialog, setShowSessionsDialog] = useState(false)
+  const [currentSession, setCurrentSession] = useState<CurrentSessionInfo | null>(null)
+  const [isSigningOutSession, setIsSigningOutSession] = useState(false)
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null)
+  const [isExportingData, setIsExportingData] = useState(false)
 
   const [moduleWeights, setModuleWeights] = useState<ModuleWeights>({
     ...DEFAULT_MODULE_WEIGHTS,
@@ -211,6 +308,86 @@ export default function SettingsPage() {
     queryKey: ["auth", "me"],
     queryFn: fetchCurrentUser,
   })
+
+  const {
+    data: sessionsData,
+    isLoading: isSessionsLoading,
+    isError: isSessionsError,
+    refetch: refetchSessions,
+  } = useQuery({
+    queryKey: ["auth", "sessions"],
+    queryFn: fetchAuthSessions,
+    enabled: Boolean(profile?.id),
+    staleTime: 30_000,
+  })
+
+  const currentAuthSessionId = profile?.id ? loadAuthSessionId(profile.id) : null
+  const remoteSessions = sessionsData?.sessions ?? []
+  const sessionCount = sessionsData?.count ?? remoteSessions.length
+
+  const sessionSummary = useMemo(() => {
+    if (isSessionsLoading) return "Loading devices…"
+    if (isSessionsError) {
+      return currentSession
+        ? `This device · ${currentSession.deviceLabel}`
+        : "Could not load devices"
+    }
+    if (sessionCount <= 0) {
+      return currentSession
+        ? `1 device · ${currentSession.deviceLabel}`
+        : "No active devices"
+    }
+    const types = new Set(remoteSessions.map((s) => s.client_type))
+    const parts: string[] = []
+    if (types.has("web")) parts.push("Website")
+    if (types.has("mobile")) parts.push("Mobile app")
+    if (types.has("desktop")) parts.push("Desktop")
+    const typeLabel = parts.length > 0 ? parts.join(" · ") : "devices"
+    return `${sessionCount} active · ${typeLabel}`
+  }, [
+    isSessionsLoading,
+    isSessionsError,
+    sessionCount,
+    remoteSessions,
+    currentSession,
+  ])
+
+  function sessionIcon(type: AuthClientType | string) {
+    if (type === "mobile") return Smartphone
+    if (type === "desktop") return Laptop
+    return Monitor
+  }
+
+  async function handleRevokeSession(session: AuthSessionApi) {
+    const isCurrent = currentAuthSessionId === session.id
+    setRevokingSessionId(session.id)
+    try {
+      await revokeAuthSession(session.id)
+      if (isCurrent) {
+        toast.success("Signed out this device")
+        await logout({ reason: "manual" })
+        return
+      }
+      toast.success("Session revoked")
+      await refetchSessions()
+    } catch (error) {
+      toast.error(getUserErrorMessage(error, "Failed to revoke session"))
+    } finally {
+      setRevokingSessionId(null)
+    }
+  }
+
+  async function handleRevokeAllSessions() {
+    setIsSigningOutSession(true)
+    try {
+      await revokeAllAuthSessions()
+      toast.success("Signed out of all devices")
+      await logout({ reason: "manual" })
+    } catch (error) {
+      toast.error(getUserErrorMessage(error, "Failed to sign out everywhere"))
+      setIsSigningOutSession(false)
+    }
+  }
 
   useEffect(() => {
     if (!profile) return
@@ -252,9 +429,42 @@ export default function SettingsPage() {
     const modules = normalizeModuleSettings(profile.module_settings)
     setModuleWeights(modules.weights)
     setModuleEnabled(modules.enabled)
+    setNotifications(loadNotificationSettings(profile.id))
+    setCurrentSession(ensureCurrentSession(profile.id))
     dispatch(setUser(profile))
     dispatch(setCurrencyAction(nextCurrency))
   }, [profile, dispatch, setTheme])
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (isAvailableSettingsTab(tab)) {
+      setSettingsTab(tab)
+      return
+    }
+    if (isSettingsTab(tab) && LOCAL_ONLY_SETTINGS_TABS.has(tab) && !isLocalMode()) {
+      setSettingsTab("profile")
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!isLocalMode() && LOCAL_ONLY_SETTINGS_TABS.has(settingsTab)) {
+      setSettingsTab("profile")
+    }
+  }, [settingsTab])
+
+  const persistAlertSettings = (
+    next: NotificationSettings,
+    message = "Alerts preferences saved"
+  ) => {
+    const normalized = normalizeNotificationSettings(next)
+    setNotifications(normalized)
+    if (profile?.id) {
+      saveNotificationSettings(profile.id, normalized)
+      toast.success(message)
+    } else {
+      toast.error("Sign in to save alert preferences")
+    }
+  }
 
   const initials = useMemo(() => {
     const first = firstName.trim().charAt(0)
@@ -328,6 +538,9 @@ export default function SettingsPage() {
           : DEFAULT_AI_DATA_SCOPE
       )
       queryClient.setQueryData(["auth", "me"], user)
+      void queryClient.invalidateQueries({ queryKey: ["daily-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["goals-quote"] })
+      void queryClient.invalidateQueries({ queryKey: ["ai-insight"] })
       toast.success("AI settings updated")
     },
     onError: (error) => {
@@ -385,6 +598,56 @@ export default function SettingsPage() {
       )
     },
   })
+
+  const { mutate: requestChangePassword, isPending: isRequestingPasswordReset } =
+    useMutation({
+      mutationFn: requestPasswordResetForCurrentUser,
+      onSuccess: (data) => {
+        setShowChangePasswordDialog(false)
+        // TEMPORARY_EMAIL_FLOW — non-local returns reset_token (no email).
+        if (typeof data.reset_token === "string" && data.reset_token.length > 0) {
+          toast.success(data.message || "Continue to set a new password.")
+          router.push(
+            `${ROUTES.AUTH.RESET_PASSWORD}?token=${encodeURIComponent(data.reset_token)}`
+          )
+          return
+        }
+        toast.success(
+          data.message ||
+            (data.sent
+              ? "We sent a password reset link to your email."
+              : "A recovery link is still valid. Check your inbox.")
+        )
+      },
+      onError: (error) => {
+        toast.error(
+          getUserErrorMessage(error, "Failed to start password reset")
+        )
+      },
+    })
+
+  const handleExportData = async () => {
+    if (!profile) {
+      toast.error("Profile is still loading")
+      return
+    }
+    setIsExportingData(true)
+    const toastId = toast.loading("Building your ASTRA data PDF…")
+    try {
+      const filename = await exportAstraDataPdf({
+        user: profile,
+        formatCurrency,
+      })
+      toast.success(`Downloaded ${filename}`, { id: toastId })
+    } catch (error) {
+      toast.error(
+        getUserErrorMessage(error, "Failed to export data. Please try again."),
+        { id: toastId }
+      )
+    } finally {
+      setIsExportingData(false)
+    }
+  }
 
   const handleSaveProfile = () => {
     if (!firstName.trim() || !lastName.trim()) {
@@ -483,6 +746,8 @@ export default function SettingsPage() {
     saveAiSettings({ ai_data_scope: value })
   }
 
+  const showLocalPlaceholders = isLocalMode()
+
   return (
     <div className="astra-page space-y-8">
       <div className="flex items-center justify-between">
@@ -492,14 +757,29 @@ export default function SettingsPage() {
             Your ASTRA Control Center - personalize your Life OS
           </p>
         </div>
-        <Badge variant="secondary" className="astra-badge-accent">
-          <Settings2 className="mr-2 h-4 w-4" />
-          Pro Plan
-        </Badge>
+        {showLocalPlaceholders ? (
+          <Badge variant="secondary" className="astra-badge-accent">
+            <Settings2 className="mr-2 h-4 w-4" />
+            Pro Plan
+          </Badge>
+        ) : null}
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="astra-tabs grid w-full grid-cols-5 lg:grid-cols-10">
+      <Tabs
+        value={settingsTab}
+        onValueChange={(value) => {
+          if (isAvailableSettingsTab(value)) setSettingsTab(value)
+        }}
+        className="space-y-6"
+      >
+        <TabsList
+          className={cn(
+            "astra-tabs grid w-full",
+            showLocalPlaceholders
+              ? "grid-cols-5 lg:grid-cols-10"
+              : "grid-cols-3 lg:grid-cols-6"
+          )}
+        >
           <TabsTrigger
             value="profile"
             className="astra-tab flex items-center gap-2"
@@ -521,13 +801,15 @@ export default function SettingsPage() {
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">Modules</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="integrations"
-            className="astra-tab flex items-center gap-2"
-          >
-            <Cloud className="h-4 w-4" />
-            <span className="hidden sm:inline">Connect</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <TabsTrigger
+              value="integrations"
+              className="astra-tab flex items-center gap-2"
+            >
+              <Cloud className="h-4 w-4" />
+              <span className="hidden sm:inline">Connect</span>
+            </TabsTrigger>
+          ) : null}
           <TabsTrigger
             value="security"
             className="astra-tab flex items-center gap-2"
@@ -535,13 +817,15 @@ export default function SettingsPage() {
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">Security</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="billing"
-            className="astra-tab flex items-center gap-2"
-          >
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Billing</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <TabsTrigger
+              value="billing"
+              className="astra-tab flex items-center gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+          ) : null}
           <TabsTrigger
             value="notifications"
             className="astra-tab flex items-center gap-2"
@@ -556,20 +840,24 @@ export default function SettingsPage() {
             <Bot className="h-4 w-4" />
             <span className="hidden sm:inline">AI</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="advanced"
-            className="astra-tab flex items-center gap-2"
-          >
-            <Zap className="h-4 w-4" />
-            <span className="hidden sm:inline">Advanced</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="support"
-            className="astra-tab flex items-center gap-2"
-          >
-            <HelpCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Help</span>
-          </TabsTrigger>
+          {showLocalPlaceholders ? (
+            <>
+              <TabsTrigger
+                value="advanced"
+                className="astra-tab flex items-center gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="support"
+                className="astra-tab flex items-center gap-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </TabsTrigger>
+            </>
+          ) : null}
         </TabsList>
 
           {/* Profile & Account */}
@@ -760,7 +1048,7 @@ export default function SettingsPage() {
                 <CardDescription className="font-mono text-muted-foreground">Customize your ASTRA experience</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <Label className="font-mono text-muted-foreground">Theme Preference</Label>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {THEME_OPTIONS.map((option) => {
@@ -805,7 +1093,8 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                {showLocalPlaceholders ? (
+                <div className="space-y-2">
                   <Label className="font-mono text-muted-foreground">Accent Color</Label>
                   <div className="flex flex-wrap gap-3">
                     {ACCENT_OPTIONS.map((accent) => {
@@ -841,6 +1130,7 @@ export default function SettingsPage() {
                     Accent follows your theme automatically.
                   </p>
                 </div>
+                ) : null}
               </CardContent>
             </Card>
           </TabsContent>
@@ -936,7 +1226,8 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
-          {/* Integrations */}
+          {/* Integrations (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="integrations" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -995,6 +1286,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
           {/* Security & Privacy */}
           <TabsContent value="security" className="space-y-6">
@@ -1010,19 +1302,42 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold font-mono text-primary">Password</h4>
-                      <p className="text-sm text-muted-foreground font-mono">Last changed 30 days ago</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Reset your account password
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent"
+                      disabled={!profile}
+                      onClick={() => setShowChangePasswordDialog(true)}
+                    >
                       Change Password
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
-                    <div>
+                  <div className="flex items-center justify-between gap-4 p-4 border border-red-500/30 rounded-lg">
+                    <div className="min-w-0">
                       <h4 className="font-semibold font-mono text-primary">Active Sessions</h4>
-                      <p className="text-sm text-muted-foreground font-mono">3 devices currently logged in</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        {sessionSummary}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground font-mono">
+                        Website, mobile app, and desktop software
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent shrink-0"
+                      disabled={!profile}
+                      onClick={() => {
+                        if (profile?.id) {
+                          setCurrentSession(ensureCurrentSession(profile.id))
+                        }
+                        void refetchSessions()
+                        setShowSessionsDialog(true)
+                      }}
+                    >
                       <Smartphone className="mr-2 h-4 w-4" />
                       Manage Devices
                     </Button>
@@ -1031,11 +1346,18 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between p-4 border border-red-500/30 rounded-lg">
                     <div>
                       <h4 className="font-semibold font-mono text-primary">Data Export</h4>
-                      <p className="text-sm text-muted-foreground font-mono">Download all your ASTRA data</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Download all your ASTRA data as a formatted PDF
+                      </p>
                     </div>
-                    <Button variant="outline" className="font-mono bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="font-mono bg-transparent"
+                      disabled={isExportingData || isProfileLoading || !profile}
+                      onClick={() => void handleExportData()}
+                    >
                       <Download className="mr-2 h-4 w-4" />
-                      Export Data
+                      {isExportingData ? "Exporting…" : "Export Data"}
                     </Button>
                   </div>
 
@@ -1058,6 +1380,172 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <Dialog open={showSessionsDialog} onOpenChange={setShowSessionsDialog}>
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="font-mono">Where you&apos;re signed in</DialogTitle>
+                  <DialogDescription className="font-mono">
+                    Website keeps only your latest browser login — signing in elsewhere signs out
+                    older website sessions immediately. Mobile and Desktop can stay signed in on
+                    multiple devices. &quot;Sign out everywhere&quot; ends every device at once.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="max-h-[50vh] space-y-3 overflow-y-auto pr-1">
+                  {isSessionsLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-20 w-full" />
+                      <Skeleton className="h-20 w-full" />
+                    </div>
+                  ) : isSessionsError ? (
+                    <div className="rounded-lg border border-border p-4 space-y-2">
+                      <p className="font-mono text-sm text-muted-foreground">
+                        Could not load sessions from the server. Showing this browser only.
+                      </p>
+                      <div className="rounded-lg border border-border/60 p-3 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-mono text-sm font-semibold">
+                            {currentSession?.deviceLabel ?? "This browser · Website"}
+                          </p>
+                          <Badge variant="secondary" className="font-mono text-[10px]">
+                            Current
+                          </Badge>
+                        </div>
+                        <p className="font-mono text-xs text-muted-foreground">
+                          Client: Website
+                        </p>
+                      </div>
+                    </div>
+                  ) : remoteSessions.length === 0 ? (
+                    <div className="space-y-3 py-4 text-center">
+                      <p className="font-mono text-sm text-muted-foreground">
+                        No active sessions found. This browser may have been signed out from
+                        another login, or your session was never registered.
+                      </p>
+                      <Button
+                        variant="destructive"
+                        className="font-mono"
+                        onClick={() => void logout({ reason: "manual" })}
+                      >
+                        Sign in again
+                      </Button>
+                    </div>
+                  ) : (
+                    remoteSessions.map((session) => {
+                      const Icon = sessionIcon(session.client_type)
+                      const isCurrent =
+                        session.is_current === true ||
+                        currentAuthSessionId === session.id
+                      return (
+                        <div
+                          key={session.id}
+                          className="rounded-lg border border-border p-4 space-y-2"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-start gap-3">
+                              <div className="mt-0.5 rounded-md border border-border p-2">
+                                <Icon className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-mono text-sm font-semibold text-foreground truncate">
+                                  {session.device_label || clientTypeLabel(session.client_type)}
+                                </p>
+                                <p className="font-mono text-xs text-muted-foreground">
+                                  {clientTypeLabel(session.client_type)}
+                                  {session.platform ? ` · ${session.platform}` : ""}
+                                </p>
+                                <p className="font-mono text-[11px] text-muted-foreground mt-1">
+                                  Signed in {formatSessionWhen(session.created_at)}
+                                </p>
+                                <p className="font-mono text-[11px] text-muted-foreground">
+                                  Last active {formatSessionWhen(session.last_seen_at)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-2">
+                              {isCurrent ? (
+                                <Badge variant="secondary" className="font-mono text-[10px]">
+                                  This device
+                                </Badge>
+                              ) : null}
+                              <Button
+                                variant={isCurrent ? "destructive" : "outline"}
+                                size="sm"
+                                className="font-mono"
+                                disabled={revokingSessionId === session.id || isSigningOutSession}
+                                onClick={() => void handleRevokeSession(session)}
+                              >
+                                {revokingSessionId === session.id
+                                  ? "…"
+                                  : isCurrent
+                                    ? "Sign out"
+                                    : "Revoke"}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+                  <Button
+                    variant="ghost"
+                    className="font-mono text-destructive"
+                    disabled={
+                      isSigningOutSession ||
+                      isSessionsLoading ||
+                      remoteSessions.length === 0
+                    }
+                    onClick={() => void handleRevokeAllSessions()}
+                  >
+                    {isSigningOutSession ? "Signing out…" : "Sign out everywhere"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="font-mono"
+                    onClick={() => setShowSessionsDialog(false)}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <AlertDialog
+              open={showChangePasswordDialog}
+              onOpenChange={setShowChangePasswordDialog}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Change your password?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    We&apos;ll start a password reset for{" "}
+                    <span className="font-medium text-foreground">
+                      {email || "your account"}
+                    </span>
+                    . You&apos;ll either get a reset email or continue to the
+                    reset form, depending on your environment.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isRequestingPasswordReset}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isRequestingPasswordReset}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      requestChangePassword()
+                    }}
+                  >
+                    {isRequestingPasswordReset ? "Starting…" : "Continue"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog open={showDeleteAccountDialog} onOpenChange={setShowDeleteAccountDialog}>
               <AlertDialogContent>
@@ -1087,7 +1575,8 @@ export default function SettingsPage() {
             </AlertDialog>
           </TabsContent>
 
-          {/* Billing */}
+          {/* Billing (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="billing" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1152,6 +1641,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
           {/* Notifications */}
           <TabsContent value="notifications" className="space-y-6">
@@ -1164,38 +1654,79 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h4 className="font-semibold font-mono text-primary">Notification Types</h4>
+                  <h4 className="font-semibold font-mono text-primary">Channels</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Receive updates via email</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Preference saved for later — email delivery needs the backend
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.email}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, email: checked }))}
+                        checked={notifications.channels.email}
+                        onCheckedChange={(checked) =>
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, email: checked },
+                          })
+                        }
                         className="font-mono"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Browser and mobile notifications</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Browser notifications while ASTRA is open
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.push}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, push: checked }))}
+                        checked={notifications.channels.push}
+                        onCheckedChange={async (checked) => {
+                          if (!checked) {
+                            persistAlertSettings({
+                              ...notifications,
+                              channels: { ...notifications.channels, push: false },
+                            })
+                            return
+                          }
+                          const permission = await requestPushPermission()
+                          if (permission !== "granted") {
+                            toast.error(
+                              permission === "denied"
+                                ? "Browser blocked notification permission"
+                                : "Notification permission was not granted"
+                            )
+                            persistAlertSettings({
+                              ...notifications,
+                              channels: { ...notifications.channels, push: false },
+                            }, "Push left off")
+                            return
+                          }
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, push: true },
+                          })
+                        }}
                         className="font-mono"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
                         <Label className="font-mono text-muted-foreground">In-App Alerts</Label>
-                        <p className="text-sm text-muted-foreground font-mono">Notifications within ASTRA</p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          Bell inbox in the app header
+                        </p>
                       </div>
                       <Switch
-                        checked={notifications.inApp}
-                        onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, inApp: checked }))}
+                        checked={notifications.channels.inApp}
+                        onCheckedChange={(checked) =>
+                          persistAlertSettings({
+                            ...notifications,
+                            channels: { ...notifications.channels, inApp: checked },
+                          })
+                        }
                         className="font-mono"
                       />
                     </div>
@@ -1205,10 +1736,48 @@ export default function SettingsPage() {
                 <Separator />
 
                 <div className="space-y-4">
+                  <h4 className="font-semibold font-mono text-primary">Categories</h4>
+                  <div className="space-y-3">
+                    {NOTIFICATION_CATEGORY_KEYS.map((key) => (
+                      <div key={key} className="flex items-center justify-between gap-4">
+                        <div>
+                          <Label className="font-mono text-muted-foreground">
+                            {NOTIFICATION_CATEGORY_LABELS[key]}
+                          </Label>
+                        </div>
+                        <Switch
+                          checked={notifications.categories[key]}
+                          onCheckedChange={(checked) =>
+                            persistAlertSettings({
+                              ...notifications,
+                              categories: {
+                                ...notifications.categories,
+                                [key]: checked,
+                              },
+                            })
+                          }
+                          className="font-mono"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-primary">Digest Frequency</h4>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    Instant fires each new alert (push). Daily/weekly batch push into one digest.
+                  </p>
                   <Select
                     value={notifications.digest}
-                    onValueChange={(value) => setNotifications((prev) => ({ ...prev, digest: value }))}
+                    onValueChange={(value) =>
+                      persistAlertSettings({
+                        ...notifications,
+                        digest: value as NotificationDigest,
+                      })
+                    }
                   >
                     <SelectTrigger className="bg-secondary/60 border-border text-foreground font-mono">
                       <SelectValue />
@@ -1229,24 +1798,57 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <h4 className="font-semibold font-mono text-primary">Quiet Hours</h4>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    Suppresses browser push (in-app inbox still updates)
+                  </p>
                   <div className="grid grid-cols-2 gap-4">
                     <TimePicker
                       label="Start Time"
-                      value={quietHours.start}
+                      value={notifications.quietHours.start}
                       onChange={(value) =>
-                        value && setQuietHours((prev) => ({ ...prev, start: value }))
+                        value &&
+                        persistAlertSettings({
+                          ...notifications,
+                          quietHours: { ...notifications.quietHours, start: value },
+                        })
                       }
                       buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
                     />
                     <TimePicker
                       label="End Time"
-                      value={quietHours.end}
+                      value={notifications.quietHours.end}
                       onChange={(value) =>
-                        value && setQuietHours((prev) => ({ ...prev, end: value }))
+                        value &&
+                        persistAlertSettings({
+                          ...notifications,
+                          quietHours: { ...notifications.quietHours, end: value },
+                        })
                       }
                       buttonClassName="bg-secondary/60 border-border text-foreground font-mono"
                     />
                   </div>
+                </div>
+
+                <Separator />
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    className="font-mono"
+                    onClick={() =>
+                      persistAlertSettings(
+                        {
+                          ...DEFAULT_NOTIFICATION_SETTINGS,
+                          channels: { ...DEFAULT_NOTIFICATION_SETTINGS.channels },
+                          quietHours: { ...DEFAULT_NOTIFICATION_SETTINGS.quietHours },
+                          categories: { ...DEFAULT_NOTIFICATION_SETTINGS.categories },
+                        },
+                        "Alerts reset to defaults"
+                      )
+                    }
+                  >
+                    Reset to defaults
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -1258,15 +1860,20 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="font-mono text-primary">AI & Assistant Settings</CardTitle>
                 <CardDescription className="font-mono text-muted-foreground">
-                  Configure your AI assistant preferences
+                  Strict rules Astra must follow for conversation, quotes, insights, and every future AI feature
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <p className="text-sm font-mono text-foreground">
+                    These settings are mandatory. Astra applies them to chat, daily quotes, insights, and any new AI surface — they cannot be skipped per feature.
+                  </p>
+                </div>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">AI speaker</Label>
                     <p className="text-sm text-muted-foreground font-mono">
-                      Choose who speaks when Astra replies with voice
+                      Voice used whenever Astra speaks — assistant chat and any future spoken replies
                     </p>
                     <Select
                       value={aiVoice}
@@ -1293,7 +1900,9 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="font-mono text-muted-foreground">Voice Mode</Label>
-                      <p className="text-sm text-muted-foreground font-mono">Enable voice input and output</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        Enable voice input and spoken replies across the assistant
+                      </p>
                     </div>
                     <Switch
                       checked={aiVoiceMode}
@@ -1305,6 +1914,9 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">AI Personality</Label>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      Tone for every AI output — conversation, quotes, and insights
+                    </p>
                     <Select
                       value={aiPersonality}
                       onValueChange={handleAiPersonalityChange}
@@ -1330,7 +1942,9 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label className="font-mono text-muted-foreground">Smart Insights</Label>
-                      <p className="text-sm text-muted-foreground font-mono">AI-powered suggestions and analysis</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        When off, Astra will not generate insight panels or volunteer extra analysis
+                      </p>
                     </div>
                     <Switch
                       checked={aiInsights}
@@ -1342,6 +1956,9 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="font-mono text-muted-foreground">Data Analysis Scope</Label>
+                    <p className="text-sm text-muted-foreground font-mono">
+                      What Astra may analyze in chat, insights, and future AI features
+                    </p>
                     <Select
                       value={aiDataScope}
                       onValueChange={handleAiDataScopeChange}
@@ -1368,7 +1985,8 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
 
-          {/* Advanced */}
+          {/* Advanced (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="advanced" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1428,8 +2046,10 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
 
-          {/* Support */}
+          {/* Support (local placeholders only) */}
+          {showLocalPlaceholders ? (
           <TabsContent value="support" className="space-y-6">
             <Card className="astra-card">
               <CardHeader>
@@ -1474,6 +2094,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          ) : null}
         </Tabs>
     </div>
   )

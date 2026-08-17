@@ -13,7 +13,7 @@ export interface HealthFilterParams {
 export interface HealthDashboardApi {
   filter: { start_date: string; end_date: string }
   health_score: number
-  profile: { height_cm: number | null }
+  profile: { height_cm: number | null; ideal_weight_kg: number | null }
   targets: {
     water_glasses: number
     sleep_hours: number
@@ -80,6 +80,7 @@ export interface HealthMoodEntryApi {
 
 export interface UpdateHealthProfilePayload {
   height_cm?: number | null
+  ideal_weight_kg?: number | null
 }
 
 export interface UpdateHealthTargetsPayload {
@@ -208,7 +209,10 @@ export function mapHealthDashboard(data: HealthDashboardApi) {
       periodExerciseMinutes: data.summary.period_exercise_minutes,
       periodAvgSleepHours: data.summary.period_avg_sleep_hours,
     },
-    profile: { heightCm: data.profile.height_cm },
+    profile: {
+      heightCm: data.profile.height_cm,
+      idealWeightKg: data.profile.ideal_weight_kg ?? null,
+    },
     targets: {
       waterGlasses: data.targets.water_glasses,
       sleepHours: data.targets.sleep_hours,
@@ -231,8 +235,14 @@ export async function fetchHealthDashboard(params: HealthFilterParams) {
 }
 
 export async function updateHealthProfile(payload: UpdateHealthProfilePayload) {
-  const response = await authApi.patch<{ height_cm: number | null }>(HEALTH.PROFILE, payload)
-  return { heightCm: response.data.height_cm }
+  const response = await authApi.patch<{
+    height_cm: number | null
+    ideal_weight_kg: number | null
+  }>(HEALTH.PROFILE, payload)
+  return {
+    heightCm: response.data.height_cm,
+    idealWeightKg: response.data.ideal_weight_kg ?? null,
+  }
 }
 
 export async function updateHealthTargets(payload: UpdateHealthTargetsPayload) {

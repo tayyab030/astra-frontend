@@ -83,8 +83,8 @@ export function MetricStepperCard({
         </p>
         {!compact && (
           <div className="flex items-end gap-2 pt-1">
-            <div className="flex-1">
-              <Label className="text-xs text-slate-400 font-mono">Target</Label>
+            <div className="flex-1 space-y-2">
+              <Label className="text-xs text-slate-400">Target</Label>
               <Input
                 type="number"
                 step={step}
@@ -94,7 +94,7 @@ export function MetricStepperCard({
                   const val = parseFloat(e.target.value)
                   if (!isNaN(val) && val > 0) onTargetChange(val)
                 }}
-                className="h-8 bg-slate-900/50 border-slate-600/50 text-white font-mono mt-1"
+                className="h-8 bg-slate-900/50 border-slate-600/50 text-white font-mono"
               />
             </div>
           </div>

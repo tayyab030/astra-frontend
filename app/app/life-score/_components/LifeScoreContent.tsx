@@ -138,8 +138,8 @@ export function LifeScoreContent() {
     <div className="astra-page space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="astra-title text-4xl">Life Score Dashboard</h1>
-          <p className="astra-subtitle mt-2">
+          <h1 className="astra-title">Life Score</h1>
+          <p className="astra-subtitle mt-1">
             Holistic balance across productivity, health, wealth, and knowledge
           </p>
         </div>

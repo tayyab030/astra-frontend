@@ -11,8 +11,24 @@ type StoredInsight = {
   cache_until?: string
 }
 
-function storageKey(userId: string, kind: InsightKind, period: InsightPeriod) {
-  return `astra-insight:${userId}:${kind}:${period}`
+function storageKey(
+  userId: string,
+  kind: InsightKind,
+  period: InsightPeriod,
+  fingerprint: string,
+  contextKey = ""
+) {
+  const contextPart = contextKey ? `:${hashContextKey(contextKey)}` : ""
+  return `astra-insight:${userId}:${kind}:${period}:${fingerprint}${contextPart}`
+}
+
+/** Short stable hash so storage keys stay compact when context JSON is large. */
+function hashContextKey(contextKey: string) {
+  let hash = 0
+  for (let i = 0; i < contextKey.length; i += 1) {
+    hash = (hash * 31 + contextKey.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash).toString(36)
 }
 
 function isFresh(stored: StoredInsight): boolean {
@@ -36,11 +52,15 @@ function isFresh(stored: StoredInsight): boolean {
 export function readInsightCache(
   userId: string,
   kind: InsightKind,
-  period: InsightPeriod
+  period: InsightPeriod,
+  fingerprint: string,
+  contextKey = ""
 ): InsightsResponse | null {
   if (typeof window === "undefined") return null
   try {
-    const raw = window.localStorage.getItem(storageKey(userId, kind, period))
+    const raw = window.localStorage.getItem(
+      storageKey(userId, kind, period, fingerprint, contextKey)
+    )
     if (!raw) return null
     const parsed = JSON.parse(raw) as StoredInsight
     if (!isFresh(parsed)) return null
@@ -54,7 +74,9 @@ export function writeInsightCache(
   userId: string,
   kind: InsightKind,
   period: InsightPeriod,
-  data: InsightsResponse
+  fingerprint: string,
+  data: InsightsResponse,
+  contextKey = ""
 ) {
   if (typeof window === "undefined") return
   try {
@@ -65,7 +87,7 @@ export function writeInsightCache(
       cache_until: data.cache_until,
     }
     window.localStorage.setItem(
-      storageKey(userId, kind, period),
+      storageKey(userId, kind, period, fingerprint, contextKey),
       JSON.stringify(payload)
     )
   } catch {
