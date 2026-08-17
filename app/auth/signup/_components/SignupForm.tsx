@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { schema, SignUpType } from "../_schemas/signup.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AUTH, publicApi } from "@/lib/api";
+import { isEmailFlowEnabled } from "@/lib/api/config";
 import { toast } from "sonner";
 import { ROUTES } from "@/constants/routes";
 import CountrySelect from "@/components/common/CountrySelect";
@@ -79,6 +80,13 @@ export default function SignupForm() {
         try {
             const response = await publicApi.post(AUTH.REGISTER, data);
             toast.success(response?.data?.message || "Profile created successfully");
+
+            // TEMPORARY_EMAIL_FLOW — skip OTP page when MODE !== local.
+            // Revert: always push VERIFY_OTP with otp_token (search TEMPORARY_EMAIL_FLOW).
+            if (!isEmailFlowEnabled() || !response?.data?.otp_token) {
+                router.push(ROUTES.AUTH.LOGIN);
+                return;
+            }
 
             router.push(`${ROUTES.AUTH.VERIFY_OTP}?otp_token=${response?.data?.otp_token}`);
         } catch (error: any) {

@@ -146,7 +146,7 @@ import {
 } from "@/lib/notification-settings"
 import { requestPushPermission } from "@/lib/notifications/browserPush"
 import { exportAstraDataPdf } from "@/lib/export/exportAstraDataPdf"
-import { isLocalMode } from "@/lib/api/config"
+import { isEmailFlowEnabled, isLocalMode } from "@/lib/api/config"
 import { useRouter, useSearchParams } from "next/navigation"
 
 const SETTINGS_TAB_VALUES = [
@@ -574,9 +574,14 @@ function SettingsPageContent() {
 
   const { mutate: requestDeleteAccount, isPending: isRequestingDelete } = useMutation({
     mutationFn: requestAccountDeletion,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setShowDeleteAccountDialog(false)
       toast.success(data.message)
+      // TEMPORARY_EMAIL_FLOW — account is already wiped when MODE !== local.
+      // Revert: keep the toast only (search TEMPORARY_EMAIL_FLOW).
+      if (!isEmailFlowEnabled() || data.sent === false) {
+        await logout({ silent: true })
+      }
     },
     onError: (error) => {
       const responseData = (error as { response?: { data?: Record<string, unknown> } })
@@ -589,7 +594,9 @@ function SettingsPageContent() {
         remaining !== null ? Math.max(1, Math.ceil(remaining / 60)) : null
       const base = getUserErrorMessage(
         error,
-        "Failed to send delete confirmation email"
+        isEmailFlowEnabled()
+          ? "Failed to send delete confirmation email"
+          : "Failed to delete account"
       )
       toast.error(
         mins
@@ -1522,12 +1529,24 @@ function SettingsPageContent() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Change your password?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    We&apos;ll start a password reset for{" "}
-                    <span className="font-medium text-foreground">
-                      {email || "your account"}
-                    </span>
-                    . You&apos;ll either get a reset email or continue to the
-                    reset form, depending on your environment.
+                    {/* TEMPORARY_EMAIL_FLOW — restore email copy when MODE=local. */}
+                    {isEmailFlowEnabled() ? (
+                      <>
+                        We&apos;ll start a password reset for{" "}
+                        <span className="font-medium text-foreground">
+                          {email || "your account"}
+                        </span>
+                        . A reset link will be sent to your inbox.
+                      </>
+                    ) : (
+                      <>
+                        Continue to set a new password for{" "}
+                        <span className="font-medium text-foreground">
+                          {email || "your account"}
+                        </span>
+                        . No email will be sent.
+                      </>
+                    )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -1552,10 +1571,21 @@ function SettingsPageContent() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete your account?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    To confirm it&apos;s you, we&apos;ll send a confirmation link to{" "}
-                    <span className="font-medium text-foreground">{email || "your inbox"}</span>.
-                    The link expires in 20 minutes. Use it to permanently delete your account and
-                    all related data. This cannot be undone.
+                    {/* TEMPORARY_EMAIL_FLOW — restore confirmation-email copy when MODE=local. */}
+                    {isEmailFlowEnabled() ? (
+                      <>
+                        To confirm it&apos;s you, we&apos;ll send a confirmation link to{" "}
+                        <span className="font-medium text-foreground">{email || "your inbox"}</span>.
+                        The link expires in 20 minutes. Use it to permanently delete your account and
+                        all related data. This cannot be undone.
+                      </>
+                    ) : (
+                      <>
+                        This permanently deletes{" "}
+                        <span className="font-medium text-foreground">{email || "your account"}</span>{" "}
+                        and all related data. This cannot be undone.
+                      </>
+                    )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -1568,7 +1598,13 @@ function SettingsPageContent() {
                       requestDeleteAccount()
                     }}
                   >
-                    {isRequestingDelete ? "Sending…" : "Send confirmation email"}
+                    {isRequestingDelete
+                      ? isEmailFlowEnabled()
+                        ? "Sending…"
+                        : "Deleting…"
+                      : isEmailFlowEnabled()
+                        ? "Send confirmation email"
+                        : "Delete account"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

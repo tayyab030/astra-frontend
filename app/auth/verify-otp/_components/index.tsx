@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AUTH, publicApi } from "@/lib/api";
+import { isEmailFlowEnabled } from "@/lib/api/config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,17 @@ export default function VerifyOTPPage() {
     const { data: status, refetch: refetchOtpStatus } = useQuery({
         queryKey: ["otp-status", token],
         queryFn: checkOtpStatus,
+        // TEMPORARY_EMAIL_FLOW — skip OTP status fetch when email is off.
+        enabled: isEmailFlowEnabled(),
     });
+
+    // TEMPORARY_EMAIL_FLOW — OTP page is unused when MODE !== local.
+    // Revert: delete this effect (search TEMPORARY_EMAIL_FLOW).
+    useEffect(() => {
+        if (!isEmailFlowEnabled()) {
+            router.replace(ROUTES.AUTH.LOGIN);
+        }
+    }, [router]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -155,6 +166,10 @@ export default function VerifyOTPPage() {
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, "0")}`;
     };
+
+    if (!isEmailFlowEnabled()) {
+        return null;
+    }
 
     if (isInvalidToken) return <InvalidToken />;
 

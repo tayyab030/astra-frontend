@@ -11,6 +11,7 @@ import { LoginType, schema } from '../_schemas/login.schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AUTH, publicApi } from '@/lib/api'
+import { isEmailFlowEnabled } from '@/lib/api/config'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useDispatch } from 'react-redux'
@@ -84,7 +85,9 @@ const LoginForm = () => {
             console.error(error);
             const errorData = error?.response?.data
 
-            if (errorData?.is_unverified) {
+            // TEMPORARY_EMAIL_FLOW — hide OTP resend UI when MODE !== local.
+            // Revert: always set unverified from is_unverified (search TEMPORARY_EMAIL_FLOW).
+            if (errorData?.is_unverified && isEmailFlowEnabled()) {
                 setUnverified({
                     userId: errorData.user_id,
                     otpToken: errorData.otp_token ?? null,

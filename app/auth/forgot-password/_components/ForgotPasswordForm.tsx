@@ -19,6 +19,7 @@ import { ROUTES } from "@/constants/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { schema, ForgotPasswordType } from "../_schemas/forgot-password.schema";
 import { AUTH, publicApi } from "@/lib/api";
+import { isEmailFlowEnabled } from "@/lib/api/config";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -123,8 +124,10 @@ export default function ForgotPasswordForm() {
         {!isSubmitted ? (
           <>
             <div className="text-center text-slate-400 text-sm font-mono mb-6">
-              Enter your registered neural address and we&apos;ll send you a
-              secure recovery link to restore access to your ASTRA Life OS.
+              {/* TEMPORARY_EMAIL_FLOW — restore the email copy when MODE is local only. */}
+              {isEmailFlowEnabled()
+                ? "Enter your registered neural address and we'll send you a secure recovery link to restore access to your ASTRA Life OS."
+                : "Enter your registered email to continue and set a new password."}
             </div>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
@@ -158,7 +161,12 @@ export default function ForgotPasswordForm() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <Mail size={18} />
-                    <span>Send Recovery Link</span>
+                    {/* TEMPORARY_EMAIL_FLOW — revert button label to "Send Recovery Link". */}
+                    <span>
+                      {isEmailFlowEnabled()
+                        ? "Send Recovery Link"
+                        : "Continue"}
+                    </span>
                   </div>
                 )}
               </Button>
