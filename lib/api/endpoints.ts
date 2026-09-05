@@ -106,6 +106,15 @@ export const API_ENDPOINTS = {
     MOOD: "/health/mood/",
   },
 
+  PRAYER: {
+    METHODS: "/prayer/methods/",
+    PREFERENCES: "/prayer/preferences/",
+    TIMINGS: "/prayer/timings/",
+    TIMINGS_BY_CITY: "/prayer/timings-by-city/",
+    DAY: "/prayer/day/",
+    LOGS: "/prayer/logs/",
+  },
+
   // Notes endpoints
   NOTES: {
     DASHBOARD: "/notes/",

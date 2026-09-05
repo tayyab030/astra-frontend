@@ -7,5 +7,6 @@ export * from "./goals";
 export * from "./tasks";
 export * from "./timeTrack";
 export * from "./health";
+export * from "./prayer";
 export * from "./notes";
 export * from "./insights";

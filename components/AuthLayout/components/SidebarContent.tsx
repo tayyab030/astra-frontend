@@ -33,6 +33,7 @@ import {
     LogOut,
     Target,
     Flame,
+    Moon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,6 +47,7 @@ const sidebarItems = [
     { id: "wealth", label: "Wealth", icon: DollarSign, href: ROUTES.APP.WEALTH },
     { id: "health", label: "Health", icon: Heart, href: ROUTES.APP.HEALTH },
     { id: "habits", label: "Habits", icon: Flame, href: ROUTES.APP.HABITS },
+    { id: "prayer", label: "Prayer", icon: Moon, href: ROUTES.APP.PRAYER },
     { id: "notes", label: "Notes", icon: FileText, href: ROUTES.APP.NOTES },
     { id: "assistant", label: "Assistant", icon: Bot, href: ROUTES.APP.ASSISTANT },
     { id: "analytics", label: "Analytics", icon: BarChart3, href: ROUTES.APP.ANALYTICS },

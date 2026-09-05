@@ -30,9 +30,11 @@ import {
   DollarSign,
   Droplets,
   Flame,
+  MapPin,
   Star,
   Zap,
 } from "lucide-react"
+import { useBrowserLocation } from "@/hooks/useBrowserLocation"
 import { useDailyQuote } from "../_hooks/useDailyQuote"
 import { useDashboard } from "../_hooks/useDashboard"
 import { QuickActions } from "./QuickActions"
@@ -86,6 +88,12 @@ export function DashboardContent() {
   const user = useAppSelector((state) => state.user.user)
   const { dashboard, isLoading, isError, refetch } = useDashboard()
   const { quote } = useDailyQuote()
+  const {
+    label: locationLabel,
+    isLoading: locationLoading,
+    error: locationError,
+    refresh: refreshLocation,
+  } = useBrowserLocation()
 
   const insightContext = dashboard ? buildDashboardInsightContext(dashboard) : undefined
   const {
@@ -125,6 +133,19 @@ export function DashboardContent() {
           <h1 className="astra-title">
             {greeting}, {firstName}
           </h1>
+          <button
+            type="button"
+            onClick={refreshLocation}
+            className="mt-1.5 flex max-w-full items-center gap-1.5 text-left text-sm text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Refresh current location"
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <span className="truncate">
+              {locationLoading
+                ? "Finding your location…"
+                : locationLabel ?? locationError ?? "Location unavailable"}
+            </span>
+          </button>
           <p className="astra-subtitle mt-1">&quot;{quote}&quot;</p>
         </div>
         <Link href={ROUTES.APP.LIFE_SCORE}>
