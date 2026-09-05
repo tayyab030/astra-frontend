@@ -36,10 +36,19 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Auth routes - redirect authenticated users away
-  if (pathname.startsWith("/auth")) {
+  // Auth routes that must stay reachable while logged in (email confirmation links).
+  // Delete-account is requested from Settings while the session is still active.
+  const authRoutesAllowedWhenLoggedIn = [
+    ROUTES.AUTH.DELETE_ACCOUNT,
+    ROUTES.AUTH.RESET_PASSWORD,
+  ] as const;
+  const isAuthException = authRoutesAllowedWhenLoggedIn.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  // Auth routes - redirect authenticated users away (except email-link flows)
+  if (pathname.startsWith("/auth") && !isAuthException) {
     if (isAuthenticated) {
-      // Redirect to dashboard if user is already logged in
       return NextResponse.redirect(new URL(ROUTES.APP.DASHBOARD, request.url));
     }
   }

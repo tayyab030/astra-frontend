@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Link from "next/link"
 import { Cell, Pie, PieChart } from "recharts"
 import { Button } from "@/components/ui/button"
@@ -35,9 +36,15 @@ import {
   Zap,
 } from "lucide-react"
 import { useBrowserLocation } from "@/hooks/useBrowserLocation"
+import { getLocalDateString } from "@/app/app/health/_utils/date"
+import { usePrayer } from "@/app/app/prayer/_hooks/usePrayer"
+import { usePrayerDay } from "@/app/app/prayer/_hooks/usePrayerDay"
+import { buildLifeOsInsightExtras } from "@/lib/insights/lifeOsContext"
+import { buildPrayerInsightSlice } from "@/lib/insights/prayerInsightContext"
 import { useDailyQuote } from "../_hooks/useDailyQuote"
 import { useDashboard } from "../_hooks/useDashboard"
 import { QuickActions } from "./QuickActions"
+import { PrayerWidget } from "./PrayerWidget"
 import type { DashboardView } from "../_utils/computeDashboard"
 
 const expenseChartConfig = {
@@ -95,7 +102,23 @@ export function DashboardContent() {
     refresh: refreshLocation,
   } = useBrowserLocation()
 
-  const insightContext = dashboard ? buildDashboardInsightContext(dashboard) : undefined
+  const prayer = usePrayer()
+  const today = getLocalDateString()
+  const { day: todayPrayerLog } = usePrayerDay(today)
+
+  const insightContext = useMemo(() => {
+    if (!dashboard) return undefined
+    return {
+      ...buildLifeOsInsightExtras(user, dashboard),
+      ...buildDashboardInsightContext(dashboard),
+      ...buildPrayerInsightSlice({
+        timings: prayer.timings,
+        today: todayPrayerLog,
+        analysis: null,
+      }),
+    }
+  }, [dashboard, user, prayer.timings, todayPrayerLog])
+
   const {
     data: insightData,
     hasInsight,
@@ -240,6 +263,8 @@ export function DashboardContent() {
           </Card>
         </Link>
       </div>
+
+      <PrayerWidget />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="astra-card">

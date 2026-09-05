@@ -19,17 +19,25 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getLocalDateString } from "../../health/_utils/date"
+import { usePrayer } from "../_hooks/usePrayer"
+import { usePrayerDay } from "../_hooks/usePrayerDay"
 import {
   usePrayerAnalysis,
   type PrayerAnalysisRange,
 } from "../_hooks/usePrayerAnalysis"
+import { AiPrayerInsights } from "./AiPrayerInsights"
 
 const CHART_CLASS =
   "h-48 w-full aspect-auto [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/40"
 
 export function AnalysisPanel() {
   const [range, setRange] = useState<PrayerAnalysisRange>(7)
-  const { points, overallPercent, isLoading, error } = usePrayerAnalysis(range)
+  const prayer = usePrayer()
+  const today = getLocalDateString()
+  const { day: todayLog } = usePrayerDay(today)
+  const { points, overallPercent, insightSlice, isLoading, error } =
+    usePrayerAnalysis(range)
 
   return (
     <div className="space-y-6">
@@ -114,6 +122,13 @@ export function AnalysisPanel() {
           )}
         </CardContent>
       </Card>
+
+      <AiPrayerInsights
+        timings={prayer.timings}
+        today={todayLog}
+        analysis={insightSlice}
+        enabled={!isLoading}
+      />
     </div>
   )
 }
