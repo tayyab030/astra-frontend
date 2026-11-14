@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from "./endpoints"
 
 const { WEALTH } = API_ENDPOINTS
 
+export type WealthScope = "personal" | "farm"
 export type WealthFilterMode = "month" | "year"
 
 export interface WealthMonthFilter {
@@ -33,13 +34,28 @@ export type WealthCategoryValue =
   | "gift"
   | "income_other"
   | "income"
+  | "feed"
+  | "vet"
+  | "labor"
+  | "fuel"
+  | "medicine"
+  | "equipment"
+  | "maintenance"
+  | "utilities"
+  | "marketing"
+  | "milk_sales"
+  | "egg_sales"
+  | "livestock_sales"
+  | "crop_sales"
 
 export interface WealthTransaction {
   id: string
+  scope?: WealthScope
   description: string
   amount: number
   category: string
   date: string
+  meta?: Record<string, unknown> | null
 }
 
 export interface WealthCategoryTotal {
@@ -52,6 +68,7 @@ export type WealthBudgetStatus = "on_track" | "near_limit" | "over_budget"
 
 export interface WealthCategoryBudget {
   id: string
+  scope?: WealthScope
   category: string
   label: string
   period_type: "month" | "year"
@@ -68,6 +85,7 @@ export interface WealthDashboard {
   filter:
     | { mode: "month"; year: number; month: number }
     | { mode: "year"; start_year: number; end_year: number }
+  scope?: WealthScope
   net_worth: number
   monthly_income: number
   monthly_expenses: number
@@ -82,15 +100,19 @@ export interface WealthDashboard {
 export interface CreateTransactionPayload {
   description: string
   amount: number
-  category: WealthCategoryValue
+  category: WealthCategoryValue | string
   date: string
+  scope?: WealthScope
+  meta?: Record<string, unknown>
 }
 
 export interface UpdateTransactionPayload {
   description?: string
   amount?: number
-  category?: WealthCategoryValue
+  category?: WealthCategoryValue | string
   date?: string
+  scope?: WealthScope
+  meta?: Record<string, unknown> | null
 }
 
 export type WealthExpenseCategoryValue =
@@ -101,33 +123,44 @@ export type WealthExpenseCategoryValue =
   | "entertainment"
   | "waste"
   | "other"
+  | "feed"
+  | "vet"
+  | "labor"
+  | "fuel"
+  | "medicine"
+  | "equipment"
+  | "maintenance"
+  | "utilities"
+  | "marketing"
 
 export interface CreateCategoryBudgetPayload {
-  category: WealthExpenseCategoryValue
+  category: WealthExpenseCategoryValue | string
   amount: number
   period_type: "month" | "year"
   year: number
   month?: number
+  scope?: WealthScope
 }
 
 export interface UpdateCategoryBudgetPayload {
   amount: number
 }
 
-export function buildWealthFilterParams(filter: WealthFilter) {
-  if (filter.mode === "month") {
-    return {
-      mode: filter.mode,
-      year: filter.year,
-      month: filter.month,
-    }
-  }
+export function buildWealthFilterParams(filter: WealthFilter, scope: WealthScope = "personal") {
+  const base =
+    filter.mode === "month"
+      ? {
+          mode: filter.mode,
+          year: filter.year,
+          month: filter.month,
+        }
+      : {
+          mode: filter.mode,
+          start_year: filter.startYear,
+          end_year: filter.endYear,
+        }
 
-  return {
-    mode: filter.mode,
-    start_year: filter.startYear,
-    end_year: filter.endYear,
-  }
+  return { ...base, scope }
 }
 
 export function getWealthErrorMessage(error: unknown, fallback: string) {
@@ -145,15 +178,21 @@ export function getWealthErrorMessage(error: unknown, fallback: string) {
   return firstFieldError?.[0] ?? fallback
 }
 
-export async function fetchWealthDashboard(filter: WealthFilter) {
+export async function fetchWealthDashboard(
+  filter: WealthFilter,
+  scope: WealthScope = "personal"
+) {
   const response = await authApi.get<WealthDashboard>(WEALTH.DASHBOARD, {
-    params: buildWealthFilterParams(filter),
+    params: buildWealthFilterParams(filter, scope),
   })
   return response.data
 }
 
 export async function createWealthTransaction(payload: CreateTransactionPayload) {
-  const response = await authApi.post<WealthTransaction>(WEALTH.TRANSACTIONS, payload)
+  const response = await authApi.post<WealthTransaction>(WEALTH.TRANSACTIONS, {
+    ...payload,
+    scope: payload.scope ?? "personal",
+  })
   return response.data
 }
 
@@ -168,7 +207,10 @@ export async function deleteWealthTransaction(id: string) {
 }
 
 export async function createWealthCategoryBudget(payload: CreateCategoryBudgetPayload) {
-  const response = await authApi.post(WEALTH.BUDGETS, payload)
+  const response = await authApi.post(WEALTH.BUDGETS, {
+    ...payload,
+    scope: payload.scope ?? "personal",
+  })
   return response.data
 }
 

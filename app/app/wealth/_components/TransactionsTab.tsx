@@ -42,6 +42,7 @@ import type {
   CreateTransactionPayload,
   UpdateTransactionPayload,
   WealthCategoryValue,
+  WealthScope,
   WealthTransaction,
 } from "@/lib/api/wealth"
 import {
@@ -85,6 +86,8 @@ type DialogMode = "add" | "edit"
 interface TransactionsTabProps {
   transactions: WealthTransaction[]
   isLoading?: boolean
+  readOnly?: boolean
+  scope?: WealthScope
   onCreateTransaction: (payload: CreateTransactionPayload) => Promise<unknown>
   onUpdateTransaction: (payload: { id: string; data: UpdateTransactionPayload }) => Promise<unknown>
   onDeleteTransaction: (id: string) => Promise<unknown>
@@ -96,6 +99,8 @@ interface TransactionsTabProps {
 export function TransactionsTab({
   transactions,
   isLoading,
+  readOnly = false,
+  scope = "personal",
   onCreateTransaction,
   onUpdateTransaction,
   onDeleteTransaction,
@@ -145,7 +150,9 @@ export function TransactionsTab({
     setShowDialog(true)
   }
 
-  useOpenActionParam("add", openAddDialog)
+  useOpenActionParam("add", () => {
+    if (!readOnly) openAddDialog()
+  })
 
   const openEditDialog = (transaction: WealthTransaction) => {
     setOpenMenuId(null)
@@ -204,11 +211,15 @@ export function TransactionsTab({
   return (
     <TabsContent value="transactions" className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h2 className="text-xl font-bold font-mono text-slate-200">Transactions</h2>
-        <Button className={primaryButtonClassName} onClick={openAddDialog} disabled={isCreatingTransaction}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Transaction
-        </Button>
+        <h2 className="text-xl font-bold font-mono text-slate-200">
+          Transactions{scope === "farm" ? " · Farm" : ""}
+        </h2>
+        {!readOnly && (
+          <Button className={primaryButtonClassName} onClick={openAddDialog} disabled={isCreatingTransaction}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Transaction
+          </Button>
+        )}
         <Dialog
           open={showDialog}
           onOpenChange={(open) => {
@@ -362,7 +373,8 @@ export function TransactionsTab({
                     <div className="min-w-0">
                       <p className="font-semibold font-mono text-slate-200 truncate">{transaction.description}</p>
                         <p className="text-sm text-slate-400 font-mono">
-                          {getCategoryLabel(transaction.category)} • {formatTransactionDate(transaction.date)}
+                          {getCategoryLabel(transaction.category, scope)} •{" "}
+                          {formatTransactionDate(transaction.date)}
                         </p>
                     </div>
                   </div>
@@ -376,39 +388,41 @@ export function TransactionsTab({
                         showSign: transaction.amount > 0,
                       })}
                     </p>
-                    <DropdownMenu
-                      modal={false}
-                      open={openMenuId === transaction.id}
-                      onOpenChange={(open) => setOpenMenuId(open ? transaction.id : null)}
-                    >
-                      <DropdownMenuTrigger
-                        type="button"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+                    {!readOnly && (
+                      <DropdownMenu
+                        modal={false}
+                        open={openMenuId === transaction.id}
+                        onOpenChange={(open) => setOpenMenuId(open ? transaction.id : null)}
                       >
-                        <EllipsisVertical className="h-4 w-4" />
-                        <span className="sr-only">Open transaction menu</span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="z-[100] bg-slate-800 border-slate-600/50 text-slate-200"
-                      >
-                        <DropdownMenuItem
-                          className="font-mono cursor-pointer focus:bg-slate-700 focus:text-slate-100"
-                          onSelect={() => openEditDialog(transaction)}
+                        <DropdownMenuTrigger
+                          type="button"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                         >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          className="font-mono cursor-pointer focus:bg-red-500/10 focus:text-red-400"
-                          onSelect={() => openDeleteDialog(transaction.id)}
+                          <EllipsisVertical className="h-4 w-4" />
+                          <span className="sr-only">Open transaction menu</span>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="z-[100] bg-slate-800 border-slate-600/50 text-slate-200"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem
+                            className="font-mono cursor-pointer focus:bg-slate-700 focus:text-slate-100"
+                            onSelect={() => openEditDialog(transaction)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="font-mono cursor-pointer focus:bg-red-500/10 focus:text-red-400"
+                            onSelect={() => openDeleteDialog(transaction.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               ))}

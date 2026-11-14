@@ -6,10 +6,10 @@ import { ListRowsSkeleton } from "@/components/skeletons"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import { useCurrency } from "@/hooks/useCurrency"
-import type { WealthCategoryTotal } from "@/lib/api/wealth"
+import type { WealthCategoryTotal, WealthScope } from "@/lib/api/wealth"
 import {
-  WEALTH_EXPENSE_CATEGORIES,
-  WEALTH_INCOME_CATEGORIES,
+  getExpenseCategoriesForScope,
+  getIncomeCategoriesForScope,
 } from "./constants"
 
 type CategoryView = "expenses" | "income"
@@ -18,6 +18,7 @@ interface CategoriesTabProps {
   categoryTotals: WealthCategoryTotal[]
   incomeCategoryTotals: WealthCategoryTotal[]
   isLoading?: boolean
+  scope?: WealthScope
 }
 
 function mergeCategoryTotals(
@@ -51,7 +52,10 @@ function CategoryList({
         >
           <p className="font-semibold font-mono text-slate-200">{cat.label}</p>
           <p className={`font-semibold font-mono ${accentClassName(cat.value)}`}>
-            {formatCurrency(cat.total)}
+            {formatCurrency(cat.total, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </p>
         </div>
       ))}
@@ -67,11 +71,14 @@ export function CategoriesTab({
   categoryTotals,
   incomeCategoryTotals,
   isLoading,
+  scope = "personal",
 }: CategoriesTabProps) {
   const [view, setView] = useState<CategoryView>("expenses")
 
-  const expenseCategories = mergeCategoryTotals(WEALTH_EXPENSE_CATEGORIES, categoryTotals)
-  const incomeCategories = mergeCategoryTotals(WEALTH_INCOME_CATEGORIES, incomeCategoryTotals)
+  const expenseDefs = getExpenseCategoriesForScope(scope)
+  const incomeDefs = getIncomeCategoriesForScope(scope)
+  const expenseCategories = mergeCategoryTotals(expenseDefs, categoryTotals)
+  const incomeCategories = mergeCategoryTotals(incomeDefs, incomeCategoryTotals)
 
   return (
     <TabsContent value="categories" className="space-y-6">
@@ -109,7 +116,7 @@ export function CategoriesTab({
 
             <TabsContent value="expenses" className="mt-0">
               {isLoading ? (
-                <CategorySkeleton count={WEALTH_EXPENSE_CATEGORIES.length} />
+                <CategorySkeleton count={expenseDefs.length} />
               ) : (
                 <CategoryList
                   categories={expenseCategories}
@@ -122,7 +129,7 @@ export function CategoriesTab({
 
             <TabsContent value="income" className="mt-0">
               {isLoading ? (
-                <CategorySkeleton count={WEALTH_INCOME_CATEGORIES.length} />
+                <CategorySkeleton count={incomeDefs.length} />
               ) : (
                 <CategoryList
                   categories={incomeCategories}

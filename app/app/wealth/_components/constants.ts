@@ -8,12 +8,22 @@ import {
   Tags,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import type { WealthScope } from "@/lib/api/wealth"
+import {
+  WEALTH_FARM_EXPENSE_CATEGORIES,
+  WEALTH_FARM_INCOME_CATEGORIES,
+} from "./farm-categories"
 
 export const WEALTH_TABS = [
   { value: "overview", label: "Overview" },
   { value: "budget", label: "Budget" },
   { value: "categories", label: "Categories" },
   { value: "transactions", label: "Transactions" },
+] as const
+
+export const WEALTH_SCOPES = [
+  { value: "personal", label: "Personal" },
+  { value: "farm", label: "Farm" },
 ] as const
 
 export const BUDGET_CATEGORY_STYLES: Record<
@@ -63,12 +73,25 @@ export function isIncomeCategory(value: string) {
   return INCOME_CATEGORY_VALUES.includes(value as (typeof INCOME_CATEGORY_VALUES)[number])
 }
 
-export function getCategoryLabel(value: string) {
+export function getExpenseCategoriesForScope(scope: WealthScope) {
+  return scope === "farm" ? WEALTH_FARM_EXPENSE_CATEGORIES : WEALTH_EXPENSE_CATEGORIES
+}
+
+export function getIncomeCategoriesForScope(scope: WealthScope) {
+  return scope === "farm" ? WEALTH_FARM_INCOME_CATEGORIES : WEALTH_INCOME_CATEGORIES
+}
+
+export function getCategoryLabel(value: string, scope: WealthScope = "personal") {
   if (value === LEGACY_INCOME_CATEGORY) {
     return "Income"
   }
 
-  return WEALTH_CATEGORIES.find((category) => category.value === value)?.label ?? value
+  const list =
+    scope === "farm"
+      ? [...WEALTH_FARM_EXPENSE_CATEGORIES, ...WEALTH_FARM_INCOME_CATEGORIES]
+      : WEALTH_CATEGORIES
+
+  return list.find((category) => category.value === value)?.label ?? value
 }
 
 export function getCategoryValue(label: string): WealthCategoryValue {

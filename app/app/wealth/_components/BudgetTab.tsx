@@ -43,6 +43,7 @@ import type {
   WealthCategoryBudget,
   WealthDashboard,
   WealthExpenseCategoryValue,
+  WealthScope,
 } from "@/lib/api/wealth"
 import {
   budgetDefaultValues,
@@ -53,7 +54,8 @@ import {
 } from "../_schemas/wealth.schema"
 import { FormFieldError } from "./FormFieldError"
 import { WealthEmptyState } from "./WealthEmptyState"
-import { BUDGET_CATEGORY_STYLES, WEALTH_EXPENSE_CATEGORIES } from "./constants"
+import { BUDGET_CATEGORY_STYLES, getExpenseCategoriesForScope } from "./constants"
+import { FARM_BUDGET_CATEGORY_STYLES } from "./farm-categories"
 import { formatBudgetPeriod, getBudgetStatus } from "./utils"
 
 const primaryButtonClassName =
@@ -99,6 +101,8 @@ interface BudgetTabProps {
   categoryBudgets: WealthCategoryBudget[]
   filter: WealthDashboard["filter"]
   isLoading?: boolean
+  readOnly?: boolean
+  scope?: WealthScope
   onCreateBudget: (payload: CreateCategoryBudgetPayload) => Promise<unknown>
   onUpdateBudget: (payload: { id: string; data: { amount: number } }) => Promise<unknown>
   onDeleteBudget: (id: string) => Promise<unknown>
@@ -111,6 +115,8 @@ export function BudgetTab({
   categoryBudgets,
   filter,
   isLoading,
+  readOnly = false,
+  scope = "personal",
   onCreateBudget,
   onUpdateBudget,
   onDeleteBudget,
@@ -125,7 +131,15 @@ export function BudgetTab({
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
-  useOpenActionParam("set-limit", () => setShowAddDialog(true))
+  useOpenActionParam("set-limit", () => {
+    if (!readOnly) setShowAddDialog(true)
+  })
+
+  const expenseCategories = getExpenseCategoriesForScope(scope)
+  const budgetStyles =
+    scope === "farm"
+      ? { ...BUDGET_CATEGORY_STYLES, ...FARM_BUDGET_CATEGORY_STYLES }
+      : BUDGET_CATEGORY_STYLES
 
   const addForm = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
@@ -194,16 +208,18 @@ export function BudgetTab({
             Limits for {filterLabel} · spending calculated from transactions
           </p>
         </div>
-        <Button
-          className={primaryButtonClassName}
-          onClick={() => {
-            resetAddForm()
-            setShowAddDialog(true)
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Set Limit
-        </Button>
+        {!readOnly && (
+          <Button
+            className={primaryButtonClassName}
+            onClick={() => {
+              resetAddForm()
+              setShowAddDialog(true)
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Set Limit
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -237,7 +253,7 @@ export function BudgetTab({
       ) : (
         <div className="grid gap-4">
           {categoryBudgets.map((budget) => {
-            const style = BUDGET_CATEGORY_STYLES[budget.category] ?? BUDGET_CATEGORY_STYLES.other
+            const style = budgetStyles[budget.category] ?? budgetStyles.other
             const Icon = style.icon
             const percentage = budget.percentage
             const status = getBudgetStatus(budget.spent, budget.limit)
@@ -277,39 +293,41 @@ export function BudgetTab({
                       >
                         {status.status}
                       </Badge>
-                      <DropdownMenu
-                        modal={false}
-                        open={openMenuId === budget.id}
-                        onOpenChange={(open) => setOpenMenuId(open ? budget.id : null)}
-                      >
-                        <DropdownMenuTrigger
-                          type="button"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+                      {!readOnly && (
+                        <DropdownMenu
+                          modal={false}
+                          open={openMenuId === budget.id}
+                          onOpenChange={(open) => setOpenMenuId(open ? budget.id : null)}
                         >
-                          <EllipsisVertical className="h-4 w-4" />
-                          <span className="sr-only">Open budget menu</span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="z-[100] bg-slate-800 border-slate-600/50 text-slate-200"
-                        >
-                          <DropdownMenuItem
-                            className="font-mono cursor-pointer focus:bg-slate-700 focus:text-slate-100"
-                            onSelect={() => openEdit(budget)}
+                          <DropdownMenuTrigger
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                           >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Limit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            className="font-mono cursor-pointer focus:bg-red-500/10 focus:text-red-400"
-                            onSelect={() => setDeleteId(budget.id)}
+                            <EllipsisVertical className="h-4 w-4" />
+                            <span className="sr-only">Open budget menu</span>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="z-[100] bg-slate-800 border-slate-600/50 text-slate-200"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            <DropdownMenuItem
+                              className="font-mono cursor-pointer focus:bg-slate-700 focus:text-slate-100"
+                              onSelect={() => openEdit(budget)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Limit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              className="font-mono cursor-pointer focus:bg-red-500/10 focus:text-red-400"
+                              onSelect={() => setDeleteId(budget.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                   <Progress value={Math.min(percentage, 100)} className="h-3" />
@@ -355,7 +373,7 @@ export function BudgetTab({
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-600/50 max-h-48">
-                  {WEALTH_EXPENSE_CATEGORIES.map((category) => (
+                  {expenseCategories.map((category) => (
                     <SelectItem key={category.value} value={category.value} className="font-mono">
                       {category.label}
                     </SelectItem>

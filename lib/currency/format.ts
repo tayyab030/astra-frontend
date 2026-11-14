@@ -1,32 +1,31 @@
-import { BASE_CURRENCY } from "@/lib/currency/types";
-
 interface FormatCurrencyOptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   showSign?: boolean;
 }
 
+/**
+ * Format an amount in the user's currency code.
+ * No FX conversion — amounts are stored and shown in the account currency.
+ */
 export function formatCurrencyAmount(
-  amountInUsd: number,
+  amount: number,
   currencyCode: string,
-  rates: Record<string, number>,
+  _rates?: Record<string, number>,
   options?: FormatCurrencyOptions
 ): string {
-  const rate = currencyCode === BASE_CURRENCY ? 1 : rates[currencyCode] ?? 1;
-  const converted = amountInUsd * rate;
-
   const formatted = new Intl.NumberFormat("en", {
     style: "currency",
     currency: currencyCode,
     minimumFractionDigits: options?.minimumFractionDigits ?? 0,
     maximumFractionDigits: options?.maximumFractionDigits ?? 2,
-  }).format(Math.abs(converted));
+  }).format(Math.abs(amount));
 
-  if (options?.showSign && amountInUsd > 0) {
+  if (options?.showSign && amount > 0) {
     return `+${formatted}`;
   }
 
-  if (amountInUsd < 0) {
+  if (amount < 0) {
     return `-${formatted}`;
   }
 

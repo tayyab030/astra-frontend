@@ -5,7 +5,6 @@ import { BASE_CURRENCY } from "@/lib/currency/types";
 import { formatCurrencyAmount } from "@/lib/currency/format";
 import { setCurrency } from "@/store/slice/currencySlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { useExchangeRates } from "./useExchangeRates";
 
 interface FormatCurrencyOptions {
   minimumFractionDigits?: number;
@@ -15,14 +14,12 @@ interface FormatCurrencyOptions {
 
 export function useCurrency() {
   const dispatch = useAppDispatch();
-  const { code, rates } = useAppSelector((state) => state.currency);
-
-  useExchangeRates();
+  const { code } = useAppSelector((state) => state.currency);
 
   const formatCurrency = useCallback(
-    (amountInUsd: number, options?: FormatCurrencyOptions) =>
-      formatCurrencyAmount(amountInUsd, code, rates, options),
-    [code, rates]
+    (amount: number, options?: FormatCurrencyOptions) =>
+      formatCurrencyAmount(amount, code, undefined, options),
+    [code]
   );
 
   const changeCurrency = useCallback(
