@@ -26,6 +26,8 @@ export const WEALTH_FARM_EXPENSE_CATEGORIES = [
   { value: "utilities", label: "Utilities" },
   { value: "transport", label: "Transportation" },
   { value: "marketing", label: "Marketing" },
+  { value: "livestock", label: "Livestock Purchase" },
+  { value: "livestock_loss", label: "Livestock Loss" },
   { value: "other", label: "Miscellaneous" },
 ] as const
 
@@ -47,6 +49,8 @@ export const FARM_BUDGET_CATEGORY_STYLES: Record<string, { icon: LucideIcon; col
   utilities: { icon: Zap, color: "from-indigo-500 to-violet-500" },
   transport: { icon: Tractor, color: "from-sky-500 to-blue-500" },
   marketing: { icon: AlertTriangle, color: "from-purple-500 to-fuchsia-500" },
+  livestock: { icon: Beef, color: "from-orange-500 to-amber-600" },
+  livestock_loss: { icon: AlertTriangle, color: "from-red-500 to-rose-600" },
   other: { icon: Tags, color: "from-slate-500 to-slate-600" },
   milk_sales: { icon: Droplets, color: "from-cyan-500 to-blue-500" },
   egg_sales: { icon: Egg, color: "from-amber-400 to-yellow-500" },
