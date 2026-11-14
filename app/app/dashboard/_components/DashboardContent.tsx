@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import Link from "next/link"
 import { Cell, Pie, PieChart } from "recharts"
 import { Button } from "@/components/ui/button"
@@ -30,12 +31,20 @@ import {
   DollarSign,
   Droplets,
   Flame,
+  MapPin,
   Star,
   Zap,
 } from "lucide-react"
+import { useBrowserLocation } from "@/hooks/useBrowserLocation"
+import { getLocalDateString } from "@/app/app/health/_utils/date"
+import { usePrayer } from "@/app/app/prayer/_hooks/usePrayer"
+import { usePrayerDay } from "@/app/app/prayer/_hooks/usePrayerDay"
+import { buildLifeOsInsightExtras } from "@/lib/insights/lifeOsContext"
+import { buildPrayerInsightSlice } from "@/lib/insights/prayerInsightContext"
 import { useDailyQuote } from "../_hooks/useDailyQuote"
 import { useDashboard } from "../_hooks/useDashboard"
 import { QuickActions } from "./QuickActions"
+import { PrayerWidget } from "./PrayerWidget"
 import type { DashboardView } from "../_utils/computeDashboard"
 
 const expenseChartConfig = {
@@ -86,8 +95,30 @@ export function DashboardContent() {
   const user = useAppSelector((state) => state.user.user)
   const { dashboard, isLoading, isError, refetch } = useDashboard()
   const { quote } = useDailyQuote()
+  const {
+    label: locationLabel,
+    isLoading: locationLoading,
+    error: locationError,
+    refresh: refreshLocation,
+  } = useBrowserLocation()
 
-  const insightContext = dashboard ? buildDashboardInsightContext(dashboard) : undefined
+  const prayer = usePrayer()
+  const today = getLocalDateString()
+  const { day: todayPrayerLog } = usePrayerDay(today)
+
+  const insightContext = useMemo(() => {
+    if (!dashboard) return undefined
+    return {
+      ...buildLifeOsInsightExtras(user, dashboard),
+      ...buildDashboardInsightContext(dashboard),
+      ...buildPrayerInsightSlice({
+        timings: prayer.timings,
+        today: todayPrayerLog,
+        analysis: null,
+      }),
+    }
+  }, [dashboard, user, prayer.timings, todayPrayerLog])
+
   const {
     data: insightData,
     hasInsight,
@@ -125,6 +156,19 @@ export function DashboardContent() {
           <h1 className="astra-title">
             {greeting}, {firstName}
           </h1>
+          <button
+            type="button"
+            onClick={refreshLocation}
+            className="mt-1.5 flex max-w-full items-center gap-1.5 text-left text-sm text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Refresh current location"
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <span className="truncate">
+              {locationLoading
+                ? "Finding your location…"
+                : locationLabel ?? locationError ?? "Location unavailable"}
+            </span>
+          </button>
           <p className="astra-subtitle mt-1">&quot;{quote}&quot;</p>
         </div>
         <Link href={ROUTES.APP.LIFE_SCORE}>
@@ -219,6 +263,8 @@ export function DashboardContent() {
           </Card>
         </Link>
       </div>
+
+      <PrayerWidget />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="astra-card">

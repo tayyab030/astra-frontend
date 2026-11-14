@@ -75,7 +75,6 @@ import {
   revokeAuthSession,
   type AuthSessionApi,
 } from "@/lib/api/sessions"
-import CurrencySelect from "@/components/common/CurrencySelect"
 import TimezoneSelect from "@/components/common/TimezoneSelect"
 import { TimePicker } from "@/components/ui/time-picker"
 import { useCurrency } from "@/hooks/useCurrency"
@@ -261,7 +260,7 @@ function SettingsPageContent() {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { currency, setCurrency, formatCurrency } = useCurrency()
+  const { currency, formatCurrency } = useCurrency()
   const { setTheme } = useTheme()
 
   const [firstName, setFirstName] = useState("")
@@ -478,7 +477,6 @@ function SettingsPageContent() {
       dispatch(setUser(user))
       if (user.currency) {
         dispatch(setCurrencyAction(user.currency))
-        setCurrency(user.currency)
         setProfileCurrency(user.currency)
       }
       if (isAppTheme(user.theme)) {
@@ -666,14 +664,8 @@ function SettingsPageContent() {
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       ...(gender ? { gender } : {}),
-      currency: profileCurrency,
       timezone,
     })
-  }
-
-  const handleCurrencyChange = (nextCurrency: string) => {
-    setProfileCurrency(nextCurrency)
-    setCurrency(nextCurrency)
   }
 
   const weightsTotal = moduleWeightsTotal(moduleWeights)
@@ -1018,9 +1010,15 @@ function SettingsPageContent() {
                         <Label htmlFor="currency" className="font-mono text-muted-foreground">
                           Currency Format
                         </Label>
-                        <CurrencySelect value={profileCurrency} onValueChange={handleCurrencyChange} />
+                        <Input
+                          id="currency"
+                          value={profileCurrency}
+                          disabled
+                          readOnly
+                          className="bg-secondary/40 border-border text-muted-foreground font-mono"
+                        />
                         <p className="text-xs text-muted-foreground font-mono">
-                          Saved to your account. Amounts across the app update automatically.
+                          Set when you create your account. Currency cannot be changed here.
                         </p>
                       </div>
                     </div>
